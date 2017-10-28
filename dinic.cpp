@@ -152,12 +152,12 @@ int main(){
     for(int i = 0; i < m; ++i){
         int a,b,c;
         cin >> a >> b >> c;
-        edge_index = mf.add_edge(a,b,c); //store edge index if care about flow value
-        mf.add_edge(b,a,c);
+        //undirected edge is a pair of edges (a,b,c,0) and (a,b,0,c)
+        edge_index = mf.add_edge(a,b,c,c); //store edge index if care about flow value
     }
-    mf.group_edges(); // call if we have multiple directed edges or self loops
+    mf.group_edges(); // small auxillary to remove multiple edges, only use this if we need to know TOTAL FLOW ONLY
     cout << mf.calc() << '\n';
-    //cout << *mf.edges[edge_index].flow << '\n'; // can call only if group_edges() was not called
+    //cout << *mf.edges[edge_index].flow << '\n'; // ONLY if group_edges() WAS NOT CALLED
 }
 //!end_codebook
     // solves http://www.spoj.com/problems/FASTFLOW/
