@@ -277,7 +277,7 @@ struct MaxFlow{
 int main(){
     int n,m;
     cin >> n >> m;
-    auto mf = MaxFlow(1,n);
+    auto mf = MaxFlow(1,n); // arguments source and sink, memory usage O(largest node index), sink doesn't need to be last
     int edge_index;
     for(int i = 0; i < m; ++i){
         int a,b,c;
