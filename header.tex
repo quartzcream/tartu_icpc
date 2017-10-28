@@ -1,0 +1,57 @@
+% !begin_codebook
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{titlesec}
+\usepackage{enumerate}
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{mathabx}
+\usepackage{graphicx}
+\usepackage{pdfpages}
+\usepackage{forloop}
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+\usepackage[hmarginratio=1:1,top=15mm, bottom=5mm, columnsep=0mm, left=6mm, right=3mm]{geometry} % Document margins
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+
+
+\usepackage{enumitem} % Customized lists
+\setlist[itemize]{noitemsep} % Make itemize lists more compact
+\usepackage{fancyhdr} % Proper control over header
+
+
+\usepackage{minted}
+\usepackage{etoolbox}
+\AtBeginEnvironment{minted}{\fontsize{10}{10}\selectfont}
+\usemintedstyle{emacs}
+\titlespacing{\section}{10mm}{0mm}{0mm}
+
+
+
+\title{\textbf{University of Tartu ICPC Team Notebook (2017-2018)}}
+\date{\today}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{University of Tartu}
+\rhead{\thepage}
+\setlength{\headsep}{0mm}
+
+\binoppenalty=\maxdimen
+\relpenalty=\maxdimen
+
+\begin{document}
+
+\maketitle
+ 
+\tableofcontents
+
+% !end_codebook
+
+\end{document}

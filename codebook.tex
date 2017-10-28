@@ -1,0 +1,459 @@
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{titlesec}
+\usepackage{enumerate}
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{mathabx}
+\usepackage{graphicx}
+\usepackage{pdfpages}
+\usepackage{forloop}
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+\usepackage[hmarginratio=1:1,top=15mm, bottom=5mm, columnsep=0mm, left=6mm, right=3mm]{geometry} % Document margins
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+
+
+\usepackage{enumitem} % Customized lists
+\setlist[itemize]{noitemsep} % Make itemize lists more compact
+\usepackage{fancyhdr} % Proper control over header
+
+
+\usepackage{minted}
+\usepackage{etoolbox}
+\AtBeginEnvironment{minted}{\fontsize{10}{10}\selectfont}
+\usemintedstyle{emacs}
+\titlespacing{\section}{10mm}{0mm}{0mm}
+
+
+
+\title{\textbf{University of Tartu ICPC Team Notebook (2017-2018)}}
+\date{\today}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{University of Tartu}
+\rhead{\thepage}
+\setlength{\headsep}{0mm}
+
+\binoppenalty=\maxdimen
+\relpenalty=\maxdimen
+
+\begin{document}
+
+\maketitle
+ 
+\tableofcontents
+
+\section{gcc ordered set}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
+#include<ext/pb_ds/assoc_container.hpp>
+#include<ext/pb_ds/tree_policy.hpp>
+using namespace __gnu_pbds;
+template <typename T>
+using ordered_set = tree<T, null_type, less<T>, rb_tree_tag, tree_order_statistics_node_update>;
+int main(){
+	ordered_set<int>  cur;
+	cur.insert(1); 
+	cur.insert(3);
+	cout << cur.order_of_key(2) << endl; // the number of elements in the set less than 2
+	cout << *cur.find_by_order(0) << endl; // the 0-th smallest number in the set(0-based)
+	cout << *cur.find_by_order(1) << endl; // the 1-th smallest number in the set(0-based)
+}
+\end{minted}
+\section{Triangle centers}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
+const double min_delta = 1e-13;
+const double coord_max = 1e6;
+typedef complex < double > point;
+point A, B, C; // vertixes of the triangle
+bool collinear(){
+	double min_diff = min(abs(A - B), min(abs(A - C), abs(B - C)));
+	if(min_diff < coord_max * min_delta)
+		return true;
+	point sp = (B - A) / (C - A);
+	double ang = M_PI/2-abs(abs(arg(sp))-M_PI/2); //positive angle with the real line
+	return ang < min_delta;
+}
+point circum_center(){
+	if(collinear())
+		return point(NAN,NAN);
+	//squared lengths of sides
+	double a2, b2, c2;
+	a2 = norm(B - C);
+	b2 = norm(A - C);
+	c2 = norm(A - B);
+	//barycentric coordinates of the circumcenter
+	double c_A, c_B, c_C;
+	c_A = a2 * (b2 + c2 - a2);//sin(2 * alpha) may be used as well
+	c_B = b2 * (a2 + c2 - b2);
+	c_C = c2 * (a2 + b2 - c2);
+	double sum = c_A + c_B + c_C;
+	c_A /= sum;
+	c_B /= sum;
+	c_C /= sum;
+	// cartesian coordinates of the circumcenter
+	return c_A * A + c_B * B + c_C * C;
+}
+point centroid(){ //center of mass
+	return (A + B + C) / 3.0;
+}
+point ortho_center(){ //euler line
+	point O = circum_center();
+	return O + 3.0 * (centroid() - O);
+};
+point nine_point_circle_center(){ //euler line
+	point O = circum_center();
+	return O + 1.5 * (centroid() - O);
+};
+point in_center(){
+	if(collinear())
+		return point(NAN,NAN);
+	double a, b, c; //side lengths
+	a = abs(B - C);
+	b = abs(A - C);
+	c = abs(A - B);
+	//trilinear coordinates are (1,1,1)
+	//barycentric coordinates
+	double c_A = a, c_B = b, c_C = c;
+	double sum = c_A + c_B + c_C;
+	c_A /= sum;
+	c_B /= sum;
+	c_C /= sum;
+	// cartesian coordinates of the incenter
+	return c_A * A + c_B * B + c_C * C;
+}
+\end{minted}
+\section{Min cost max flow O($\text{flow} \cdot n^2$)}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
+const int nmax=1055;
+const ll inf=1e14;
+int t, n, v;
+ll rem_flow[nmax][nmax];
+ll cost[nmax][nmax];
+ll min_dist[nmax];
+int prev_node[nmax];
+ll node_flow[nmax];
+bool visited[nmax];
+ll tot_cost, tot_flow;
+void mincmaxf(){
+	tot_cost=0;
+	tot_flow=0;
+	ll sink_pot=0;
+	while(true){
+		for(int i=0; i<=v; ++i){
+			min_dist[i]=inf;
+			visited[i]=false;
+		}
+		min_dist[0]=0;
+		node_flow[0]=inf;
+		int min_node;
+		while(true){
+			int min_node=v;
+			for(int i=0; i<v; ++i){
+				if((!visited[i]) && min_dist[i]<min_dist[min_node]){
+					min_node=i;
+				}
+			}
+			if(min_node==v){
+				break;
+			}
+			visited[min_node]=true;
+			for(int i=0; i<v; ++i){
+				if((!visited[i]) && min_dist[min_node]+cost[min_node][i] < min_dist[i]){
+					min_dist[i]=min_dist[min_node]+cost[min_node][i];
+					prev_node[i]=min_node;
+					node_flow[i]=min(node_flow[min_node], rem_flow[min_node][i]);
+				}
+			}
+		}
+		if(min_dist[v-1]==inf){
+			break;
+		}
+		for(int i=0; i<v; ++i){
+			for(int j=0; j<v; ++j){
+				if(cost[i][j]!=inf){
+					cost[i][j]+=min_dist[i];
+					cost[i][j]-=min_dist[j];
+				}
+			}
+		}
+		sink_pot+=min_dist[v-1];
+		tot_flow+=node_flow[v-1];
+		tot_cost+=sink_pot*node_flow[v-1];
+		int cur=v-1;
+		while(cur!=0){
+			rem_flow[prev_node[cur]][cur]-=node_flow[v-1];
+			rem_flow[cur][prev_node[cur]]+=node_flow[v-1];
+			cost[cur][prev_node[cur]]=0;
+			if(rem_flow[prev_node[cur]][cur]==0){
+				cost[prev_node[cur]][cur]=inf;
+			}
+			cur=prev_node[cur];
+		}
+	}
+}
+\end{minted}
+\section{Aho Corasick O($|\text{alpha}|\sum{\text{len}}$)}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
+const int alpha_size=26;
+struct node{
+	node *nxt[alpha_size]; //May use other structures to move in trie
+	node *suffix;
+	node(){
+		memset(nxt, 0, alpha_size*sizeof(node *));
+	}
+	int cnt=0;
+};
+node *aho_corasick(vector<vector<char> > &dict){
+	node *root= new node;
+	root->suffix = 0;
+	vector<pair<vector<char> *, node *> > cur_state;
+	for(vector<char> &s : dict)
+		cur_state.emplace_back(&s, root);
+	for(int i=0; !cur_state.empty(); ++i){
+		vector<pair<vector<char> *, node *> > nxt_state;
+		for(auto &cur : cur_state){
+			node *nxt=cur.second->nxt[(*cur.first)[i]];
+			if(nxt){
+				cur.second=nxt;
+			}else{
+				nxt = new node;
+				cur.second->nxt[(*cur.first)[i]] = nxt;
+				node *suf = cur.second->suffix;
+				cur.second = nxt;
+				nxt->suffix = root; //set correct suffix link
+				while(suf){
+					if(suf->nxt[(*cur.first)[i]]){
+						nxt->suffix = suf->nxt[(*cur.first)[i]];
+						break;
+					}
+					suf=suf->suffix;
+				}
+			}
+			if(cur.first->size() > i+1)
+				nxt_state.push_back(cur);
+		}
+		cur_state=nxt_state;
+	}
+	return root;
+}
+node *walk(node *cur, char c){
+	while(true){
+		if(cur->nxt[c])
+			return cur->nxt[c];
+		if(!cur->suffix){
+			return cur;
+		}
+		cur = cur->suffix;
+	}
+}
+void cnt_matches(node *root, vector<char> &match_in){
+	node *cur = root;
+	for(char c : match_in){
+		cur = walk(cur, c);
+		++cur->cnt;
+	}
+}
+void add_cnt(node *root){
+	vector<node *> to_visit = {root};
+	for(int i=0; i<to_visit.size(); ++i){
+		node *cur = to_visit[i];
+		for(int j=0; j<alpha_size; ++j){
+			if(cur->nxt[j]){
+				to_visit.push_back(cur->nxt[j]);
+			}
+		}
+	}
+	for(int i=to_visit.size()-1; i>0; --i){
+		to_visit[i]->suffix->cnt += to_visit[i]->cnt;
+	}
+}
+\end{minted}
+\section{Suffix automaton O($(n+q)\log(|\text{alpha}|)$)}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
+class AutoNode {
+ private:
+  map< char, AutoNode * > nxt_char;  // Map is faster than hashtable and unsorted arrays
+ public:
+  int len;
+  AutoNode *suf;
+  bool has_nxt(char c) const { 
+		return nxt_char.count(c); 
+	}
+  AutoNode *nxt(char c) {
+    if (!has_nxt(c)) 
+			return NULL;
+    return nxt_char[c];
+  }
+  void set_nxt(char c, AutoNode *node) { 
+		nxt_char[c] = node; 
+	}
+  AutoNode *split(int new_len, char c) {
+    AutoNode *new_n = new AutoNode;
+    new_n->nxt_char = nxt_char;
+    new_n->len = new_len;
+    new_n->suf = suf;
+    suf = new_n;
+    return new_n;
+  }
+  // Extra functions for matching and counting
+  AutoNode *lower_depth(int depth) {
+    if (suf->len >= depth) 
+			return suf->lower_depth(depth);
+    return this;
+  }
+  AutoNode *walk(char c, int depth, int &match_len) {
+    match_len = min(match_len, len);
+    if (has_nxt(c)) {
+      ++match_len;
+      return nxt(c)->lower_depth(depth);
+    }
+    if (suf) 
+			return suf->walk(c, depth, match_len);
+    return this;
+  }
+  int paths_to_end = 0;
+  void set_as_end() {
+    paths_to_end = 1;
+    if (suf) suf->set_as_end();
+  }
+  bool vis = false;
+  void calc_paths_to_end() {
+    if (!vis) {
+      vis = true;
+      for (auto cur : nxt_char) {
+        cur.second->calc_paths_to_end();
+        paths_to_end += cur.second->paths_to_end;
+      }
+    }
+  }
+};
+struct SufAutomaton {
+  AutoNode *last;
+  AutoNode *root;
+  void extend(char new_c) {
+    AutoNode *new_end = new AutoNode;  // The equivalence class containing the whole new string
+    new_end->len = last->len + 1;
+    AutoNode *suf_w_nxt = last;                        // The whole old string class
+    while (suf_w_nxt && !suf_w_nxt->has_nxt(new_c)) {  // is turned into the longest suffix which
+                                                       // can be turned into a substring of old state
+                                                       // by appending new_c
+      suf_w_nxt->set_nxt(new_c, new_end);
+      suf_w_nxt = suf_w_nxt->suf;
+    }
+    if (!suf_w_nxt) {  // The new character isn't part of the old string
+      new_end->suf = root;
+    } else {
+      AutoNode *max_sbstr = suf_w_nxt->nxt(new_c);  // Equivalence class containing longest
+                                                    // substring which is a suffix of the new state.
+      if (suf_w_nxt->len + 1 == max_sbstr->len) { // Check whether splitting is needed
+        new_end->suf = max_sbstr;
+      } else {
+        AutoNode *eq_sbstr = max_sbstr->split(suf_w_nxt->len + 1, new_c);
+        new_end->suf = eq_sbstr;
+        // Make suffixes of suf_w_nxt point to eq_sbstr instead of mox_sbstr
+        AutoNode *w_edge_to_eq_sbstr = suf_w_nxt;
+        while (w_edge_to_eq_sbstr != 0 && w_edge_to_eq_sbstr->nxt(new_c) == max_sbstr) {
+          w_edge_to_eq_sbstr->set_nxt(new_c, eq_sbstr);
+          w_edge_to_eq_sbstr = w_edge_to_eq_sbstr->suf;
+        }
+      }
+    }
+    last = new_end;
+  }
+  SufAutomaton(string to_suffix) {
+    root = new AutoNode;
+    root->len = 0;
+    root->suf = NULL;
+    last = root;
+    for (char c : to_suffix) extend(c);
+  }
+};
+\end{minted}
+\section{Templated multi dimensional BIT O($\log(n)^\text{dim}$)}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
+// Fully overloaded any dimensional BIT, use any type for coordinates, elements, return_value.
+// Includes coordinate compression.
+template < typename elem_t, typename coord_t, coord_t n_inf, typename ret_t >
+class BIT {
+  vector< coord_t > positions;
+  vector< elem_t > elems;
+  bool initiated = false;
+
+ public:
+  BIT() {
+		positions.push_back(n_inf);
+	}
+  void initiate() {
+    if (initiated) {
+      for (elem_t &c_elem : elems)
+				c_elem.initiate();
+    } else {
+      initiated = true;
+      sort(positions.begin(), positions.end());
+      positions.resize(unique(positions.begin(), positions.end()) - positions.begin());
+      elems.resize(positions.size());
+    }
+  }
+  template < typename... loc_form >
+  void update(coord_t cord, loc_form... args) {
+    if (initiated) {
+      int pos = lower_bound(positions.begin(), positions.end(), cord) - positions.begin();
+      for (; pos < positions.size(); pos += pos & -pos)
+				elems[pos].update(args...);
+    } else {
+      positions.push_back(cord);
+    }
+  }
+  template < typename... loc_form >
+  ret_t query(coord_t cord, loc_form... args) { //sum in open interval (-inf, cord)
+    ret_t res = 0;
+    int pos = (lower_bound(positions.begin(), positions.end(), cord) - positions.begin())-1;
+    for (; pos > 0; pos -= pos & -pos)
+			res += elems[pos].query(args...);
+    return res;
+  }
+};
+template < typename internal_type >
+struct wrapped {
+  internal_type a = 0;
+  void update(internal_type b) {
+		a += b;
+	}
+  internal_type query() {
+		return a;
+	}
+  // Should never be called, needed for compilation
+  void initiate() {
+		cerr << 'i' << endl; 
+	}
+  void update() { 
+		cerr << 'u' << endl;
+	}
+};
+int main() {
+  // retun type should be same as type inside wrapped
+  BIT< BIT< wrapped< ll >, int, INT_MIN, ll >, int, INT_MIN, ll > fenwick;
+  int dim = 2;
+  vector< tuple< int, int, ll > > to_insert;
+	to_insert.emplace_back(1, 1, 1);
+  // set up all positions that are to be used for update
+  for (int i = 0; i < dim; ++i) {
+    for (auto &cur : to_insert)
+      fenwick.update(get< 0 >(cur), get< 1 >(cur));  // May include value which won't be used
+    fenwick.initiate();
+  }
+  // actual use
+  for (auto &cur : to_insert) 
+		fenwick.update(get< 0 >(cur), get< 1 >(cur), get< 2 >(cur));
+  cout << fenwick.query(2, 2)<<'\n';
+}
+\end{minted}
+\end{document}
