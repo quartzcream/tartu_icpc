@@ -1,6 +1,7 @@
 header.tex
 ordered_set.cpp
 triangle.cpp
+dinic.cpp
 min_cost_max_flow.cpp
 aho_corasick.cpp
 suffix_automaton.cpp
