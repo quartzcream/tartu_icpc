@@ -6,4 +6,6 @@ min_cost_max_flow.cpp
 aho_corasick.cpp
 suffix_automaton.cpp
 multi_dim_fenwick.cpp
+HLD.cpp
+persistent.cpp
 footer.tex
