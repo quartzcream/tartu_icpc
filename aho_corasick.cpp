@@ -47,7 +47,8 @@ node *aho_corasick(vector<vector<char> > &dict){
 	}
 	return root;
 }
-node *walk(node *cur, char c){
+//auxilary functions for searhing and counting
+node *walk(node *cur, char c){ //longest prefix in dict that is suffix of walked string.
 	while(true){
 		if(cur->nxt[c])
 			return cur->nxt[c];
@@ -64,7 +65,7 @@ void cnt_matches(node *root, vector<char> &match_in){
 		++cur->cnt;
 	}
 }
-void add_cnt(node *root){
+void add_cnt(node *root){ //After counting matches propagete ONCE to suffixes for final counts
 	vector<node *> to_visit = {root};
 	for(int i=0; i<to_visit.size(); ++i){
 		node *cur = to_visit[i];

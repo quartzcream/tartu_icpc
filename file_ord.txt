@@ -1,6 +1,8 @@
 header.tex
 ordered_set.cpp
 triangle.cpp
+Library/Geometry/vector2d.h
+Library/Geometry/segment2d.h
 dinic.cpp
 min_cost_max_flow.cpp
 aho_corasick.cpp
@@ -8,4 +10,6 @@ suffix_automaton.cpp
 multi_dim_fenwick.cpp
 HLD.cpp
 persistent.cpp
+Library/Math/poly.h
+Library/Math/mod.h
 footer.tex

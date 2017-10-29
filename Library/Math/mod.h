@@ -4,6 +4,8 @@
 using namespace std;
 
 
+//!escape \section{MOD int, extended Euctlidean}
+//!begin_codebook
 pair<int, int> extendedEuclideanAlgorithm(int a, int b) {
 	if(b == 0)
 		return make_pair(1, 0);
@@ -50,6 +52,7 @@ struct Modint {
 	}
 	Modint operator/(Modint r) {return Modint(*this) /= r;}
 };
+//!end_codebook
 
 
 //OMLEND: Modular Integers

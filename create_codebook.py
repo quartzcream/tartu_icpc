@@ -9,7 +9,7 @@ fout = open("codebook.tex", "w");
 for file in file_ord:
     file = file.rstrip()
     need_minted = False;
-    if(file[-4:] == ".cpp"):
+    if(file[-4:] == ".cpp" or file[-4:] == ".hpp" or file[-2:] == ".c" or file[-2:] == ".h"):
         need_minted = True;
     fin = open(file, "r")
     outputting = False
@@ -30,7 +30,7 @@ for file in file_ord:
                 fout.write("\\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}\n")
                 need_minted = False
             fout.write(line)
-    if(file[-4:] == ".cpp" and not need_minted):
+    if((file[-4:] == ".cpp" or file[-4:] == ".hpp" or file[-2:] == ".c" or file[-2:] == ".h") and not need_minted):
         fout.write("\\end{minted}\n")
 fout.close()
 

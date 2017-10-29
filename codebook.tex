@@ -47,9 +47,16 @@
 
 \begin{document}
 
-\maketitle
+\begin{center}
+	\smallskip
+	\Large{\textbf{University of Tartu ICPC Team Notebook (2017-2018)}}
+
+	\today
+\end{center}
  
 \tableofcontents
+
+\par\noindent\rule{\textwidth}{0.4pt}
 
 \section{gcc ordered set}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
@@ -128,6 +135,174 @@ point in_center(){
 	c_C /= sum;
 	// cartesian coordinates of the incenter
 	return c_A * A + c_B * B + c_C * C;
+}
+\end{minted}
+\section{2D line segment}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
+const long double PI = acos(-1.0L);
+
+struct Vec {
+	long double x, y;
+	
+	Vec& operator-=(Vec r) {
+		x -= r.x, y -= r.y;
+		return *this;
+	}
+	Vec operator-(Vec r) {return Vec(*this) -= r;}
+	
+	Vec& operator+=(Vec r) {
+		x += r.x, y += r.y;
+		return *this;
+	}
+	Vec operator+(Vec r) {return Vec(*this) += r;}
+	Vec operator-() {return {-x, -y};}
+	Vec& operator*=(long double r) {
+		x *= r, y *= r;
+		return *this;
+	}
+	Vec operator*(long double r) {return Vec(*this) *= r;}
+	Vec& operator/=(long double r) {
+		x /= r, y /= r;
+		return *this;
+	}
+	Vec operator/(long double r) {return Vec(*this) /= r;}
+	
+	long double operator*(Vec r) {
+		return x * r.x + y * r.y;
+	}
+};
+ostream& operator<<(ostream& l, Vec r) {
+	return l << '(' << r.x << ", " << r.y << ')';
+}
+long double len(Vec a) {
+	return hypot(a.x, a.y);
+}
+long double cross(Vec l, Vec r) {
+	return l.x * r.y - l.y * r.x;
+}
+long double angle(Vec a) {
+	return fmod(atan2(a.y, a.x)+2*PI, 2*PI);
+}
+Vec normal(Vec a) {
+	return Vec({-a.y, a.x}) / len(a);
+}
+\end{minted}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
+struct Segment {
+	Vec a, b;
+	Vec d() {
+		return b-a;
+	}
+};
+ostream& operator<<(ostream& l, Segment r) {
+	return l << r.a << '-' << r.b;
+}
+
+Vec intersection(Segment l, Segment r) {
+	Vec dl = l.d(), dr = r.d();
+	if(cross(dl, dr) == 0)
+		return {nanl(""), nanl("")};
+	
+	long double h = cross(dr, l.a-r.a) / len(dr);
+	long double dh = cross(dr, dl) / len(dr);
+	
+	return l.a + dl * (h / -dh);
+}
+
+//Returns the area bounded by halfplanes
+long double getArea(vector<Segment> lines) {
+	long double lowerbound = -HUGE_VALL, upperbound = HUGE_VALL;
+	
+	vector<Segment> linesBySide[2];
+	for(auto line : lines) {
+		if(line.b.y == line.a.y) {
+			if(line.a.x < line.b.x)
+				lowerbound = max(lowerbound, line.a.y);
+			else
+				upperbound = min(upperbound, line.a.y);
+		}
+		else if(line.a.y < line.b.y)
+			linesBySide[1].push_back(line);
+		else
+			linesBySide[0].push_back({line.b, line.a});
+	}
+	
+	sort(linesBySide[0].begin(), linesBySide[0].end(), [](Segment l, Segment r) {
+		if(cross(l.d(), r.d()) == 0) return normal(l.d())*l.a > normal(r.d())*r.a;
+		return cross(l.d(), r.d()) < 0;
+	});
+	sort(linesBySide[1].begin(), linesBySide[1].end(), [](Segment l, Segment r) {
+		if(cross(l.d(), r.d()) == 0) return normal(l.d())*l.a < normal(r.d())*r.a;
+		return cross(l.d(), r.d()) > 0;
+	});
+	
+	//Now find the application area of the lines and clean up redundant ones
+	vector<long double> applyStart[2];
+	for(int side = 0; side < 2; side++) {
+		vector<long double> &apply = applyStart[side];
+		vector<Segment> curLines;
+		
+		for(auto line : linesBySide[side]) {
+			while(curLines.size() > 0) {
+				Segment other = curLines.back();
+				
+				if(cross(line.d(), other.d()) != 0) {
+					long double start = intersection(line, other).y;
+					if(start > apply.back())
+						break;
+				}
+				
+				curLines.pop_back();
+				apply.pop_back();
+			}
+			
+			if(curLines.size() == 0)
+				apply.push_back(-HUGE_VALL);
+			else
+				apply.push_back(intersection(line, curLines.back()).y);
+			curLines.push_back(line);
+		}
+		
+		linesBySide[side] = curLines;
+	}
+	applyStart[0].push_back(HUGE_VALL);
+	applyStart[1].push_back(HUGE_VALL);
+	
+	long double result = 0;
+	{
+		long double lb = -HUGE_VALL, ub;
+		for(int i=0, j=0; i < (int)linesBySide[0].size() && j < (int)linesBySide[1].size();lb = ub) {
+			ub = min(applyStart[0][i+1], applyStart[1][j+1]);
+			
+			long double alb = lb, aub = ub;
+			Segment l0 = linesBySide[0][i], l1 = linesBySide[1][j];
+			
+			if(cross(l1.d(), l0.d()) > 0)
+				alb = max(alb, intersection(l0, l1).y);
+			else if(cross(l1.d(), l0.d()) < 0)
+				aub = min(aub, intersection(l0, l1).y);
+			alb = max(alb, lowerbound);
+			aub = min(aub, upperbound);
+			aub = max(aub, alb);
+			
+			{
+				long double x1 = l0.a.x + (alb - l0.a.y) / l0.d().y * l0.d().x;
+				long double x2 = l0.a.x + (aub - l0.a.y) / l0.d().y * l0.d().x;
+				result -= (aub - alb) * (x1 + x2) / 2;
+			}
+			{
+				long double x1 = l1.a.x + (alb - l1.a.y) / l1.d().y * l1.d().x;
+				long double x2 = l1.a.x + (aub - l1.a.y) / l1.d().y * l1.d().x;
+				result += (aub - alb) * (x1 + x2) / 2;
+			}
+			
+			if(applyStart[0][i+1] < applyStart[1][j+1])
+				i++;
+			else
+				j++;
+		}
+	}
+	return result;
 }
 \end{minted}
 \section{Dinic}
@@ -294,15 +469,15 @@ int main(){
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 const int nmax=1055;
 const ll inf=1e14;
-int t, n, v;
-ll rem_flow[nmax][nmax];
-ll cost[nmax][nmax];
+int t, n, v; //0 is source, v-1 sink
+ll rem_flow[nmax][nmax]; //set [x][y] for directed capacity from x to y.
+ll cost[nmax][nmax]; //set [x][y] for directed cost from x to y. SET TO inf IF NOT USED
 ll min_dist[nmax];
 int prev_node[nmax];
 ll node_flow[nmax];
 bool visited[nmax];
-ll tot_cost, tot_flow;
-void mincmaxf(){
+ll tot_cost, tot_flow; //output
+void min_cost_max_flow(){
 	tot_cost=0;
 	tot_flow=0;
 	ll sink_pot=0;
@@ -404,7 +579,8 @@ node *aho_corasick(vector<vector<char> > &dict){
 	}
 	return root;
 }
-node *walk(node *cur, char c){
+//auxilary functions for searhing and counting
+node *walk(node *cur, char c){ //longest prefix in dict that is suffix of walked string.
 	while(true){
 		if(cur->nxt[c])
 			return cur->nxt[c];
@@ -421,7 +597,7 @@ void cnt_matches(node *root, vector<char> &match_in){
 		++cur->cnt;
 	}
 }
-void add_cnt(node *root){
+void add_cnt(node *root){ //After counting matches propagete ONCE to suffixes for final counts
 	vector<node *> to_visit = {root};
 	for(int i=0; i<to_visit.size(); ++i){
 		node *cur = to_visit[i];
@@ -442,7 +618,7 @@ class AutoNode {
  private:
   map< char, AutoNode * > nxt_char;  // Map is faster than hashtable and unsorted arrays
  public:
-  int len;
+  int len; //Length of longest suffix in equivalence class.
   AutoNode *suf;
   bool has_nxt(char c) const { 
 		return nxt_char.count(c); 
@@ -464,14 +640,14 @@ class AutoNode {
     return new_n;
   }
   // Extra functions for matching and counting
-  AutoNode *lower_depth(int depth) {
+  AutoNode *lower_depth(int depth) { //move to longest suffix of current with a maximum length of depth.
     if (suf->len >= depth) 
 			return suf->lower_depth(depth);
     return this;
   }
-  AutoNode *walk(char c, int depth, int &match_len) {
-    match_len = min(match_len, len);
-    if (has_nxt(c)) {
+  AutoNode *walk(char c, int depth, int &match_len) { //move to longest suffix of walked path that is a substring
+    match_len = min(match_len, len);									//includes depth limit(needed for finding matches)
+    if (has_nxt(c)) {																	//as suffixes are in classes match_len must be tracte eternally
       ++match_len;
       return nxt(c)->lower_depth(depth);
     }
@@ -480,13 +656,13 @@ class AutoNode {
     return this;
   }
   int paths_to_end = 0;
-  void set_as_end() {
+  void set_as_end() { //All suffixes of current node are marked as ending nodes. 
     paths_to_end = 1;
     if (suf) suf->set_as_end();
   }
   bool vis = false;
-  void calc_paths_to_end() {
-    if (!vis) {
+  void calc_paths_to_end() { 	//Call ONCE from ROOT. For each node calculates number of ways to reach an end node.
+    if (!vis) {							 	//paths_to_end is ocurence count for any strings in current suffix equivalence class.
       vis = true;
       for (auto cur : nxt_char) {
         cur.second->calc_paths_to_end();
@@ -615,5 +791,407 @@ int main() {
 		fenwick.update(get< 0 >(cur), get< 1 >(cur), get< 2 >(cur));
   cout << fenwick.query(2, 2)<<'\n';
 }
+\end{minted}
+\section{Templated HLD}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
+class dummy {
+public:
+  dummy () {
+  }
+  
+  dummy (int, int) {
+  }
+
+  void set (int, int) {
+  }
+
+  int query (int left, int right) {
+    cout << this << ' ' << left << ' ' << right << endl;
+  }
+};
+
+/* T should be the type of the data stored in each vertex;
+ * DS should be the underlying data structure that is used to peform the
+ * group operation. It should have the following methods:
+ * * DS () - empty constructor
+ * * DS (int size, T initial) - constructs the structure with the given size,
+ *   initially filled with initial.
+ * * void set (int index, T value) - set the value at index `index` to `value`
+ * * T query (int left, int right) - return the "sum" of elements between left and right, inclusive.
+ */
+template<typename T, class DS>
+class HLD {
+  int vertexc;
+  vector<int> *adj;
+  vector<int> subtree_size;
+  DS structure;
+  DS aux;
+
+  void build_sizes (int vertex, int parent) {
+    subtree_size[vertex] = 1;
+    for (int child : adj[vertex]) {
+      if (child != parent) {
+        build_sizes(child, vertex);
+        subtree_size[vertex] += subtree_size[child];
+      }
+    }
+  }
+
+  int cur;
+  vector<int> ord;
+  vector<int> chain_root;
+  vector<int> par;
+  void build_hld (int vertex, int parent, int chain_source) {
+    cur++;
+    ord[vertex] = cur;
+    chain_root[vertex] = chain_source;
+    par[vertex] = parent;
+
+    if (adj[vertex].size() > 1) {
+      int big_child, big_size = -1;
+      for (int child : adj[vertex]) {
+        if ((child != parent) &&
+            (subtree_size[child] > big_size)) {
+          big_child = child;
+          big_size = subtree_size[child];
+        }
+      }
+
+      build_hld(big_child, vertex, chain_source);
+      for (int child : adj[vertex]) {
+        if ((child != parent) && (child != big_child)) {
+          build_hld(child, vertex, child);
+        }
+      }
+    }
+  }
+  
+public:
+  HLD (int _vertexc) {
+    vertexc = _vertexc;
+    adj = new vector<int> [vertexc + 5];
+  }
+
+  void add_edge (int u, int v) {
+    adj[u].push_back(v);
+    adj[v].push_back(u);
+  }
+
+  void build (T initial) {
+    subtree_size = vector<int> (vertexc + 5);
+    ord = vector<int> (vertexc + 5);
+    chain_root = vector<int> (vertexc + 5);
+    par = vector<int> (vertexc + 5);
+    cur = 0;
+    build_sizes(1, -1);
+    build_hld(1, -1, 1);
+    structure = DS (vertexc + 5, initial);
+    aux = DS (50, initial);
+  }
+
+  void set (int vertex, int value) {
+    structure.set(ord[vertex], value);
+  }
+
+  T query_path (int u, int v) { /* returns the "sum" of the path u->v */
+    int cur_id = 0;
+    while (chain_root[u] != chain_root[v]) {
+      if (ord[u] > ord[v]) {
+        cur_id++;
+        aux.set(cur_id, structure.query(ord[chain_root[u]], ord[u]));
+        u = par[chain_root[u]];
+      } else {
+        cur_id++;
+        aux.set(cur_id, structure.query(ord[chain_root[v]], ord[v]));
+        v = par[chain_root[v]];
+      }
+    }
+
+    cur_id++;
+    aux.set(cur_id, structure.query(min(ord[u], ord[v]), max(ord[u], ord[v])));
+
+    return aux.query(1, cur_id);
+  }
+
+  void print () {
+    for (int i = 1; i <= vertexc; i++) {
+      cout << i << ' ' << ord[i] << ' ' << chain_root[i] << ' ' << par[i] << endl;
+    }
+  }
+};
+
+int main () {
+  int vertexc;
+  cin >> vertexc;
+
+  HLD<int, dummy> hld (vertexc);
+  for (int i = 0; i < vertexc - 1; i++) {
+    int u, v;
+    cin >> u >> v;
+
+    hld.add_edge(u, v);
+  }
+  hld.build(0);
+  hld.print();
+
+  int queryc;
+  cin >> queryc;
+  for (int i = 0; i < queryc; i++) {
+    int u, v;
+    cin >> u >> v;
+
+    hld.query_path(u, v);
+    cout << endl;
+  }
+}
+\end{minted}
+\section{Templated Persitent Segment Tree}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
+template<typename T, typename comp>
+class PersistentST {
+  struct Node {
+    Node *left, *right;
+    int lend, rend;
+    T value;
+
+    Node (int position, T _value) {
+      left = NULL;
+      right = NULL;
+      lend = position;
+      rend = position;
+      value = _value;
+    }
+
+    Node (Node *_left, Node *_right) {
+      left = _left;
+      right = _right;
+      lend = left->lend;
+      rend = right->rend;
+      value = comp()(left->value, right->value);
+    }
+
+    T query (int qleft, int qright) {
+      qleft = max(qleft, lend);
+      qright = min(qright, rend);
+
+      if (qleft == lend && qright == rend) {
+        return value;
+      } else if (qleft > qright) {
+        return comp().identity;
+      } else {
+        return comp()(left->query(qleft, qright),
+                      right->query(qleft, qright));
+      }
+    }
+  };
+
+  int size;
+  Node **tree;
+  vector<Node*> roots;
+public:
+  PersistentST () {
+  }
+
+  PersistentST (int _size, T initial) {
+    for (int i = 0; i < 32; i++) {
+      if ((1 << i) > _size) {
+        size = 1 << i;
+        break;
+      }
+    }
+    
+    tree = new Node* [2 * size + 5];
+
+    for (int i = size; i < 2 * size; i++) {
+      tree[i] = new Node (i - size, initial);
+    }
+
+    for (int i = size - 1; i > 0; i--) {
+      tree[i] = new Node (tree[2 * i], tree[2 * i + 1]);
+    }
+
+    roots = vector<Node*> (1, tree[1]);
+  }
+
+  void set (int position, T _value) {
+    tree[size + position] = new Node (position, _value);
+    for (int i = (size + position) / 2; i >= 1; i /= 2) {
+      tree[i] = new Node (tree[2 * i], tree[2 * i + 1]);
+    }
+    roots.push_back(tree[1]);
+  }
+
+  int last_revision () {
+    return (int) roots.size() - 1;
+  }
+
+  T query (int qleft, int qright, int revision) {
+    return roots[revision]->query(qleft, qright);
+  }
+
+  T query (int qleft, int qright) {
+    return roots[last_revision()]->query(qleft, qright);
+  }
+};
+\end{minted}
+\section{FFT O($n\log(n)$)}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
+//Assumes a is a power of two
+vector<complex<long double> > fastFourierTransform(vector<complex<long double> > a, bool inverse) {
+	const long double PI = acos(-1.0L);
+	int n = a.size();
+	//Precalculate w
+	vector<complex<long double> > w(n, 0.0L);
+	w[0] = 1;
+	for(int tpow = 1; tpow < n; tpow *= 2)
+		w[tpow] = polar(1.0L, 2*PI * tpow/n * (inverse ? -1 : 1) );
+	for(int i=3, last = 2;i<n;i++) {
+		if(w[i] == 0.0L)
+			w[i] = w[last] * w[i-last];
+		else
+			last = i;
+	}
+	
+	//Rearrange a
+	for(int block = n; block > 1; block /= 2) {
+		int half = block/2;
+		vector<complex<long double> > na(n);
+		for(int s=0; s < n; s += block)
+			for(int i=0;i<block;i++)
+				na[s + half*(i%2) + i/2] = a[s+i];
+		a = na;
+	}
+	
+	//Now do the calculation
+	for(int block = 2; block <= n; block *= 2) {
+		vector<complex<long double> > na(n);
+		int wb = n/block, half = block/2;
+		
+		for(int s=0; s < n; s += block)
+			for(int i=0;i<half; i++) {
+				na[s+i] = a[s+i] + w[wb*i] * a[s+half+i];
+				na[s+half+i] = a[s+i] - w[wb*i] * a[s+half+i];
+			}
+		a = na;
+	}
+	
+	return a;
+}
+
+
+struct Polynomial {
+	vector<long double> a;
+	
+	long double& operator[](int ind) {
+		return a[ind];
+	}
+	
+	Polynomial& operator*=(long double r) {
+		for(auto &c : a)
+			c *= r;
+		return *this;
+	}
+	Polynomial operator*(long double r) {return Polynomial(*this) *= r;}
+	
+	Polynomial& operator/=(long double r) {
+		for(auto &c : a)
+			c /= r;
+		return *this;
+	}
+	Polynomial operator/(long double r) {return Polynomial(*this) /= r;}
+	
+	Polynomial& operator+=(Polynomial r) {
+		if(a.size() < r.a.size())
+			a.resize(r.a.size(), 0.0L);
+		for(int i=0;i<(int)r.a.size();i++)
+			a[i] += r[i];
+		return *this;
+	}
+	Polynomial operator+(Polynomial r) {return Polynomial(*this) += r;}
+	
+	Polynomial& operator-=(Polynomial r) {
+		if(a.size() < r.a.size())
+			a.resize(r.a.size(), 0.0L);
+		for(int i=0;i<(int)r.a.size();i++)
+			a[i] -= r[i];
+		return *this;
+	}
+	Polynomial operator-(Polynomial r) {return Polynomial(*this) -= r;}
+	
+	Polynomial operator*(Polynomial r) {
+		int n = 1;
+		while(n < (int)(a.size() + r.a.size() - 1) )
+			n *= 2;
+		
+		vector<complex<long double> > fl(n, 0.0L), fr(n, 0.0L);
+		for(int i=0;i<(int)a.size();i++)
+			fl[i] = a[i];
+		for(int i=0;i<(int)r.a.size();i++)
+			fr[i] = r[i];
+		
+		fl = fastFourierTransform(fl, false);
+		fr = fastFourierTransform(fr, false);
+		
+		vector<complex<long double> > ret(n);
+		for(int i=0;i<n;i++)
+			ret[i] = fl[i] * fr[i];
+		ret = fastFourierTransform(ret, true);
+		
+		Polynomial result;
+		result.a.resize(a.size() + r.a.size() - 1);
+		for(int i=0;i<(int)result.a.size();i++)
+			result[i] = ret[i].real() / n;
+		return result;
+	}
+};
+\end{minted}
+\section{MOD int, extended Euctlidean}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
+pair<int, int> extendedEuclideanAlgorithm(int a, int b) {
+	if(b == 0)
+		return make_pair(1, 0);
+	pair<int, int> ret = extendedEuclideanAlgorithm(b, a%b);
+	return {ret.second, ret.first - a/b * ret.second};
+}
+
+
+struct Modint {
+	static const int MOD = 1000000007;
+	int val;
+	
+	Modint(int nval = 0) {
+		val = nval;
+	}
+	
+	Modint& operator+=(Modint r) {
+		val = (val + r.val) % MOD;
+		return *this;
+	}
+	Modint operator+(Modint r) {return Modint(*this) += r;}
+	
+	Modint& operator-=(Modint r) {
+		val = (val + MOD - r.val) % MOD;
+		return *this;
+	}
+	Modint operator-(Modint r) {return Modint(*this) -= r;}
+	
+	Modint& operator*=(Modint r) {
+		val = 1LL * val * r.val % MOD;
+		return *this;
+	}
+	Modint operator*(Modint r) {return Modint(*this) *= r;}
+	
+	Modint inverse() {
+		int ret = extendedEuclideanAlgorithm(val, MOD).first;
+		if(ret < 0)
+			ret += MOD;
+		return ret;
+	}
+	
+	Modint& operator/=(Modint r) {
+		return operator*=(r.inverse() );
+	}
+	Modint operator/(Modint r) {return Modint(*this) /= r;}
+};
 \end{minted}
 \end{document}

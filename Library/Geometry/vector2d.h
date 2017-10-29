@@ -5,7 +5,8 @@
 #include<iostream>
 using namespace std;
 
-
+//!escape \section{2D line segment}
+//!begin_codebook
 const long double PI = acos(-1.0L);
 
 struct Vec {
@@ -53,5 +54,6 @@ long double angle(Vec a) {
 Vec normal(Vec a) {
 	return Vec({-a.y, a.x}) / len(a);
 }
+//!end_codebook
 //OMLEND: 2D Vectors
 //----------------------------------------------------------------

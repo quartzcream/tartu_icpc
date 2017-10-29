@@ -17,6 +17,8 @@ struct sum {
   }
 };
 
+//!escape \section{Templated Persitent Segment Tree}
+//!begin_codebook
 template<typename T, typename comp>
 class PersistentST {
   struct Node {
@@ -103,3 +105,4 @@ public:
     return roots[last_revision()]->query(qleft, qright);
   }
 };
+//!end_codebook

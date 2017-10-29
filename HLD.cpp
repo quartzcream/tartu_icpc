@@ -3,7 +3,9 @@
 #include <vector>
 
 using namespace std;
+//!escape \section{Templated HLD}
 
+//!begin_codebook
 class dummy {
 public:
   dummy () {
@@ -154,3 +156,4 @@ int main () {
     cout << endl;
   }
 }
+//!end_codebook

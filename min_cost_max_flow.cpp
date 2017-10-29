@@ -9,15 +9,15 @@ typedef long long               ll;
 //!begin_codebook
 const int nmax=1055;
 const ll inf=1e14;
-int t, n, v;
-ll rem_flow[nmax][nmax];
-ll cost[nmax][nmax];
+int t, n, v; //0 is source, v-1 sink
+ll rem_flow[nmax][nmax]; //set [x][y] for directed capacity from x to y.
+ll cost[nmax][nmax]; //set [x][y] for directed cost from x to y. SET TO inf IF NOT USED
 ll min_dist[nmax];
 int prev_node[nmax];
 ll node_flow[nmax];
 bool visited[nmax];
-ll tot_cost, tot_flow;
-void mincmaxf(){
+ll tot_cost, tot_flow; //output
+void min_cost_max_flow(){
 	tot_cost=0;
 	tot_flow=0;
 	ll sink_pot=0;
@@ -112,7 +112,7 @@ int main(){
 			rem_flow[n+b][a]=nmax;
 		}
 		v=2*n+2;
-		mincmaxf();
+		min_cost_max_flow();
 		cout<<tot_cost<<'\n';
 		//cout<<tot_flow<<'\n';
 	}

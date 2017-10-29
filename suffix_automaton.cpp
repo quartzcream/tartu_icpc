@@ -9,7 +9,7 @@ class AutoNode {
  private:
   map< char, AutoNode * > nxt_char;  // Map is faster than hashtable and unsorted arrays
  public:
-  int len;
+  int len; //Length of longest suffix in equivalence class.
   AutoNode *suf;
   bool has_nxt(char c) const { 
 		return nxt_char.count(c); 
@@ -31,14 +31,14 @@ class AutoNode {
     return new_n;
   }
   // Extra functions for matching and counting
-  AutoNode *lower_depth(int depth) {
+  AutoNode *lower_depth(int depth) { //move to longest suffix of current with a maximum length of depth.
     if (suf->len >= depth) 
 			return suf->lower_depth(depth);
     return this;
   }
-  AutoNode *walk(char c, int depth, int &match_len) {
-    match_len = min(match_len, len);
-    if (has_nxt(c)) {
+  AutoNode *walk(char c, int depth, int &match_len) { //move to longest suffix of walked path that is a substring
+    match_len = min(match_len, len);									//includes depth limit(needed for finding matches)
+    if (has_nxt(c)) {																	//as suffixes are in classes match_len must be tracte eternally
       ++match_len;
       return nxt(c)->lower_depth(depth);
     }
@@ -47,13 +47,13 @@ class AutoNode {
     return this;
   }
   int paths_to_end = 0;
-  void set_as_end() {
+  void set_as_end() { //All suffixes of current node are marked as ending nodes. 
     paths_to_end = 1;
     if (suf) suf->set_as_end();
   }
   bool vis = false;
-  void calc_paths_to_end() {
-    if (!vis) {
+  void calc_paths_to_end() { 	//Call ONCE from ROOT. For each node calculates number of ways to reach an end node.
+    if (!vis) {							 	//paths_to_end is ocurence count for any strings in current suffix equivalence class.
       vis = true;
       for (auto cur : nxt_char) {
         cur.second->calc_paths_to_end();
