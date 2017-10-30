@@ -6,7 +6,6 @@
 \usepackage{enumerate}
 \usepackage{amsmath, amsfonts, amssymb, amsthm}
 \usepackage{mathtools}
-\usepackage{mathabx}
 \usepackage{graphicx}
 \usepackage{pdfpages}
 \usepackage{forloop}
@@ -465,7 +464,7 @@ int main(){
     //cout << *mf.edges[edge_index].flow << '\n'; // ONLY if group_edges() WAS NOT CALLED
 }
 \end{minted}
-\section{Min Cost Max Flow with succesive dijkstra O($\text{flow} \cdot n^2$)}
+\section{Min Cost Max Flow with succesive dijkstra $\mathcal{O}(\text{flow} \cdot n^2)$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 const int nmax=1055;
 const ll inf=1e14;
@@ -535,7 +534,7 @@ void min_cost_max_flow(){ //incase of negative edges have to add Bellman-Ford th
 	}
 }
 \end{minted}
-\section{Min Cost Max Flow with Cycle Cancelling O($\text{flow} \cdot nm$)}
+\section{Min Cost Max Flow with Cycle Cancelling $\mathcal{O}(\text{flow} \cdot nm)$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 struct Network {
 	struct Node;
@@ -674,7 +673,7 @@ struct Network {
 	
 };
 \end{minted}
-\section{Aho Corasick O($|\text{alpha}|\sum{\text{len}}$)}
+\section{Aho Corasick $\mathcal{O}(|\text{alpha}|\sum{\text{len}})$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 const int alpha_size=26;
 struct node{
@@ -751,7 +750,7 @@ void add_cnt(node *root){ //After counting matches propagete ONCE to suffixes fo
 	}
 }
 \end{minted}
-\section{Suffix automaton O($(n+q)\log(|\text{alpha}|)$)}
+\section{Suffix automaton $O((n+q)\log(|\text{alpha}|))$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 class AutoNode {
  private:
@@ -852,7 +851,7 @@ struct SufAutomaton {
   }
 };
 \end{minted}
-\section{Templated multi dimensional BIT O($\log(n)^\text{dim}$)}
+\section{Templated multi dimensional BIT $\mathcal{O}(\log(n)^\text{dim})$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 // Fully overloaded any dimensional BIT, use any type for coordinates, elements, return_value.
 // Includes coordinate compression.
@@ -931,7 +930,7 @@ int main() {
   cout << fenwick.query(2, 2)<<'\n';
 }
 \end{minted}
-\section{Templated HLD}
+\section{Templated HLD $\mathcal{O}(M(n) \log n)$ per query}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 class dummy {
 public:
@@ -1084,7 +1083,7 @@ int main () {
   }
 }
 \end{minted}
-\section{Templated Persitent Segment Tree}
+\section{Templated Persitent Segment Tree $\mathcal{O}(\log n)$ per query}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 template<typename T, typename comp>
 class PersistentST {
@@ -1173,7 +1172,7 @@ public:
   }
 };
 \end{minted}
-\section{FFT O($n\log(n)$)}
+\section{FFT $\mathcal{O}(n\log(n))$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 //Assumes a is a power of two
 vector<complex<long double> > fastFourierTransform(vector<complex<long double> > a, bool inverse) {
@@ -1333,6 +1332,55 @@ struct Modint {
 	Modint operator/(Modint r) {return Modint(*this) /= r;}
 };
 \end{minted}
-\includegraphics[scale=1]{comb.pdf}
+\section{Factsheet}
+\includegraphics[scale=0.9]{comb.pdf}
+
+\begin{itemize}
+\item \textbf{Fermat's little theorem.} Let $p$ be prime. Then, for each integer $a$:
+  \begin{equation*}
+    a^{p - 1} \equiv 1 \pmod{p}.
+  \end{equation*}
+  Thus:
+  \begin{equation*}
+    a^{k} \equiv a^{k \mod (p - 1)} \pmod{p}.
+  \end{equation*}
+  Also:
+  \begin{equation*}
+    a^{p - 2} \equiv a^{-1} \pmod{p}.
+  \end{equation*}
+\item \textbf{Iterating over subsets.} Let \texttt{mask} be the binary representation
+  of a set. Then \texttt{for (int i = mask; i != 0; i = (i - 1) \& mask)} will iterate
+  over all the nonempty subsets of \texttt{mask}.
+\item \textbf{Chinese remainder theorem.} We know that:
+  \begin{align*}
+    x &\equiv a_1 \pmod{n_1} \\
+    x &\equiv a_2 \pmod{n_2}
+  \end{align*}
+  where $n_1$ and $n_2$ are (co)prime. We want to find $a_{1, 2}$ so that:
+  \begin{equation*}
+    x \equiv a_{1, 2} \pmod{n_1 \cdot n_2}.
+  \end{equation*}
+  A solution is given by:
+  \begin{equation*}
+    a_{1, 2} = a_1 m_2 n_2 + a_2 m_1 n_1,
+  \end{equation*}
+  where $m_1$ and $m_2$ are integers so that $m_1 n_1 + m_2 n_2 = 1$. Those
+  values can be found using the Extended Euclidean algorithm.
+\item \textbf{Sum of harmonic series.}
+  \begin{equation*} 
+     \frac11 + \frac12 + \dots + \frac1n \in \mathcal{O}(\log n)
+  \end{equation*}
+\item \textbf{Number of primes below...}
+  \begin{equation*}
+    \begin{array}{rl}
+       10^2 & 25 \\
+       10^3 & 168 \\
+       10^4 & 1229 \\
+       10^5 & 9592 \\
+       10^6 & 78498 \\
+       10^7 & 664579
+    \end{array}
+  \end{equation*}
+\end{itemize}
 
 \end{document}

@@ -1,0 +1,15 @@
+\select@language {english}
+\contentsline {section}{\numberline {1}gcc ordered set}{1}
+\contentsline {section}{\numberline {2}Triangle centers}{1}
+\contentsline {section}{\numberline {3}2D line segment}{2}
+\contentsline {section}{\numberline {4}Dinic}{4}
+\contentsline {section}{\numberline {5}Min Cost Max Flow with succesive dijkstra $\mathcal {O}(\text {flow} \cdot n^2)$}{7}
+\contentsline {section}{\numberline {6}Min Cost Max Flow with Cycle Cancelling $\mathcal {O}(\text {flow} \cdot nm)$}{8}
+\contentsline {section}{\numberline {7}Aho Corasick $\mathcal {O}(|\text {alpha}|\DOTSB \sum@ \slimits@ {\text {len}})$}{10}
+\contentsline {section}{\numberline {8}Suffix automaton $O((n+q)\qopname \relax o{log}(|\text {alpha}|))$}{11}
+\contentsline {section}{\numberline {9}Templated multi dimensional BIT $\mathcal {O}(\qopname \relax o{log}(n)^\text {dim})$}{12}
+\contentsline {section}{\numberline {10}Templated HLD $\mathcal {O}(M(n) \qopname \relax o{log}n)$ per query}{13}
+\contentsline {section}{\numberline {11}Templated Persitent Segment Tree $\mathcal {O}(\qopname \relax o{log}n)$ per query}{15}
+\contentsline {section}{\numberline {12}FFT $\mathcal {O}(n\qopname \relax o{log}(n))$}{16}
+\contentsline {section}{\numberline {13}MOD int, extended Euctlidean}{18}
+\contentsline {section}{\numberline {14}Factsheet}{20}

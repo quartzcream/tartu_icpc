@@ -6,7 +6,7 @@
 #include<iostream>
 using namespace std;
 
-//!escape \section{FFT O($n\log(n)$)}
+//!escape \section{FFT $\mathcal{O}(n\log(n))$}
 //!begin_codebook
 //Assumes a is a power of two
 vector<complex<long double> > fastFourierTransform(vector<complex<long double> > a, bool inverse) {

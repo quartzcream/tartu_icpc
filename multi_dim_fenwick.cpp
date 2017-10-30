@@ -9,7 +9,7 @@ typedef unsigned long long ull;
 const int mod = 1e9 + 7;
 const int nmax = 1e5 + 5;
 
-//!escape \section{Templated multi dimensional BIT O($\log(n)^\text{dim}$)}
+//!escape \section{Templated multi dimensional BIT $\mathcal{O}(\log(n)^\text{dim})$}
 
 //!begin_codebook
 // Fully overloaded any dimensional BIT, use any type for coordinates, elements, return_value.

@@ -2,7 +2,7 @@
 using namespace std;
 typedef long long ll;
 
-//!escape \section{Suffix automaton O($(n+q)\log(|\text{alpha}|)$)}
+//!escape \section{Suffix automaton $O((n+q)\log(|\text{alpha}|))$}
 
 //!begin_codebook
 class AutoNode {

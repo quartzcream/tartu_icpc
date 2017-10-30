@@ -4,7 +4,7 @@ using namespace std;
 
 typedef long long               ll;
 
-//!escape \section{Min Cost Max Flow with succesive dijkstra O($\text{flow} \cdot n^2$)}
+//!escape \section{Min Cost Max Flow with succesive dijkstra $\mathcal{O}(\text{flow} \cdot n^2)$}
 
 //!begin_codebook
 const int nmax=1055;
