@@ -138,173 +138,6 @@ point in_center(){
 }
 \end{minted}
 \section{2D line segment}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
-const long double PI = acos(-1.0L);
-
-struct Vec {
-	long double x, y;
-	
-	Vec& operator-=(Vec r) {
-		x -= r.x, y -= r.y;
-		return *this;
-	}
-	Vec operator-(Vec r) {return Vec(*this) -= r;}
-	
-	Vec& operator+=(Vec r) {
-		x += r.x, y += r.y;
-		return *this;
-	}
-	Vec operator+(Vec r) {return Vec(*this) += r;}
-	Vec operator-() {return {-x, -y};}
-	Vec& operator*=(long double r) {
-		x *= r, y *= r;
-		return *this;
-	}
-	Vec operator*(long double r) {return Vec(*this) *= r;}
-	Vec& operator/=(long double r) {
-		x /= r, y /= r;
-		return *this;
-	}
-	Vec operator/(long double r) {return Vec(*this) /= r;}
-	
-	long double operator*(Vec r) {
-		return x * r.x + y * r.y;
-	}
-};
-ostream& operator<<(ostream& l, Vec r) {
-	return l << '(' << r.x << ", " << r.y << ')';
-}
-long double len(Vec a) {
-	return hypot(a.x, a.y);
-}
-long double cross(Vec l, Vec r) {
-	return l.x * r.y - l.y * r.x;
-}
-long double angle(Vec a) {
-	return fmod(atan2(a.y, a.x)+2*PI, 2*PI);
-}
-Vec normal(Vec a) {
-	return Vec({-a.y, a.x}) / len(a);
-}
-\end{minted}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
-struct Segment {
-	Vec a, b;
-	Vec d() {
-		return b-a;
-	}
-};
-ostream& operator<<(ostream& l, Segment r) {
-	return l << r.a << '-' << r.b;
-}
-
-Vec intersection(Segment l, Segment r) {
-	Vec dl = l.d(), dr = r.d();
-	if(cross(dl, dr) == 0)
-		return {nanl(""), nanl("")};
-	
-	long double h = cross(dr, l.a-r.a) / len(dr);
-	long double dh = cross(dr, dl) / len(dr);
-	
-	return l.a + dl * (h / -dh);
-}
-
-//Returns the area bounded by halfplanes
-long double getArea(vector<Segment> lines) {
-	long double lowerbound = -HUGE_VALL, upperbound = HUGE_VALL;
-	
-	vector<Segment> linesBySide[2];
-	for(auto line : lines) {
-		if(line.b.y == line.a.y) {
-			if(line.a.x < line.b.x)
-				lowerbound = max(lowerbound, line.a.y);
-			else
-				upperbound = min(upperbound, line.a.y);
-		}
-		else if(line.a.y < line.b.y)
-			linesBySide[1].push_back(line);
-		else
-			linesBySide[0].push_back({line.b, line.a});
-	}
-	
-	sort(linesBySide[0].begin(), linesBySide[0].end(), [](Segment l, Segment r) {
-		if(cross(l.d(), r.d()) == 0) return normal(l.d())*l.a > normal(r.d())*r.a;
-		return cross(l.d(), r.d()) < 0;
-	});
-	sort(linesBySide[1].begin(), linesBySide[1].end(), [](Segment l, Segment r) {
-		if(cross(l.d(), r.d()) == 0) return normal(l.d())*l.a < normal(r.d())*r.a;
-		return cross(l.d(), r.d()) > 0;
-	});
-	
-	//Now find the application area of the lines and clean up redundant ones
-	vector<long double> applyStart[2];
-	for(int side = 0; side < 2; side++) {
-		vector<long double> &apply = applyStart[side];
-		vector<Segment> curLines;
-		
-		for(auto line : linesBySide[side]) {
-			while(curLines.size() > 0) {
-				Segment other = curLines.back();
-				
-				if(cross(line.d(), other.d()) != 0) {
-					long double start = intersection(line, other).y;
-					if(start > apply.back())
-						break;
-				}
-				
-				curLines.pop_back();
-				apply.pop_back();
-			}
-			
-			if(curLines.size() == 0)
-				apply.push_back(-HUGE_VALL);
-			else
-				apply.push_back(intersection(line, curLines.back()).y);
-			curLines.push_back(line);
-		}
-		
-		linesBySide[side] = curLines;
-	}
-	applyStart[0].push_back(HUGE_VALL);
-	applyStart[1].push_back(HUGE_VALL);
-	
-	long double result = 0;
-	{
-		long double lb = -HUGE_VALL, ub;
-		for(int i=0, j=0; i < (int)linesBySide[0].size() && j < (int)linesBySide[1].size();lb = ub) {
-			ub = min(applyStart[0][i+1], applyStart[1][j+1]);
-			
-			long double alb = lb, aub = ub;
-			Segment l0 = linesBySide[0][i], l1 = linesBySide[1][j];
-			
-			if(cross(l1.d(), l0.d()) > 0)
-				alb = max(alb, intersection(l0, l1).y);
-			else if(cross(l1.d(), l0.d()) < 0)
-				aub = min(aub, intersection(l0, l1).y);
-			alb = max(alb, lowerbound);
-			aub = min(aub, upperbound);
-			aub = max(aub, alb);
-			
-			{
-				long double x1 = l0.a.x + (alb - l0.a.y) / l0.d().y * l0.d().x;
-				long double x2 = l0.a.x + (aub - l0.a.y) / l0.d().y * l0.d().x;
-				result -= (aub - alb) * (x1 + x2) / 2;
-			}
-			{
-				long double x1 = l1.a.x + (alb - l1.a.y) / l1.d().y * l1.d().x;
-				long double x2 = l1.a.x + (aub - l1.a.y) / l1.d().y * l1.d().x;
-				result += (aub - alb) * (x1 + x2) / 2;
-			}
-			
-			if(applyStart[0][i+1] < applyStart[1][j+1])
-				i++;
-			else
-				j++;
-		}
-	}
-	return result;
-}
-\end{minted}
 \section{Dinic}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 struct MaxFlow{
@@ -465,7 +298,7 @@ int main(){
     //cout << *mf.edges[edge_index].flow << '\n'; // ONLY if group_edges() WAS NOT CALLED
 }
 \end{minted}
-\section{Min Cost Max Flow with succesive dijkstra O($\text{flow} \cdot n^2$)}
+\section{Min Cost Max Flow with succesive dijkstra $\mathcal{O}(\text{flow} \cdot n^2)$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 const int nmax=1055;
 const ll inf=1e14;
@@ -535,146 +368,8 @@ void min_cost_max_flow(){ //incase of negative edges have to add Bellman-Ford th
 	}
 }
 \end{minted}
-\section{Min Cost Max Flow with Cycle Cancelling O($\text{flow} \cdot nm$)}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
-struct Network {
-	struct Node;
-	
-	struct Edge {
-		Node *u, *v;
-		int f, c, cost;
-		
-		Node* from(Node* pos) {
-			if(pos == u)
-				return v;
-			return u;
-		}
-		int getCap(Node* pos) {
-			if(pos == u)
-				return c-f;
-			return f;
-		}
-		int addFlow(Node* pos, int toAdd) {
-			if(pos == u) {
-				f += toAdd;
-				return toAdd * cost;
-			}
-			else {
-				f -= toAdd;
-				return -toAdd * cost;
-			}
-		}
-		
-	};
-	struct Node {
-		vector<Edge*> conn;
-		int index;
-	};
-	
-	deque<Node> nodes;
-	deque<Edge> edges;
-	
-	Node* addNode() {
-		nodes.push_back(Node());
-		nodes.back().index = nodes.size()-1;
-		return &nodes.back();
-	}
-	Edge* addEdge(Node* u, Node* v, int f, int c, int cost) {
-		edges.push_back({u, v, f, c, cost});
-		u->conn.push_back(&edges.back());
-		v->conn.push_back(&edges.back());
-		return &edges.back();
-	}
-	
-	
-	//Assumes all needed flow has already been added
-	int minCostMaxFlow() {
-		int n = nodes.size();
-		int result = 0;
-		
-		struct State {
-			int p;
-			Edge* used;
-		};
-		
-		while(1) {
-			vector<vector<State> > state(1, vector<State>(n, {0, 0}));
-			
-			for(int lev = 0; lev < n; lev++) {
-				state.push_back(state[lev]);
-				for(int i=0;i<n;i++)
-					if(lev == 0 || state[lev][i].p < state[lev-1][i].p) {
-						
-						for(Edge* edge : nodes[i].conn) if(edge->getCap(&nodes[i]) > 0) {
-							int np = state[lev][i].p + (edge->u == &nodes[i] ? edge->cost : -edge->cost);
-							int ni = edge->from(&nodes[i])->index;
-							
-							if(np < state[lev+1][ni].p) {
-								state[lev+1][ni].p = np;
-								state[lev+1][ni].used = edge;
-							}
-						}
-					}
-			}
-			
-			//Now look at the last level
-			bool valid = false;
-			
-			for(int i=0;i<n;i++)
-				if(state[n-1][i].p > state[n][i].p) {
-					valid = true;
-					
-					vector<Edge*> path;
-					
-					int cap = 1000000000;
-					Node* cur = &nodes[i];
-					int clev = n;
-					
-					vector<bool> explr(n, false);
-					
-					while(!explr[cur->index]) {
-						explr[cur->index] = true;
-						
-						State cstate = state[clev][cur->index];
-						cur = cstate.used->from(cur);
-						
-						path.push_back(cstate.used);
-					}
-					
-					reverse(path.begin(), path.end() );
-					
-					{
-						int i=0;
-						Node* cur2 = cur;
-						
-						do {
-							cur2 = path[i]->from(cur2);
-							i++;
-						}while(cur2 != cur);
-						
-						path.resize(i);
-					}
-					
-					for(auto edge : path) {
-						cap = min(cap, edge->getCap(cur));
-						cur = edge->from(cur);
-					}
-					
-					for(auto edge : path) {
-						result += edge->addFlow(cur, cap);
-						cur = edge->from(cur);
-					}
-				}
-			
-			if(!valid) break;
-		}
-		
-		return result;
-	}
-	
-};
-\end{minted}
-\section{Aho Corasick O($|\text{alpha}|\sum{\text{len}}$)}
+\section{Min Cost Max Flow with Cycle Cancelling $\mathcal{O}(\text{flow} \cdot nm)$}
+\section{Aho Corasick $\mathcal{O}(|\text{alpha}|\sum{\text{len}})$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 const int alpha_size=26;
 struct node{
@@ -751,7 +446,7 @@ void add_cnt(node *root){ //After counting matches propagete ONCE to suffixes fo
 	}
 }
 \end{minted}
-\section{Suffix automaton O($(n+q)\log(|\text{alpha}|)$)}
+\section{Suffix automaton $O((n+q)\log(|\text{alpha}|))$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 class AutoNode {
  private:
@@ -852,7 +547,7 @@ struct SufAutomaton {
   }
 };
 \end{minted}
-\section{Templated multi dimensional BIT O($\log(n)^\text{dim}$)}
+\section{Templated multi dimensional BIT $\mathcal{O}(\log(n)^\text{dim})$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 // Fully overloaded any dimensional BIT, use any type for coordinates, elements, return_value.
 // Includes coordinate compression.
@@ -931,7 +626,7 @@ int main() {
   cout << fenwick.query(2, 2)<<'\n';
 }
 \end{minted}
-\section{Templated HLD}
+\section{Templated HLD $\mathcal{O}(M(n) \log n)$ per query}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 class dummy {
 public:
@@ -1084,7 +779,7 @@ int main () {
   }
 }
 \end{minted}
-\section{Templated Persitent Segment Tree}
+\section{Templated Persitent Segment Tree $\mathcal{O}(\log n)$ per query}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
 template<typename T, typename comp>
 class PersistentST {
@@ -1173,166 +868,8 @@ public:
   }
 };
 \end{minted}
-\section{FFT O($n\log(n)$)}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
-//Assumes a is a power of two
-vector<complex<long double> > fastFourierTransform(vector<complex<long double> > a, bool inverse) {
-	const long double PI = acos(-1.0L);
-	int n = a.size();
-	//Precalculate w
-	vector<complex<long double> > w(n, 0.0L);
-	w[0] = 1;
-	for(int tpow = 1; tpow < n; tpow *= 2)
-		w[tpow] = polar(1.0L, 2*PI * tpow/n * (inverse ? -1 : 1) );
-	for(int i=3, last = 2;i<n;i++) {
-		if(w[i] == 0.0L)
-			w[i] = w[last] * w[i-last];
-		else
-			last = i;
-	}
-	
-	//Rearrange a
-	for(int block = n; block > 1; block /= 2) {
-		int half = block/2;
-		vector<complex<long double> > na(n);
-		for(int s=0; s < n; s += block)
-			for(int i=0;i<block;i++)
-				na[s + half*(i%2) + i/2] = a[s+i];
-		a = na;
-	}
-	
-	//Now do the calculation
-	for(int block = 2; block <= n; block *= 2) {
-		vector<complex<long double> > na(n);
-		int wb = n/block, half = block/2;
-		
-		for(int s=0; s < n; s += block)
-			for(int i=0;i<half; i++) {
-				na[s+i] = a[s+i] + w[wb*i] * a[s+half+i];
-				na[s+half+i] = a[s+i] - w[wb*i] * a[s+half+i];
-			}
-		a = na;
-	}
-	
-	return a;
-}
-
-
-struct Polynomial {
-	vector<long double> a;
-	
-	long double& operator[](int ind) {
-		return a[ind];
-	}
-	
-	Polynomial& operator*=(long double r) {
-		for(auto &c : a)
-			c *= r;
-		return *this;
-	}
-	Polynomial operator*(long double r) {return Polynomial(*this) *= r;}
-	
-	Polynomial& operator/=(long double r) {
-		for(auto &c : a)
-			c /= r;
-		return *this;
-	}
-	Polynomial operator/(long double r) {return Polynomial(*this) /= r;}
-	
-	Polynomial& operator+=(Polynomial r) {
-		if(a.size() < r.a.size())
-			a.resize(r.a.size(), 0.0L);
-		for(int i=0;i<(int)r.a.size();i++)
-			a[i] += r[i];
-		return *this;
-	}
-	Polynomial operator+(Polynomial r) {return Polynomial(*this) += r;}
-	
-	Polynomial& operator-=(Polynomial r) {
-		if(a.size() < r.a.size())
-			a.resize(r.a.size(), 0.0L);
-		for(int i=0;i<(int)r.a.size();i++)
-			a[i] -= r[i];
-		return *this;
-	}
-	Polynomial operator-(Polynomial r) {return Polynomial(*this) -= r;}
-	
-	Polynomial operator*(Polynomial r) {
-		int n = 1;
-		while(n < (int)(a.size() + r.a.size() - 1) )
-			n *= 2;
-		
-		vector<complex<long double> > fl(n, 0.0L), fr(n, 0.0L);
-		for(int i=0;i<(int)a.size();i++)
-			fl[i] = a[i];
-		for(int i=0;i<(int)r.a.size();i++)
-			fr[i] = r[i];
-		
-		fl = fastFourierTransform(fl, false);
-		fr = fastFourierTransform(fr, false);
-		
-		vector<complex<long double> > ret(n);
-		for(int i=0;i<n;i++)
-			ret[i] = fl[i] * fr[i];
-		ret = fastFourierTransform(ret, true);
-		
-		Polynomial result;
-		result.a.resize(a.size() + r.a.size() - 1);
-		for(int i=0;i<(int)result.a.size();i++)
-			result[i] = ret[i].real() / n;
-		return result;
-	}
-};
-\end{minted}
+\section{FFT $\mathcal{O}(n\log(n))$}
 \section{MOD int, extended Euctlidean}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines]{c++}
-pair<int, int> extendedEuclideanAlgorithm(int a, int b) {
-	if(b == 0)
-		return make_pair(1, 0);
-	pair<int, int> ret = extendedEuclideanAlgorithm(b, a%b);
-	return {ret.second, ret.first - a/b * ret.second};
-}
-
-
-struct Modint {
-	static const int MOD = 1000000007;
-	int val;
-	
-	Modint(int nval = 0) {
-		val = nval;
-	}
-	
-	Modint& operator+=(Modint r) {
-		val = (val + r.val) % MOD;
-		return *this;
-	}
-	Modint operator+(Modint r) {return Modint(*this) += r;}
-	
-	Modint& operator-=(Modint r) {
-		val = (val + MOD - r.val) % MOD;
-		return *this;
-	}
-	Modint operator-(Modint r) {return Modint(*this) -= r;}
-	
-	Modint& operator*=(Modint r) {
-		val = 1LL * val * r.val % MOD;
-		return *this;
-	}
-	Modint operator*(Modint r) {return Modint(*this) *= r;}
-	
-	Modint inverse() {
-		int ret = extendedEuclideanAlgorithm(val, MOD).first;
-		if(ret < 0)
-			ret += MOD;
-		return ret;
-	}
-	
-	Modint& operator/=(Modint r) {
-		return operator*=(r.inverse() );
-	}
-	Modint operator/(Modint r) {return Modint(*this) /= r;}
-};
-\end{minted}
 \includegraphics[scale=1]{comb.pdf}
 
 \end{document}

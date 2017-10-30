@@ -17,7 +17,7 @@ struct sum {
   }
 };
 
-//!escape \section{Templated Persitent Segment Tree}
+//!escape \section{Templated Persitent Segment Tree $\mathcal{O}(\log n)$ per query}
 //!begin_codebook
 template<typename T, typename comp>
 class PersistentST {

@@ -3,7 +3,7 @@
 #include <vector>
 
 using namespace std;
-//!escape \section{Templated HLD}
+//!escape \section{Templated HLD $\mathcal{O}(M(n) \log n)$ per query}
 
 //!begin_codebook
 class dummy {

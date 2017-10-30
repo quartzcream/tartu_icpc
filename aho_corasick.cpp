@@ -2,7 +2,7 @@
 using namespace std;
 typedef long long               ll;
 
-//!escape \section{Aho Corasick O($|\text{alpha}|\sum{\text{len}}$)}
+//!escape \section{Aho Corasick $\mathcal{O}(|\text{alpha}|\sum{\text{len}})$}
 
 //!begin_codebook
 const int alpha_size=26;
