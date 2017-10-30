@@ -871,7 +871,7 @@ public:
 \section{FFT $\mathcal{O}(n\log(n))$}
 \section{MOD int, extended Euctlidean}
 \section{Factsheet}
-\includegraphics[scale=0.8]{comb.pdf}
+\includegraphics[scale=0.9]{comb.pdf}
 
 \begin{itemize}
 \item \textbf{Fermat's little theorem.} Let $p$ be prime. Then, for each integer $a$:
@@ -889,7 +889,21 @@ public:
 \item \textbf{Iterating over subsets.} Let \texttt{mask} be the binary representation
   of a set. Then \texttt{for (int i = mask; i != 0; i = (i - 1) \& mask)} will iterate
   over all the nonempty subsets of \texttt{mask}.
-\item \textbf{Chinese remainder theorem.}
+\item \textbf{Chinese remainder theorem.} We know that:
+  \begin{align*}
+    x &\equiv a_1 \pmod{n_1} \\
+    x &\equiv a_2 \pmod{n_2}
+  \end{align*}
+  where $n_1$ and $n_2$ are (co)prime. We want to find $a_{1, 2}$ so that:
+  \begin{equation*}
+    x \equiv a_{1, 2} \pmod{n_1 \cdot n_2}.
+  \end{equation*}
+  A solution is given by:
+  \begin{equation*}
+    a_{1, 2} = a_1 m_2 n_2 + a_2 m_1 n_1,
+  \end{equation*}
+  where $m_1$ and $m_2$ are integers so that $m_1 n_1 + m_2 n_2 = 1$. Those
+  values can be found using the Extended Euclidean algorithm.
 \item \textbf{Sum of harmonic series.}
   \begin{equation*} 
      \frac11 + \frac12 + \dots + \frac1n \in \mathcal{O}(\log n)
