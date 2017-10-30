@@ -1,0 +1,76 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{const} \PYG{k+kt}{int} \PYG{n}{alpha\PYGZus{}size}\PYG{o}{=}\PYG{l+m+mi}{26}\PYG{p}{;}
+\PYG{k}{struct} \PYG{n}{node}\PYG{p}{\PYGZob{}}
+	\PYG{n}{node} \PYG{o}{*}\PYG{n}{nxt}\PYG{p}{[}\PYG{n}{alpha\PYGZus{}size}\PYG{p}{];} \PYG{c+c1}{//May use other structures to move in trie}
+	\PYG{n}{node} \PYG{o}{*}\PYG{n}{suffix}\PYG{p}{;}
+	\PYG{n}{node}\PYG{p}{()\PYGZob{}}
+		\PYG{n}{memset}\PYG{p}{(}\PYG{n}{nxt}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{alpha\PYGZus{}size}\PYG{o}{*}\PYG{k}{sizeof}\PYG{p}{(}\PYG{n}{node} \PYG{o}{*}\PYG{p}{));}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{k+kt}{int} \PYG{n}{cnt}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{p}{\PYGZcb{};}
+\PYG{n}{node} \PYG{o}{*}\PYG{n+nf}{aho\PYGZus{}corasick}\PYG{p}{(}\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{char}\PYG{o}{\PYGZgt{}} \PYG{o}{\PYGZgt{}} \PYG{o}{\PYGZam{}}\PYG{n}{dict}\PYG{p}{)\PYGZob{}}
+	\PYG{n}{node} \PYG{o}{*}\PYG{n}{root}\PYG{o}{=} \PYG{k}{new} \PYG{n}{node}\PYG{p}{;}
+	\PYG{n}{root}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{suffix} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+	\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{pair}\PYG{o}{\PYGZlt{}}\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{char}\PYG{o}{\PYGZgt{}} \PYG{o}{*}\PYG{p}{,} \PYG{n}{node} \PYG{o}{*\PYGZgt{}} \PYG{o}{\PYGZgt{}} \PYG{n}{cur\PYGZus{}state}\PYG{p}{;}
+	\PYG{k}{for}\PYG{p}{(}\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{char}\PYG{o}{\PYGZgt{}} \PYG{o}{\PYGZam{}}\PYG{n+nl}{s} \PYG{p}{:} \PYG{n}{dict}\PYG{p}{)}
+		\PYG{n}{cur\PYGZus{}state}\PYG{p}{.}\PYG{n}{emplace\PYGZus{}back}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{s}\PYG{p}{,} \PYG{n}{root}\PYG{p}{);}
+	\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{o}{!}\PYG{n}{cur\PYGZus{}state}\PYG{p}{.}\PYG{n}{empty}\PYG{p}{();} \PYG{o}{++}\PYG{n}{i}\PYG{p}{)\PYGZob{}}
+		\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{pair}\PYG{o}{\PYGZlt{}}\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{char}\PYG{o}{\PYGZgt{}} \PYG{o}{*}\PYG{p}{,} \PYG{n}{node} \PYG{o}{*\PYGZgt{}} \PYG{o}{\PYGZgt{}} \PYG{n}{nxt\PYGZus{}state}\PYG{p}{;}
+		\PYG{k}{for}\PYG{p}{(}\PYG{k}{auto} \PYG{o}{\PYGZam{}}\PYG{n+nl}{cur} \PYG{p}{:} \PYG{n}{cur\PYGZus{}state}\PYG{p}{)\PYGZob{}}
+			\PYG{n}{node} \PYG{o}{*}\PYG{n}{nxt}\PYG{o}{=}\PYG{n}{cur}\PYG{p}{.}\PYG{n}{second}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{nxt}\PYG{p}{[(}\PYG{o}{*}\PYG{n}{cur}\PYG{p}{.}\PYG{n}{first}\PYG{p}{)[}\PYG{n}{i}\PYG{p}{]];}
+			\PYG{k}{if}\PYG{p}{(}\PYG{n}{nxt}\PYG{p}{)\PYGZob{}}
+				\PYG{n}{cur}\PYG{p}{.}\PYG{n}{second}\PYG{o}{=}\PYG{n}{nxt}\PYG{p}{;}
+			\PYG{p}{\PYGZcb{}}\PYG{k}{else}\PYG{p}{\PYGZob{}}
+				\PYG{n}{nxt} \PYG{o}{=} \PYG{k}{new} \PYG{n}{node}\PYG{p}{;}
+				\PYG{n}{cur}\PYG{p}{.}\PYG{n}{second}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{nxt}\PYG{p}{[(}\PYG{o}{*}\PYG{n}{cur}\PYG{p}{.}\PYG{n}{first}\PYG{p}{)[}\PYG{n}{i}\PYG{p}{]]} \PYG{o}{=} \PYG{n}{nxt}\PYG{p}{;}
+				\PYG{n}{node} \PYG{o}{*}\PYG{n}{suf} \PYG{o}{=} \PYG{n}{cur}\PYG{p}{.}\PYG{n}{second}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{suffix}\PYG{p}{;}
+				\PYG{n}{cur}\PYG{p}{.}\PYG{n}{second} \PYG{o}{=} \PYG{n}{nxt}\PYG{p}{;}
+				\PYG{n}{nxt}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{suffix} \PYG{o}{=} \PYG{n}{root}\PYG{p}{;} \PYG{c+c1}{//set correct suffix link}
+				\PYG{k}{while}\PYG{p}{(}\PYG{n}{suf}\PYG{p}{)\PYGZob{}}
+					\PYG{k}{if}\PYG{p}{(}\PYG{n}{suf}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{nxt}\PYG{p}{[(}\PYG{o}{*}\PYG{n}{cur}\PYG{p}{.}\PYG{n}{first}\PYG{p}{)[}\PYG{n}{i}\PYG{p}{]])\PYGZob{}}
+						\PYG{n}{nxt}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{suffix} \PYG{o}{=} \PYG{n}{suf}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{nxt}\PYG{p}{[(}\PYG{o}{*}\PYG{n}{cur}\PYG{p}{.}\PYG{n}{first}\PYG{p}{)[}\PYG{n}{i}\PYG{p}{]];}
+						\PYG{k}{break}\PYG{p}{;}
+					\PYG{p}{\PYGZcb{}}
+					\PYG{n}{suf}\PYG{o}{=}\PYG{n}{suf}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{suffix}\PYG{p}{;}
+				\PYG{p}{\PYGZcb{}}
+			\PYG{p}{\PYGZcb{}}
+			\PYG{k}{if}\PYG{p}{(}\PYG{n}{cur}\PYG{p}{.}\PYG{n}{first}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{size}\PYG{p}{()} \PYG{o}{\PYGZgt{}} \PYG{n}{i}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{)}
+				\PYG{n}{nxt\PYGZus{}state}\PYG{p}{.}\PYG{n}{push\PYGZus{}back}\PYG{p}{(}\PYG{n}{cur}\PYG{p}{);}
+		\PYG{p}{\PYGZcb{}}
+		\PYG{n}{cur\PYGZus{}state}\PYG{o}{=}\PYG{n}{nxt\PYGZus{}state}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{k}{return} \PYG{n}{root}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+\PYG{c+c1}{//auxilary functions for searhing and counting}
+\PYG{n}{node} \PYG{o}{*}\PYG{n+nf}{walk}\PYG{p}{(}\PYG{n}{node} \PYG{o}{*}\PYG{n}{cur}\PYG{p}{,} \PYG{k+kt}{char} \PYG{n}{c}\PYG{p}{)\PYGZob{}} \PYG{c+c1}{//longest prefix in dict that is suffix of walked string.}
+	\PYG{k}{while}\PYG{p}{(}\PYG{n+nb}{true}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{if}\PYG{p}{(}\PYG{n}{cur}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{nxt}\PYG{p}{[}\PYG{n}{c}\PYG{p}{])}
+			\PYG{k}{return} \PYG{n}{cur}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{nxt}\PYG{p}{[}\PYG{n}{c}\PYG{p}{];}
+		\PYG{k}{if}\PYG{p}{(}\PYG{o}{!}\PYG{n}{cur}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{suffix}\PYG{p}{)\PYGZob{}}
+			\PYG{k}{return} \PYG{n}{cur}\PYG{p}{;}
+		\PYG{p}{\PYGZcb{}}
+		\PYG{n}{cur} \PYG{o}{=} \PYG{n}{cur}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{suffix}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\PYG{k+kt}{void} \PYG{n+nf}{cnt\PYGZus{}matches}\PYG{p}{(}\PYG{n}{node} \PYG{o}{*}\PYG{n}{root}\PYG{p}{,} \PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{char}\PYG{o}{\PYGZgt{}} \PYG{o}{\PYGZam{}}\PYG{n}{match\PYGZus{}in}\PYG{p}{)\PYGZob{}}
+	\PYG{n}{node} \PYG{o}{*}\PYG{n}{cur} \PYG{o}{=} \PYG{n}{root}\PYG{p}{;}
+	\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{char} \PYG{n+nl}{c} \PYG{p}{:} \PYG{n}{match\PYGZus{}in}\PYG{p}{)\PYGZob{}}
+		\PYG{n}{cur} \PYG{o}{=} \PYG{n}{walk}\PYG{p}{(}\PYG{n}{cur}\PYG{p}{,} \PYG{n}{c}\PYG{p}{);}
+		\PYG{o}{++}\PYG{n}{cur}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{cnt}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\PYG{k+kt}{void} \PYG{n+nf}{add\PYGZus{}cnt}\PYG{p}{(}\PYG{n}{node} \PYG{o}{*}\PYG{n}{root}\PYG{p}{)\PYGZob{}} \PYG{c+c1}{//After counting matches propagete ONCE to suffixes for final counts}
+	\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{node} \PYG{o}{*\PYGZgt{}} \PYG{n}{to\PYGZus{}visit} \PYG{o}{=} \PYG{p}{\PYGZob{}}\PYG{n}{root}\PYG{p}{\PYGZcb{};}
+	\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i}\PYG{o}{\PYGZlt{}}\PYG{n}{to\PYGZus{}visit}\PYG{p}{.}\PYG{n}{size}\PYG{p}{();} \PYG{o}{++}\PYG{n}{i}\PYG{p}{)\PYGZob{}}
+		\PYG{n}{node} \PYG{o}{*}\PYG{n}{cur} \PYG{o}{=} \PYG{n}{to\PYGZus{}visit}\PYG{p}{[}\PYG{n}{i}\PYG{p}{];}
+		\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{j}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{j}\PYG{o}{\PYGZlt{}}\PYG{n}{alpha\PYGZus{}size}\PYG{p}{;} \PYG{o}{++}\PYG{n}{j}\PYG{p}{)\PYGZob{}}
+			\PYG{k}{if}\PYG{p}{(}\PYG{n}{cur}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{nxt}\PYG{p}{[}\PYG{n}{j}\PYG{p}{])\PYGZob{}}
+				\PYG{n}{to\PYGZus{}visit}\PYG{p}{.}\PYG{n}{push\PYGZus{}back}\PYG{p}{(}\PYG{n}{cur}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{nxt}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]);}
+			\PYG{p}{\PYGZcb{}}
+		\PYG{p}{\PYGZcb{}}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i}\PYG{o}{=}\PYG{n}{to\PYGZus{}visit}\PYG{p}{.}\PYG{n}{size}\PYG{p}{()}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{;} \PYG{n}{i}\PYG{o}{\PYGZgt{}}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{o}{\PYGZhy{}\PYGZhy{}}\PYG{n}{i}\PYG{p}{)\PYGZob{}}
+		\PYG{n}{to\PYGZus{}visit}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{suffix}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{cnt} \PYG{o}{+=} \PYG{n}{to\PYGZus{}visit}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{cnt}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

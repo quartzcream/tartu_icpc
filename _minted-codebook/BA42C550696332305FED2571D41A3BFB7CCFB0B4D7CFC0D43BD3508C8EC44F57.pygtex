@@ -1,0 +1,152 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{class} \PYG{n+nc}{dummy} \PYG{p}{\PYGZob{}}
+\PYG{k}{public}\PYG{o}{:}
+  \PYG{n}{dummy} \PYG{p}{()} \PYG{p}{\PYGZob{}}
+  \PYG{p}{\PYGZcb{}}
+
+  \PYG{n}{dummy} \PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{,} \PYG{k+kt}{int}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+  \PYG{p}{\PYGZcb{}}
+
+  \PYG{k+kt}{void} \PYG{n}{set} \PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{,} \PYG{k+kt}{int}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+  \PYG{p}{\PYGZcb{}}
+
+  \PYG{k+kt}{int} \PYG{n}{query} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{left}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{right}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{n}{cout} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{k}{this} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{l+s+sc}{\PYGZsq{} \PYGZsq{}} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{left} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{l+s+sc}{\PYGZsq{} \PYGZsq{}} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{right} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{endl}\PYG{p}{;}
+  \PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{};}
+
+\PYG{c+cm}{/* T should be the type of the data stored in each vertex;}
+\PYG{c+cm}{ * DS should be the underlying data structure that is used to peform the}
+\PYG{c+cm}{ * group operation. It should have the following methods:}
+\PYG{c+cm}{ * * DS () \PYGZhy{} empty constructor}
+\PYG{c+cm}{ * * DS (int size, T initial) \PYGZhy{} constructs the structure with the given size,}
+\PYG{c+cm}{ *   initially filled with initial.}
+\PYG{c+cm}{ * * void set (int index, T value) \PYGZhy{} set the value at index `index` to `value`}
+\PYG{c+cm}{ * * T query (int left, int right) \PYGZhy{} return the \PYGZdq{}sum\PYGZdq{} of elements between left and right, inclusive.}
+\PYG{c+cm}{ */}
+\PYG{k}{template}\PYG{o}{\PYGZlt{}}\PYG{k}{typename} \PYG{n}{T}\PYG{p}{,} \PYG{k}{class} \PYG{n+nc}{DS}\PYG{o}{\PYGZgt{}}
+\PYG{k}{class} \PYG{n+nc}{HLD} \PYG{p}{\PYGZob{}}
+  \PYG{k+kt}{int} \PYG{n}{vertexc}\PYG{p}{;}
+  \PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{int}\PYG{o}{\PYGZgt{}} \PYG{o}{*}\PYG{n}{adj}\PYG{p}{;}
+  \PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{int}\PYG{o}{\PYGZgt{}} \PYG{n}{subtree\PYGZus{}size}\PYG{p}{;}
+  \PYG{n}{DS} \PYG{n}{structure}\PYG{p}{;}
+  \PYG{n}{DS} \PYG{n}{aux}\PYG{p}{;}
+
+  \PYG{k+kt}{void} \PYG{n+nf}{build\PYGZus{}sizes} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{vertex}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{parent}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{n}{subtree\PYGZus{}size}\PYG{p}{[}\PYG{n}{vertex}\PYG{p}{]} \PYG{o}{=} \PYG{l+m+mi}{1}\PYG{p}{;}
+    \PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n+nl}{child} \PYG{p}{:} \PYG{n}{adj}\PYG{p}{[}\PYG{n}{vertex}\PYG{p}{])} \PYG{p}{\PYGZob{}}
+      \PYG{k}{if} \PYG{p}{(}\PYG{n}{child} \PYG{o}{!=} \PYG{n}{parent}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+        \PYG{n}{build\PYGZus{}sizes}\PYG{p}{(}\PYG{n}{child}\PYG{p}{,} \PYG{n}{vertex}\PYG{p}{);}
+        \PYG{n}{subtree\PYGZus{}size}\PYG{p}{[}\PYG{n}{vertex}\PYG{p}{]} \PYG{o}{+=} \PYG{n}{subtree\PYGZus{}size}\PYG{p}{[}\PYG{n}{child}\PYG{p}{];}
+      \PYG{p}{\PYGZcb{}}
+    \PYG{p}{\PYGZcb{}}
+  \PYG{p}{\PYGZcb{}}
+
+  \PYG{k+kt}{int} \PYG{n}{cur}\PYG{p}{;}
+  \PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{int}\PYG{o}{\PYGZgt{}} \PYG{n}{ord}\PYG{p}{;}
+  \PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{int}\PYG{o}{\PYGZgt{}} \PYG{n}{chain\PYGZus{}root}\PYG{p}{;}
+  \PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{int}\PYG{o}{\PYGZgt{}} \PYG{n}{par}\PYG{p}{;}
+  \PYG{k+kt}{void} \PYG{n+nf}{build\PYGZus{}hld} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{vertex}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{parent}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{chain\PYGZus{}source}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{n}{cur}\PYG{o}{++}\PYG{p}{;}
+    \PYG{n}{ord}\PYG{p}{[}\PYG{n}{vertex}\PYG{p}{]} \PYG{o}{=} \PYG{n}{cur}\PYG{p}{;}
+    \PYG{n}{chain\PYGZus{}root}\PYG{p}{[}\PYG{n}{vertex}\PYG{p}{]} \PYG{o}{=} \PYG{n}{chain\PYGZus{}source}\PYG{p}{;}
+    \PYG{n}{par}\PYG{p}{[}\PYG{n}{vertex}\PYG{p}{]} \PYG{o}{=} \PYG{n}{parent}\PYG{p}{;}
+
+    \PYG{k}{if} \PYG{p}{(}\PYG{n}{adj}\PYG{p}{[}\PYG{n}{vertex}\PYG{p}{].}\PYG{n}{size}\PYG{p}{()} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{1}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+      \PYG{k+kt}{int} \PYG{n}{big\PYGZus{}child}\PYG{p}{,} \PYG{n}{big\PYGZus{}size} \PYG{o}{=} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{;}
+      \PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n+nl}{child} \PYG{p}{:} \PYG{n}{adj}\PYG{p}{[}\PYG{n}{vertex}\PYG{p}{])} \PYG{p}{\PYGZob{}}
+        \PYG{k}{if} \PYG{p}{((}\PYG{n}{child} \PYG{o}{!=} \PYG{n}{parent}\PYG{p}{)} \PYG{o}{\PYGZam{}\PYGZam{}}
+            \PYG{p}{(}\PYG{n}{subtree\PYGZus{}size}\PYG{p}{[}\PYG{n}{child}\PYG{p}{]} \PYG{o}{\PYGZgt{}} \PYG{n}{big\PYGZus{}size}\PYG{p}{))} \PYG{p}{\PYGZob{}}
+          \PYG{n}{big\PYGZus{}child} \PYG{o}{=} \PYG{n}{child}\PYG{p}{;}
+          \PYG{n}{big\PYGZus{}size} \PYG{o}{=} \PYG{n}{subtree\PYGZus{}size}\PYG{p}{[}\PYG{n}{child}\PYG{p}{];}
+        \PYG{p}{\PYGZcb{}}
+      \PYG{p}{\PYGZcb{}}
+
+      \PYG{n}{build\PYGZus{}hld}\PYG{p}{(}\PYG{n}{big\PYGZus{}child}\PYG{p}{,} \PYG{n}{vertex}\PYG{p}{,} \PYG{n}{chain\PYGZus{}source}\PYG{p}{);}
+      \PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n+nl}{child} \PYG{p}{:} \PYG{n}{adj}\PYG{p}{[}\PYG{n}{vertex}\PYG{p}{])} \PYG{p}{\PYGZob{}}
+        \PYG{k}{if} \PYG{p}{((}\PYG{n}{child} \PYG{o}{!=} \PYG{n}{parent}\PYG{p}{)} \PYG{o}{\PYGZam{}\PYGZam{}} \PYG{p}{(}\PYG{n}{child} \PYG{o}{!=} \PYG{n}{big\PYGZus{}child}\PYG{p}{))} \PYG{p}{\PYGZob{}}
+          \PYG{n}{build\PYGZus{}hld}\PYG{p}{(}\PYG{n}{child}\PYG{p}{,} \PYG{n}{vertex}\PYG{p}{,} \PYG{n}{child}\PYG{p}{);}
+        \PYG{p}{\PYGZcb{}}
+      \PYG{p}{\PYGZcb{}}
+    \PYG{p}{\PYGZcb{}}
+  \PYG{p}{\PYGZcb{}}
+
+\PYG{k}{public}\PYG{o}{:}
+  \PYG{n}{HLD} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{\PYGZus{}vertexc}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{n}{vertexc} \PYG{o}{=} \PYG{n}{\PYGZus{}vertexc}\PYG{p}{;}
+    \PYG{n}{adj} \PYG{o}{=} \PYG{k}{new} \PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{int}\PYG{o}{\PYGZgt{}} \PYG{p}{[}\PYG{n}{vertexc} \PYG{o}{+} \PYG{l+m+mi}{5}\PYG{p}{];}
+  \PYG{p}{\PYGZcb{}}
+
+  \PYG{k+kt}{void} \PYG{n}{add\PYGZus{}edge} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{u}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{v}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{n}{adj}\PYG{p}{[}\PYG{n}{u}\PYG{p}{].}\PYG{n}{push\PYGZus{}back}\PYG{p}{(}\PYG{n}{v}\PYG{p}{);}
+    \PYG{n}{adj}\PYG{p}{[}\PYG{n}{v}\PYG{p}{].}\PYG{n}{push\PYGZus{}back}\PYG{p}{(}\PYG{n}{u}\PYG{p}{);}
+  \PYG{p}{\PYGZcb{}}
+
+  \PYG{k+kt}{void} \PYG{n}{build} \PYG{p}{(}\PYG{n}{T} \PYG{n}{initial}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{n}{subtree\PYGZus{}size} \PYG{o}{=} \PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{int}\PYG{o}{\PYGZgt{}} \PYG{p}{(}\PYG{n}{vertexc} \PYG{o}{+} \PYG{l+m+mi}{5}\PYG{p}{);}
+    \PYG{n}{ord} \PYG{o}{=} \PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{int}\PYG{o}{\PYGZgt{}} \PYG{p}{(}\PYG{n}{vertexc} \PYG{o}{+} \PYG{l+m+mi}{5}\PYG{p}{);}
+    \PYG{n}{chain\PYGZus{}root} \PYG{o}{=} \PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{int}\PYG{o}{\PYGZgt{}} \PYG{p}{(}\PYG{n}{vertexc} \PYG{o}{+} \PYG{l+m+mi}{5}\PYG{p}{);}
+    \PYG{n}{par} \PYG{o}{=} \PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{int}\PYG{o}{\PYGZgt{}} \PYG{p}{(}\PYG{n}{vertexc} \PYG{o}{+} \PYG{l+m+mi}{5}\PYG{p}{);}
+    \PYG{n}{cur} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+    \PYG{n}{build\PYGZus{}sizes}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{);}
+    \PYG{n}{build\PYGZus{}hld}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{);}
+    \PYG{n}{structure} \PYG{o}{=} \PYG{n}{DS} \PYG{p}{(}\PYG{n}{vertexc} \PYG{o}{+} \PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n}{initial}\PYG{p}{);}
+    \PYG{n}{aux} \PYG{o}{=} \PYG{n}{DS} \PYG{p}{(}\PYG{l+m+mi}{50}\PYG{p}{,} \PYG{n}{initial}\PYG{p}{);}
+  \PYG{p}{\PYGZcb{}}
+
+  \PYG{k+kt}{void} \PYG{n}{set} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{vertex}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{value}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{n}{structure}\PYG{p}{.}\PYG{n}{set}\PYG{p}{(}\PYG{n}{ord}\PYG{p}{[}\PYG{n}{vertex}\PYG{p}{],} \PYG{n}{value}\PYG{p}{);}
+  \PYG{p}{\PYGZcb{}}
+
+  \PYG{n}{T} \PYG{n}{query\PYGZus{}path} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{u}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{v}\PYG{p}{)} \PYG{p}{\PYGZob{}} \PYG{c+cm}{/* returns the \PYGZdq{}sum\PYGZdq{} of the path u\PYGZhy{}\PYGZgt{}v */}
+    \PYG{k+kt}{int} \PYG{n}{cur\PYGZus{}id} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+    \PYG{k}{while} \PYG{p}{(}\PYG{n}{chain\PYGZus{}root}\PYG{p}{[}\PYG{n}{u}\PYG{p}{]} \PYG{o}{!=} \PYG{n}{chain\PYGZus{}root}\PYG{p}{[}\PYG{n}{v}\PYG{p}{])} \PYG{p}{\PYGZob{}}
+      \PYG{k}{if} \PYG{p}{(}\PYG{n}{ord}\PYG{p}{[}\PYG{n}{u}\PYG{p}{]} \PYG{o}{\PYGZgt{}} \PYG{n}{ord}\PYG{p}{[}\PYG{n}{v}\PYG{p}{])} \PYG{p}{\PYGZob{}}
+        \PYG{n}{cur\PYGZus{}id}\PYG{o}{++}\PYG{p}{;}
+        \PYG{n}{aux}\PYG{p}{.}\PYG{n}{set}\PYG{p}{(}\PYG{n}{cur\PYGZus{}id}\PYG{p}{,} \PYG{n}{structure}\PYG{p}{.}\PYG{n}{query}\PYG{p}{(}\PYG{n}{ord}\PYG{p}{[}\PYG{n}{chain\PYGZus{}root}\PYG{p}{[}\PYG{n}{u}\PYG{p}{]],} \PYG{n}{ord}\PYG{p}{[}\PYG{n}{u}\PYG{p}{]));}
+        \PYG{n}{u} \PYG{o}{=} \PYG{n}{par}\PYG{p}{[}\PYG{n}{chain\PYGZus{}root}\PYG{p}{[}\PYG{n}{u}\PYG{p}{]];}
+      \PYG{p}{\PYGZcb{}} \PYG{k}{else} \PYG{p}{\PYGZob{}}
+        \PYG{n}{cur\PYGZus{}id}\PYG{o}{++}\PYG{p}{;}
+        \PYG{n}{aux}\PYG{p}{.}\PYG{n}{set}\PYG{p}{(}\PYG{n}{cur\PYGZus{}id}\PYG{p}{,} \PYG{n}{structure}\PYG{p}{.}\PYG{n}{query}\PYG{p}{(}\PYG{n}{ord}\PYG{p}{[}\PYG{n}{chain\PYGZus{}root}\PYG{p}{[}\PYG{n}{v}\PYG{p}{]],} \PYG{n}{ord}\PYG{p}{[}\PYG{n}{v}\PYG{p}{]));}
+        \PYG{n}{v} \PYG{o}{=} \PYG{n}{par}\PYG{p}{[}\PYG{n}{chain\PYGZus{}root}\PYG{p}{[}\PYG{n}{v}\PYG{p}{]];}
+      \PYG{p}{\PYGZcb{}}
+    \PYG{p}{\PYGZcb{}}
+
+    \PYG{n}{cur\PYGZus{}id}\PYG{o}{++}\PYG{p}{;}
+    \PYG{n}{aux}\PYG{p}{.}\PYG{n}{set}\PYG{p}{(}\PYG{n}{cur\PYGZus{}id}\PYG{p}{,} \PYG{n}{structure}\PYG{p}{.}\PYG{n}{query}\PYG{p}{(}\PYG{n}{min}\PYG{p}{(}\PYG{n}{ord}\PYG{p}{[}\PYG{n}{u}\PYG{p}{],} \PYG{n}{ord}\PYG{p}{[}\PYG{n}{v}\PYG{p}{]),} \PYG{n}{max}\PYG{p}{(}\PYG{n}{ord}\PYG{p}{[}\PYG{n}{u}\PYG{p}{],} \PYG{n}{ord}\PYG{p}{[}\PYG{n}{v}\PYG{p}{])));}
+
+    \PYG{k}{return} \PYG{n}{aux}\PYG{p}{.}\PYG{n}{query}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{cur\PYGZus{}id}\PYG{p}{);}
+  \PYG{p}{\PYGZcb{}}
+
+  \PYG{k+kt}{void} \PYG{n}{print} \PYG{p}{()} \PYG{p}{\PYGZob{}}
+    \PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i} \PYG{o}{=} \PYG{l+m+mi}{1}\PYG{p}{;} \PYG{n}{i} \PYG{o}{\PYGZlt{}=} \PYG{n}{vertexc}\PYG{p}{;} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+      \PYG{n}{cout} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{i} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{l+s+sc}{\PYGZsq{} \PYGZsq{}} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{ord}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{l+s+sc}{\PYGZsq{} \PYGZsq{}} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{chain\PYGZus{}root}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{l+s+sc}{\PYGZsq{} \PYGZsq{}} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{par}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{endl}\PYG{p}{;}
+    \PYG{p}{\PYGZcb{}}
+  \PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{};}
+
+\PYG{k+kt}{int} \PYG{n+nf}{main} \PYG{p}{()} \PYG{p}{\PYGZob{}}
+  \PYG{k+kt}{int} \PYG{n}{vertexc}\PYG{p}{;}
+  \PYG{n}{cin} \PYG{o}{\PYGZgt{}\PYGZgt{}} \PYG{n}{vertexc}\PYG{p}{;}
+
+  \PYG{n}{HLD}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{int}\PYG{p}{,} \PYG{n}{dummy}\PYG{o}{\PYGZgt{}} \PYG{n}{hld} \PYG{p}{(}\PYG{n}{vertexc}\PYG{p}{);}
+  \PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{n}{vertexc} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{;} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{k+kt}{int} \PYG{n}{u}\PYG{p}{,} \PYG{n}{v}\PYG{p}{;}
+    \PYG{n}{cin} \PYG{o}{\PYGZgt{}\PYGZgt{}} \PYG{n}{u} \PYG{o}{\PYGZgt{}\PYGZgt{}} \PYG{n}{v}\PYG{p}{;}
+
+    \PYG{n}{hld}\PYG{p}{.}\PYG{n}{add\PYGZus{}edge}\PYG{p}{(}\PYG{n}{u}\PYG{p}{,} \PYG{n}{v}\PYG{p}{);}
+  \PYG{p}{\PYGZcb{}}
+  \PYG{n}{hld}\PYG{p}{.}\PYG{n}{build}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{);}
+  \PYG{n}{hld}\PYG{p}{.}\PYG{n}{print}\PYG{p}{();}
+
+  \PYG{k+kt}{int} \PYG{n}{queryc}\PYG{p}{;}
+  \PYG{n}{cin} \PYG{o}{\PYGZgt{}\PYGZgt{}} \PYG{n}{queryc}\PYG{p}{;}
+  \PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{n}{queryc}\PYG{p}{;} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{k+kt}{int} \PYG{n}{u}\PYG{p}{,} \PYG{n}{v}\PYG{p}{;}
+    \PYG{n}{cin} \PYG{o}{\PYGZgt{}\PYGZgt{}} \PYG{n}{u} \PYG{o}{\PYGZgt{}\PYGZgt{}} \PYG{n}{v}\PYG{p}{;}
+
+    \PYG{n}{hld}\PYG{p}{.}\PYG{n}{query\PYGZus{}path}\PYG{p}{(}\PYG{n}{u}\PYG{p}{,} \PYG{n}{v}\PYG{p}{);}
+    \PYG{n}{cout} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{endl}\PYG{p}{;}
+  \PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

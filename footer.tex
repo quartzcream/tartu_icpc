@@ -1,5 +1,40 @@
 % !begin_codebook
-\includegraphics[scale=1]{comb.pdf}
+\section{Factsheet}
+\includegraphics[scale=0.8]{comb.pdf}
+
+\begin{itemize}
+\item \textbf{Fermat's little theorem.} Let $p$ be prime. Then, for each integer $a$:
+  \begin{equation*}
+    a^{p - 1} \equiv 1 \pmod{p}.
+  \end{equation*}
+  Thus:
+  \begin{equation*}
+    a^{k} \equiv a^{k \mod (p - 1)} \pmod{p}.
+  \end{equation*}
+  Also:
+  \begin{equation*}
+    a^{p - 2} \equiv a^{-1} \pmod{p}.
+  \end{equation*}
+\item \textbf{Iterating over subsets.} Let \texttt{mask} be the binary representation
+  of a set. Then \texttt{for (int i = mask; i != 0; i = (i - 1) \& mask)} will iterate
+  over all the nonempty subsets of \texttt{mask}.
+\item \textbf{Chinese remainder theorem.}
+\item \textbf{Sum of harmonic series.}
+  \begin{equation*} 
+     \frac11 + \frac12 + \dots + \frac1n \in \mathcal{O}(\log n)
+  \end{equation*}
+\item \textbf{Number of primes below...}
+  \begin{equation*}
+    \begin{array}{rl}
+       10^2 & 25 \\
+       10^3 & 168 \\
+       10^4 & 1229 \\
+       10^5 & 9592 \\
+       10^6 & 78498 \\
+       10^7 & 664579
+    \end{array}
+  \end{equation*}
+\end{itemize}
 
 \end{document}
 % !end_codebook

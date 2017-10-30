@@ -1,0 +1,69 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{const} \PYG{k+kt}{int} \PYG{n}{nmax}\PYG{o}{=}\PYG{l+m+mi}{1055}\PYG{p}{;}
+\PYG{k}{const} \PYG{n}{ll} \PYG{n}{inf}\PYG{o}{=}\PYG{l+m+mf}{1e14}\PYG{p}{;}
+\PYG{k+kt}{int} \PYG{n}{t}\PYG{p}{,} \PYG{n}{n}\PYG{p}{,} \PYG{n}{v}\PYG{p}{;} \PYG{c+c1}{//0 is source, v\PYGZhy{}1 sink}
+\PYG{n}{ll} \PYG{n}{rem\PYGZus{}flow}\PYG{p}{[}\PYG{n}{nmax}\PYG{p}{][}\PYG{n}{nmax}\PYG{p}{];} \PYG{c+c1}{//set [x][y] for directed capacity from x to y.}
+\PYG{n}{ll} \PYG{n}{cost}\PYG{p}{[}\PYG{n}{nmax}\PYG{p}{][}\PYG{n}{nmax}\PYG{p}{];} \PYG{c+c1}{//set [x][y] for directed cost from x to y. SET TO inf IF NOT USED}
+\PYG{n}{ll} \PYG{n}{min\PYGZus{}dist}\PYG{p}{[}\PYG{n}{nmax}\PYG{p}{];}
+\PYG{k+kt}{int} \PYG{n}{prev\PYGZus{}node}\PYG{p}{[}\PYG{n}{nmax}\PYG{p}{];}
+\PYG{n}{ll} \PYG{n}{node\PYGZus{}flow}\PYG{p}{[}\PYG{n}{nmax}\PYG{p}{];}
+\PYG{k+kt}{bool} \PYG{n}{visited}\PYG{p}{[}\PYG{n}{nmax}\PYG{p}{];}
+\PYG{n}{ll} \PYG{n}{tot\PYGZus{}cost}\PYG{p}{,} \PYG{n}{tot\PYGZus{}flow}\PYG{p}{;} \PYG{c+c1}{//output}
+\PYG{k+kt}{void} \PYG{n+nf}{min\PYGZus{}cost\PYGZus{}max\PYGZus{}flow}\PYG{p}{()\PYGZob{}} \PYG{c+c1}{//incase of negative edges have to add Bellman\PYGZhy{}Ford that is run once.}
+	\PYG{n}{tot\PYGZus{}cost}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;}							\PYG{c+c1}{//Does not work with negative cycles.}
+	\PYG{n}{tot\PYGZus{}flow}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;}
+	\PYG{n}{ll} \PYG{n}{sink\PYGZus{}pot}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;}
+	\PYG{k}{while}\PYG{p}{(}\PYG{n+nb}{true}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i}\PYG{o}{\PYGZlt{}=}\PYG{n}{v}\PYG{p}{;} \PYG{o}{++}\PYG{n}{i}\PYG{p}{)\PYGZob{}}
+			\PYG{n}{min\PYGZus{}dist}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{o}{=}\PYG{n}{inf}\PYG{p}{;}
+			\PYG{n}{visited}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{o}{=}\PYG{n+nb}{false}\PYG{p}{;}
+		\PYG{p}{\PYGZcb{}}
+		\PYG{n}{min\PYGZus{}dist}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;}
+		\PYG{n}{node\PYGZus{}flow}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{=}\PYG{n}{inf}\PYG{p}{;}
+		\PYG{k+kt}{int} \PYG{n}{min\PYGZus{}node}\PYG{p}{;}
+		\PYG{k}{while}\PYG{p}{(}\PYG{n+nb}{true}\PYG{p}{)\PYGZob{}} \PYG{c+c1}{//Use Dijkstra to calculate potentials}
+			\PYG{k+kt}{int} \PYG{n}{min\PYGZus{}node}\PYG{o}{=}\PYG{n}{v}\PYG{p}{;}
+			\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i}\PYG{o}{\PYGZlt{}}\PYG{n}{v}\PYG{p}{;} \PYG{o}{++}\PYG{n}{i}\PYG{p}{)\PYGZob{}}
+				\PYG{k}{if}\PYG{p}{((}\PYG{o}{!}\PYG{n}{visited}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])} \PYG{o}{\PYGZam{}\PYGZam{}} \PYG{n}{min\PYGZus{}dist}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{o}{\PYGZlt{}}\PYG{n}{min\PYGZus{}dist}\PYG{p}{[}\PYG{n}{min\PYGZus{}node}\PYG{p}{])\PYGZob{}}
+					\PYG{n}{min\PYGZus{}node}\PYG{o}{=}\PYG{n}{i}\PYG{p}{;}
+				\PYG{p}{\PYGZcb{}}
+			\PYG{p}{\PYGZcb{}}
+			\PYG{k}{if}\PYG{p}{(}\PYG{n}{min\PYGZus{}node}\PYG{o}{==}\PYG{n}{v}\PYG{p}{)\PYGZob{}}
+				\PYG{k}{break}\PYG{p}{;}
+			\PYG{p}{\PYGZcb{}}
+			\PYG{n}{visited}\PYG{p}{[}\PYG{n}{min\PYGZus{}node}\PYG{p}{]}\PYG{o}{=}\PYG{n+nb}{true}\PYG{p}{;}
+			\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i}\PYG{o}{\PYGZlt{}}\PYG{n}{v}\PYG{p}{;} \PYG{o}{++}\PYG{n}{i}\PYG{p}{)\PYGZob{}}
+				\PYG{k}{if}\PYG{p}{((}\PYG{o}{!}\PYG{n}{visited}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])} \PYG{o}{\PYGZam{}\PYGZam{}} \PYG{n}{min\PYGZus{}dist}\PYG{p}{[}\PYG{n}{min\PYGZus{}node}\PYG{p}{]}\PYG{o}{+}\PYG{n}{cost}\PYG{p}{[}\PYG{n}{min\PYGZus{}node}\PYG{p}{][}\PYG{n}{i}\PYG{p}{]} \PYG{o}{\PYGZlt{}} \PYG{n}{min\PYGZus{}dist}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])\PYGZob{}}
+					\PYG{n}{min\PYGZus{}dist}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{o}{=}\PYG{n}{min\PYGZus{}dist}\PYG{p}{[}\PYG{n}{min\PYGZus{}node}\PYG{p}{]}\PYG{o}{+}\PYG{n}{cost}\PYG{p}{[}\PYG{n}{min\PYGZus{}node}\PYG{p}{][}\PYG{n}{i}\PYG{p}{];}
+					\PYG{n}{prev\PYGZus{}node}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{o}{=}\PYG{n}{min\PYGZus{}node}\PYG{p}{;}
+					\PYG{n}{node\PYGZus{}flow}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{o}{=}\PYG{n}{min}\PYG{p}{(}\PYG{n}{node\PYGZus{}flow}\PYG{p}{[}\PYG{n}{min\PYGZus{}node}\PYG{p}{],} \PYG{n}{rem\PYGZus{}flow}\PYG{p}{[}\PYG{n}{min\PYGZus{}node}\PYG{p}{][}\PYG{n}{i}\PYG{p}{]);}
+				\PYG{p}{\PYGZcb{}}
+			\PYG{p}{\PYGZcb{}}
+		\PYG{p}{\PYGZcb{}}
+		\PYG{k}{if}\PYG{p}{(}\PYG{n}{min\PYGZus{}dist}\PYG{p}{[}\PYG{n}{v}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{==}\PYG{n}{inf}\PYG{p}{)\PYGZob{}}
+			\PYG{k}{break}\PYG{p}{;}
+		\PYG{p}{\PYGZcb{}}
+		\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i}\PYG{o}{\PYGZlt{}}\PYG{n}{v}\PYG{p}{;} \PYG{o}{++}\PYG{n}{i}\PYG{p}{)\PYGZob{}} 	\PYG{c+c1}{//Apply potentials to edge costs.}
+			\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{j}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{j}\PYG{o}{\PYGZlt{}}\PYG{n}{v}\PYG{p}{;} \PYG{o}{++}\PYG{n}{j}\PYG{p}{)\PYGZob{}} \PYG{c+c1}{//Found path from source to sink becomes 0 cost.}
+				\PYG{k}{if}\PYG{p}{(}\PYG{n}{cost}\PYG{p}{[}\PYG{n}{i}\PYG{p}{][}\PYG{n}{j}\PYG{p}{]}\PYG{o}{!=}\PYG{n}{inf}\PYG{p}{)\PYGZob{}}
+					\PYG{n}{cost}\PYG{p}{[}\PYG{n}{i}\PYG{p}{][}\PYG{n}{j}\PYG{p}{]}\PYG{o}{+=}\PYG{n}{min\PYGZus{}dist}\PYG{p}{[}\PYG{n}{i}\PYG{p}{];}
+					\PYG{n}{cost}\PYG{p}{[}\PYG{n}{i}\PYG{p}{][}\PYG{n}{j}\PYG{p}{]}\PYG{o}{\PYGZhy{}=}\PYG{n}{min\PYGZus{}dist}\PYG{p}{[}\PYG{n}{j}\PYG{p}{];}
+				\PYG{p}{\PYGZcb{}}
+			\PYG{p}{\PYGZcb{}}
+		\PYG{p}{\PYGZcb{}}
+		\PYG{n}{sink\PYGZus{}pot}\PYG{o}{+=}\PYG{n}{min\PYGZus{}dist}\PYG{p}{[}\PYG{n}{v}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{];}
+		\PYG{n}{tot\PYGZus{}flow}\PYG{o}{+=}\PYG{n}{node\PYGZus{}flow}\PYG{p}{[}\PYG{n}{v}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{];}
+		\PYG{n}{tot\PYGZus{}cost}\PYG{o}{+=}\PYG{n}{sink\PYGZus{}pot}\PYG{o}{*}\PYG{n}{node\PYGZus{}flow}\PYG{p}{[}\PYG{n}{v}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{];}
+		\PYG{k+kt}{int} \PYG{n}{cur}\PYG{o}{=}\PYG{n}{v}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{;}
+		\PYG{k}{while}\PYG{p}{(}\PYG{n}{cur}\PYG{o}{!=}\PYG{l+m+mi}{0}\PYG{p}{)\PYGZob{}} \PYG{c+c1}{//Backtrack along found path that now has 0 cost.}
+			\PYG{n}{rem\PYGZus{}flow}\PYG{p}{[}\PYG{n}{prev\PYGZus{}node}\PYG{p}{[}\PYG{n}{cur}\PYG{p}{]][}\PYG{n}{cur}\PYG{p}{]}\PYG{o}{\PYGZhy{}=}\PYG{n}{node\PYGZus{}flow}\PYG{p}{[}\PYG{n}{v}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{];}
+			\PYG{n}{rem\PYGZus{}flow}\PYG{p}{[}\PYG{n}{cur}\PYG{p}{][}\PYG{n}{prev\PYGZus{}node}\PYG{p}{[}\PYG{n}{cur}\PYG{p}{]]}\PYG{o}{+=}\PYG{n}{node\PYGZus{}flow}\PYG{p}{[}\PYG{n}{v}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{];}
+			\PYG{n}{cost}\PYG{p}{[}\PYG{n}{cur}\PYG{p}{][}\PYG{n}{prev\PYGZus{}node}\PYG{p}{[}\PYG{n}{cur}\PYG{p}{]]}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;}
+			\PYG{k}{if}\PYG{p}{(}\PYG{n}{rem\PYGZus{}flow}\PYG{p}{[}\PYG{n}{prev\PYGZus{}node}\PYG{p}{[}\PYG{n}{cur}\PYG{p}{]][}\PYG{n}{cur}\PYG{p}{]}\PYG{o}{==}\PYG{l+m+mi}{0}\PYG{p}{)\PYGZob{}}
+				\PYG{n}{cost}\PYG{p}{[}\PYG{n}{prev\PYGZus{}node}\PYG{p}{[}\PYG{n}{cur}\PYG{p}{]][}\PYG{n}{cur}\PYG{p}{]}\PYG{o}{=}\PYG{n}{inf}\PYG{p}{;}
+			\PYG{p}{\PYGZcb{}}
+			\PYG{n}{cur}\PYG{o}{=}\PYG{n}{prev\PYGZus{}node}\PYG{p}{[}\PYG{n}{cur}\PYG{p}{];}
+		\PYG{p}{\PYGZcb{}}
+	\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

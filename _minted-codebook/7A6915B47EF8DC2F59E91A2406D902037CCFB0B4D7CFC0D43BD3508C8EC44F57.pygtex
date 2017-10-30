@@ -1,0 +1,78 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{// Fully overloaded any dimensional BIT, use any type for coordinates, elements, return\PYGZus{}value.}
+\PYG{c+c1}{// Includes coordinate compression.}
+\PYG{k}{template} \PYG{o}{\PYGZlt{}} \PYG{k}{typename} \PYG{n}{elem\PYGZus{}t}\PYG{p}{,} \PYG{k}{typename} \PYG{n}{coord\PYGZus{}t}\PYG{p}{,} \PYG{n}{coord\PYGZus{}t} \PYG{n}{n\PYGZus{}inf}\PYG{p}{,} \PYG{k}{typename} \PYG{n}{ret\PYGZus{}t} \PYG{o}{\PYGZgt{}}
+\PYG{k}{class} \PYG{n+nc}{BIT} \PYG{p}{\PYGZob{}}
+  \PYG{n}{vector}\PYG{o}{\PYGZlt{}} \PYG{n}{coord\PYGZus{}t} \PYG{o}{\PYGZgt{}} \PYG{n}{positions}\PYG{p}{;}
+  \PYG{n}{vector}\PYG{o}{\PYGZlt{}} \PYG{n}{elem\PYGZus{}t} \PYG{o}{\PYGZgt{}} \PYG{n}{elems}\PYG{p}{;}
+  \PYG{k+kt}{bool} \PYG{n}{initiated} \PYG{o}{=} \PYG{n+nb}{false}\PYG{p}{;}
+
+ \PYG{k}{public}\PYG{o}{:}
+  \PYG{n}{BIT}\PYG{p}{()} \PYG{p}{\PYGZob{}}
+		\PYG{n}{positions}\PYG{p}{.}\PYG{n}{push\PYGZus{}back}\PYG{p}{(}\PYG{n}{n\PYGZus{}inf}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+  \PYG{k+kt}{void} \PYG{n}{initiate}\PYG{p}{()} \PYG{p}{\PYGZob{}}
+    \PYG{k}{if} \PYG{p}{(}\PYG{n}{initiated}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+      \PYG{k}{for} \PYG{p}{(}\PYG{n}{elem\PYGZus{}t} \PYG{o}{\PYGZam{}}\PYG{n+nl}{c\PYGZus{}elem} \PYG{p}{:} \PYG{n}{elems}\PYG{p}{)}
+				\PYG{n}{c\PYGZus{}elem}\PYG{p}{.}\PYG{n}{initiate}\PYG{p}{();}
+    \PYG{p}{\PYGZcb{}} \PYG{k}{else} \PYG{p}{\PYGZob{}}
+      \PYG{n}{initiated} \PYG{o}{=} \PYG{n+nb}{true}\PYG{p}{;}
+      \PYG{n}{sort}\PYG{p}{(}\PYG{n}{positions}\PYG{p}{.}\PYG{n}{begin}\PYG{p}{(),} \PYG{n}{positions}\PYG{p}{.}\PYG{n}{end}\PYG{p}{());}
+      \PYG{n}{positions}\PYG{p}{.}\PYG{n}{resize}\PYG{p}{(}\PYG{n}{unique}\PYG{p}{(}\PYG{n}{positions}\PYG{p}{.}\PYG{n}{begin}\PYG{p}{(),} \PYG{n}{positions}\PYG{p}{.}\PYG{n}{end}\PYG{p}{())} \PYG{o}{\PYGZhy{}} \PYG{n}{positions}\PYG{p}{.}\PYG{n}{begin}\PYG{p}{());}
+      \PYG{n}{elems}\PYG{p}{.}\PYG{n}{resize}\PYG{p}{(}\PYG{n}{positions}\PYG{p}{.}\PYG{n}{size}\PYG{p}{());}
+    \PYG{p}{\PYGZcb{}}
+  \PYG{p}{\PYGZcb{}}
+  \PYG{k}{template} \PYG{o}{\PYGZlt{}} \PYG{k}{typename}\PYG{p}{...} \PYG{n}{loc\PYGZus{}form} \PYG{o}{\PYGZgt{}}
+  \PYG{k+kt}{void} \PYG{n}{update}\PYG{p}{(}\PYG{n}{coord\PYGZus{}t} \PYG{n}{cord}\PYG{p}{,} \PYG{n}{loc\PYGZus{}form}\PYG{p}{...} \PYG{n}{args}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{k}{if} \PYG{p}{(}\PYG{n}{initiated}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+      \PYG{k+kt}{int} \PYG{n}{pos} \PYG{o}{=} \PYG{n}{lower\PYGZus{}bound}\PYG{p}{(}\PYG{n}{positions}\PYG{p}{.}\PYG{n}{begin}\PYG{p}{(),} \PYG{n}{positions}\PYG{p}{.}\PYG{n}{end}\PYG{p}{(),} \PYG{n}{cord}\PYG{p}{)} \PYG{o}{\PYGZhy{}} \PYG{n}{positions}\PYG{p}{.}\PYG{n}{begin}\PYG{p}{();}
+      \PYG{k}{for} \PYG{p}{(;} \PYG{n}{pos} \PYG{o}{\PYGZlt{}} \PYG{n}{positions}\PYG{p}{.}\PYG{n}{size}\PYG{p}{();} \PYG{n}{pos} \PYG{o}{+=} \PYG{n}{pos} \PYG{o}{\PYGZam{}} \PYG{o}{\PYGZhy{}}\PYG{n}{pos}\PYG{p}{)}
+				\PYG{n}{elems}\PYG{p}{[}\PYG{n}{pos}\PYG{p}{].}\PYG{n}{update}\PYG{p}{(}\PYG{n}{args}\PYG{p}{...);}
+    \PYG{p}{\PYGZcb{}} \PYG{k}{else} \PYG{p}{\PYGZob{}}
+      \PYG{n}{positions}\PYG{p}{.}\PYG{n}{push\PYGZus{}back}\PYG{p}{(}\PYG{n}{cord}\PYG{p}{);}
+    \PYG{p}{\PYGZcb{}}
+  \PYG{p}{\PYGZcb{}}
+  \PYG{k}{template} \PYG{o}{\PYGZlt{}} \PYG{k}{typename}\PYG{p}{...} \PYG{n}{loc\PYGZus{}form} \PYG{o}{\PYGZgt{}}
+  \PYG{n}{ret\PYGZus{}t} \PYG{n}{query}\PYG{p}{(}\PYG{n}{coord\PYGZus{}t} \PYG{n}{cord}\PYG{p}{,} \PYG{n}{loc\PYGZus{}form}\PYG{p}{...} \PYG{n}{args}\PYG{p}{)} \PYG{p}{\PYGZob{}} \PYG{c+c1}{//sum in open interval (\PYGZhy{}inf, cord)}
+    \PYG{n}{ret\PYGZus{}t} \PYG{n}{res} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+    \PYG{k+kt}{int} \PYG{n}{pos} \PYG{o}{=} \PYG{p}{(}\PYG{n}{lower\PYGZus{}bound}\PYG{p}{(}\PYG{n}{positions}\PYG{p}{.}\PYG{n}{begin}\PYG{p}{(),} \PYG{n}{positions}\PYG{p}{.}\PYG{n}{end}\PYG{p}{(),} \PYG{n}{cord}\PYG{p}{)} \PYG{o}{\PYGZhy{}} \PYG{n}{positions}\PYG{p}{.}\PYG{n}{begin}\PYG{p}{())}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{;}
+    \PYG{k}{for} \PYG{p}{(;} \PYG{n}{pos} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{pos} \PYG{o}{\PYGZhy{}=} \PYG{n}{pos} \PYG{o}{\PYGZam{}} \PYG{o}{\PYGZhy{}}\PYG{n}{pos}\PYG{p}{)}
+			\PYG{n}{res} \PYG{o}{+=} \PYG{n}{elems}\PYG{p}{[}\PYG{n}{pos}\PYG{p}{].}\PYG{n}{query}\PYG{p}{(}\PYG{n}{args}\PYG{p}{...);}
+    \PYG{k}{return} \PYG{n}{res}\PYG{p}{;}
+  \PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{};}
+\PYG{k}{template} \PYG{o}{\PYGZlt{}} \PYG{k}{typename} \PYG{n}{internal\PYGZus{}type} \PYG{o}{\PYGZgt{}}
+\PYG{k}{struct} \PYG{n}{wrapped} \PYG{p}{\PYGZob{}}
+  \PYG{n}{internal\PYGZus{}type} \PYG{n}{a} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+  \PYG{k+kt}{void} \PYG{n+nf}{update}\PYG{p}{(}\PYG{n}{internal\PYGZus{}type} \PYG{n}{b}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+		\PYG{n}{a} \PYG{o}{+=} \PYG{n}{b}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+  \PYG{n}{internal\PYGZus{}type} \PYG{n+nf}{query}\PYG{p}{()} \PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{n}{a}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+  \PYG{c+c1}{// Should never be called, needed for compilation}
+  \PYG{k+kt}{void} \PYG{n+nf}{initiate}\PYG{p}{()} \PYG{p}{\PYGZob{}}
+		\PYG{n}{cerr} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{l+s+sc}{\PYGZsq{}i\PYGZsq{}} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{endl}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+  \PYG{k+kt}{void} \PYG{n+nf}{update}\PYG{p}{()} \PYG{p}{\PYGZob{}}
+		\PYG{n}{cerr} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{l+s+sc}{\PYGZsq{}u\PYGZsq{}} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{endl}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{};}
+\PYG{k+kt}{int} \PYG{n+nf}{main}\PYG{p}{()} \PYG{p}{\PYGZob{}}
+  \PYG{c+c1}{// retun type should be same as type inside wrapped}
+  \PYG{n}{BIT}\PYG{o}{\PYGZlt{}} \PYG{n}{BIT}\PYG{o}{\PYGZlt{}} \PYG{n}{wrapped}\PYG{o}{\PYGZlt{}} \PYG{n}{ll} \PYG{o}{\PYGZgt{}}\PYG{p}{,} \PYG{k+kt}{int}\PYG{p}{,} \PYG{n}{INT\PYGZus{}MIN}\PYG{p}{,} \PYG{n}{ll} \PYG{o}{\PYGZgt{}}\PYG{p}{,} \PYG{k+kt}{int}\PYG{p}{,} \PYG{n}{INT\PYGZus{}MIN}\PYG{p}{,} \PYG{n}{ll} \PYG{o}{\PYGZgt{}} \PYG{n}{fenwick}\PYG{p}{;}
+  \PYG{k+kt}{int} \PYG{n}{dim} \PYG{o}{=} \PYG{l+m+mi}{2}\PYG{p}{;}
+  \PYG{n}{vector}\PYG{o}{\PYGZlt{}} \PYG{n}{tuple}\PYG{o}{\PYGZlt{}} \PYG{k+kt}{int}\PYG{p}{,} \PYG{k+kt}{int}\PYG{p}{,} \PYG{n}{ll} \PYG{o}{\PYGZgt{}} \PYG{o}{\PYGZgt{}} \PYG{n}{to\PYGZus{}insert}\PYG{p}{;}
+	\PYG{n}{to\PYGZus{}insert}\PYG{p}{.}\PYG{n}{emplace\PYGZus{}back}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{);}
+  \PYG{c+c1}{// set up all positions that are to be used for update}
+  \PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{n}{dim}\PYG{p}{;} \PYG{o}{++}\PYG{n}{i}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{k}{for} \PYG{p}{(}\PYG{k}{auto} \PYG{o}{\PYGZam{}}\PYG{n+nl}{cur} \PYG{p}{:} \PYG{n}{to\PYGZus{}insert}\PYG{p}{)}
+      \PYG{n}{fenwick}\PYG{p}{.}\PYG{n}{update}\PYG{p}{(}\PYG{n}{get}\PYG{o}{\PYGZlt{}} \PYG{l+m+mi}{0} \PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{n}{cur}\PYG{p}{),} \PYG{n}{get}\PYG{o}{\PYGZlt{}} \PYG{l+m+mi}{1} \PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{n}{cur}\PYG{p}{));}  \PYG{c+c1}{// May include value which won\PYGZsq{}t be used}
+    \PYG{n}{fenwick}\PYG{p}{.}\PYG{n}{initiate}\PYG{p}{();}
+  \PYG{p}{\PYGZcb{}}
+  \PYG{c+c1}{// actual use}
+  \PYG{k}{for} \PYG{p}{(}\PYG{k}{auto} \PYG{o}{\PYGZam{}}\PYG{n+nl}{cur} \PYG{p}{:} \PYG{n}{to\PYGZus{}insert}\PYG{p}{)}
+		\PYG{n}{fenwick}\PYG{p}{.}\PYG{n}{update}\PYG{p}{(}\PYG{n}{get}\PYG{o}{\PYGZlt{}} \PYG{l+m+mi}{0} \PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{n}{cur}\PYG{p}{),} \PYG{n}{get}\PYG{o}{\PYGZlt{}} \PYG{l+m+mi}{1} \PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{n}{cur}\PYG{p}{),} \PYG{n}{get}\PYG{o}{\PYGZlt{}} \PYG{l+m+mi}{2} \PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{n}{cur}\PYG{p}{));}
+  \PYG{n}{cout} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{fenwick}\PYG{p}{.}\PYG{n}{query}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+m+mi}{2}\PYG{p}{)}\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{l+s+sc}{\PYGZsq{}\PYGZbs{}n\PYGZsq{}}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

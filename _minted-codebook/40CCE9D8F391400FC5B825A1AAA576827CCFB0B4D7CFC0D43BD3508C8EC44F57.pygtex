@@ -1,0 +1,88 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{template}\PYG{o}{\PYGZlt{}}\PYG{k}{typename} \PYG{n}{T}\PYG{p}{,} \PYG{k}{typename} \PYG{n}{comp}\PYG{o}{\PYGZgt{}}
+\PYG{k}{class} \PYG{n+nc}{PersistentST} \PYG{p}{\PYGZob{}}
+  \PYG{k}{struct} \PYG{n}{Node} \PYG{p}{\PYGZob{}}
+    \PYG{n}{Node} \PYG{o}{*}\PYG{n}{left}\PYG{p}{,} \PYG{o}{*}\PYG{n}{right}\PYG{p}{;}
+    \PYG{k+kt}{int} \PYG{n}{lend}\PYG{p}{,} \PYG{n}{rend}\PYG{p}{;}
+    \PYG{n}{T} \PYG{n}{value}\PYG{p}{;}
+
+    \PYG{n}{Node} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{position}\PYG{p}{,} \PYG{n}{T} \PYG{n}{\PYGZus{}value}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+      \PYG{n}{left} \PYG{o}{=} \PYG{n+nb}{NULL}\PYG{p}{;}
+      \PYG{n}{right} \PYG{o}{=} \PYG{n+nb}{NULL}\PYG{p}{;}
+      \PYG{n}{lend} \PYG{o}{=} \PYG{n}{position}\PYG{p}{;}
+      \PYG{n}{rend} \PYG{o}{=} \PYG{n}{position}\PYG{p}{;}
+      \PYG{n}{value} \PYG{o}{=} \PYG{n}{\PYGZus{}value}\PYG{p}{;}
+    \PYG{p}{\PYGZcb{}}
+
+    \PYG{n}{Node} \PYG{p}{(}\PYG{n}{Node} \PYG{o}{*}\PYG{n}{\PYGZus{}left}\PYG{p}{,} \PYG{n}{Node} \PYG{o}{*}\PYG{n}{\PYGZus{}right}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+      \PYG{n}{left} \PYG{o}{=} \PYG{n}{\PYGZus{}left}\PYG{p}{;}
+      \PYG{n}{right} \PYG{o}{=} \PYG{n}{\PYGZus{}right}\PYG{p}{;}
+      \PYG{n}{lend} \PYG{o}{=} \PYG{n}{left}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{lend}\PYG{p}{;}
+      \PYG{n}{rend} \PYG{o}{=} \PYG{n}{right}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{rend}\PYG{p}{;}
+      \PYG{n}{value} \PYG{o}{=} \PYG{n}{comp}\PYG{p}{()(}\PYG{n}{left}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{value}\PYG{p}{,} \PYG{n}{right}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{value}\PYG{p}{);}
+    \PYG{p}{\PYGZcb{}}
+
+    \PYG{n}{T} \PYG{n}{query} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{qleft}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{qright}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+      \PYG{n}{qleft} \PYG{o}{=} \PYG{n}{max}\PYG{p}{(}\PYG{n}{qleft}\PYG{p}{,} \PYG{n}{lend}\PYG{p}{);}
+      \PYG{n}{qright} \PYG{o}{=} \PYG{n}{min}\PYG{p}{(}\PYG{n}{qright}\PYG{p}{,} \PYG{n}{rend}\PYG{p}{);}
+
+      \PYG{k}{if} \PYG{p}{(}\PYG{n}{qleft} \PYG{o}{==} \PYG{n}{lend} \PYG{o}{\PYGZam{}\PYGZam{}} \PYG{n}{qright} \PYG{o}{==} \PYG{n}{rend}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+        \PYG{k}{return} \PYG{n}{value}\PYG{p}{;}
+      \PYG{p}{\PYGZcb{}} \PYG{k}{else} \PYG{k}{if} \PYG{p}{(}\PYG{n}{qleft} \PYG{o}{\PYGZgt{}} \PYG{n}{qright}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+        \PYG{k}{return} \PYG{n}{comp}\PYG{p}{().}\PYG{n}{identity}\PYG{p}{;}
+      \PYG{p}{\PYGZcb{}} \PYG{k}{else} \PYG{p}{\PYGZob{}}
+        \PYG{k}{return} \PYG{n}{comp}\PYG{p}{()(}\PYG{n}{left}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{query}\PYG{p}{(}\PYG{n}{qleft}\PYG{p}{,} \PYG{n}{qright}\PYG{p}{),}
+                      \PYG{n}{right}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{query}\PYG{p}{(}\PYG{n}{qleft}\PYG{p}{,} \PYG{n}{qright}\PYG{p}{));}
+      \PYG{p}{\PYGZcb{}}
+    \PYG{p}{\PYGZcb{}}
+  \PYG{p}{\PYGZcb{};}
+
+  \PYG{k+kt}{int} \PYG{n}{size}\PYG{p}{;}
+  \PYG{n}{Node} \PYG{o}{**}\PYG{n}{tree}\PYG{p}{;}
+  \PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{Node}\PYG{o}{*\PYGZgt{}} \PYG{n}{roots}\PYG{p}{;}
+\PYG{k}{public}\PYG{o}{:}
+  \PYG{n}{PersistentST} \PYG{p}{()} \PYG{p}{\PYGZob{}}
+  \PYG{p}{\PYGZcb{}}
+
+  \PYG{n}{PersistentST} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{\PYGZus{}size}\PYG{p}{,} \PYG{n}{T} \PYG{n}{initial}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{l+m+mi}{32}\PYG{p}{;} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+      \PYG{k}{if} \PYG{p}{((}\PYG{l+m+mi}{1} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{i}\PYG{p}{)} \PYG{o}{\PYGZgt{}} \PYG{n}{\PYGZus{}size}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+        \PYG{n}{size} \PYG{o}{=} \PYG{l+m+mi}{1} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{i}\PYG{p}{;}
+        \PYG{k}{break}\PYG{p}{;}
+      \PYG{p}{\PYGZcb{}}
+    \PYG{p}{\PYGZcb{}}
+
+    \PYG{n}{tree} \PYG{o}{=} \PYG{k}{new} \PYG{n}{Node}\PYG{o}{*} \PYG{p}{[}\PYG{l+m+mi}{2} \PYG{o}{*} \PYG{n}{size} \PYG{o}{+} \PYG{l+m+mi}{5}\PYG{p}{];}
+
+    \PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i} \PYG{o}{=} \PYG{n}{size}\PYG{p}{;} \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{l+m+mi}{2} \PYG{o}{*} \PYG{n}{size}\PYG{p}{;} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+      \PYG{n}{tree}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]} \PYG{o}{=} \PYG{k}{new} \PYG{n}{Node} \PYG{p}{(}\PYG{n}{i} \PYG{o}{\PYGZhy{}} \PYG{n}{size}\PYG{p}{,} \PYG{n}{initial}\PYG{p}{);}
+    \PYG{p}{\PYGZcb{}}
+
+    \PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i} \PYG{o}{=} \PYG{n}{size} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{;} \PYG{n}{i} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i}\PYG{o}{\PYGZhy{}\PYGZhy{}}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+      \PYG{n}{tree}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]} \PYG{o}{=} \PYG{k}{new} \PYG{n}{Node} \PYG{p}{(}\PYG{n}{tree}\PYG{p}{[}\PYG{l+m+mi}{2} \PYG{o}{*} \PYG{n}{i}\PYG{p}{],} \PYG{n}{tree}\PYG{p}{[}\PYG{l+m+mi}{2} \PYG{o}{*} \PYG{n}{i} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{]);}
+    \PYG{p}{\PYGZcb{}}
+
+    \PYG{n}{roots} \PYG{o}{=} \PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{Node}\PYG{o}{*\PYGZgt{}} \PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{tree}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]);}
+  \PYG{p}{\PYGZcb{}}
+
+  \PYG{k+kt}{void} \PYG{n}{set} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{position}\PYG{p}{,} \PYG{n}{T} \PYG{n}{\PYGZus{}value}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{n}{tree}\PYG{p}{[}\PYG{n}{size} \PYG{o}{+} \PYG{n}{position}\PYG{p}{]} \PYG{o}{=} \PYG{k}{new} \PYG{n}{Node} \PYG{p}{(}\PYG{n}{position}\PYG{p}{,} \PYG{n}{\PYGZus{}value}\PYG{p}{);}
+    \PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i} \PYG{o}{=} \PYG{p}{(}\PYG{n}{size} \PYG{o}{+} \PYG{n}{position}\PYG{p}{)} \PYG{o}{/} \PYG{l+m+mi}{2}\PYG{p}{;} \PYG{n}{i} \PYG{o}{\PYGZgt{}=} \PYG{l+m+mi}{1}\PYG{p}{;} \PYG{n}{i} \PYG{o}{/=} \PYG{l+m+mi}{2}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+      \PYG{n}{tree}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]} \PYG{o}{=} \PYG{k}{new} \PYG{n}{Node} \PYG{p}{(}\PYG{n}{tree}\PYG{p}{[}\PYG{l+m+mi}{2} \PYG{o}{*} \PYG{n}{i}\PYG{p}{],} \PYG{n}{tree}\PYG{p}{[}\PYG{l+m+mi}{2} \PYG{o}{*} \PYG{n}{i} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{]);}
+    \PYG{p}{\PYGZcb{}}
+    \PYG{n}{roots}\PYG{p}{.}\PYG{n}{push\PYGZus{}back}\PYG{p}{(}\PYG{n}{tree}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]);}
+  \PYG{p}{\PYGZcb{}}
+
+  \PYG{k+kt}{int} \PYG{n}{last\PYGZus{}revision} \PYG{p}{()} \PYG{p}{\PYGZob{}}
+    \PYG{k}{return} \PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)} \PYG{n}{roots}\PYG{p}{.}\PYG{n}{size}\PYG{p}{()} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{;}
+  \PYG{p}{\PYGZcb{}}
+
+  \PYG{n}{T} \PYG{n}{query} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{qleft}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{qright}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{revision}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{k}{return} \PYG{n}{roots}\PYG{p}{[}\PYG{n}{revision}\PYG{p}{]}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{query}\PYG{p}{(}\PYG{n}{qleft}\PYG{p}{,} \PYG{n}{qright}\PYG{p}{);}
+  \PYG{p}{\PYGZcb{}}
+
+  \PYG{n}{T} \PYG{n}{query} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{qleft}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{qright}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{k}{return} \PYG{n}{roots}\PYG{p}{[}\PYG{n}{last\PYGZus{}revision}\PYG{p}{()]}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{query}\PYG{p}{(}\PYG{n}{qleft}\PYG{p}{,} \PYG{n}{qright}\PYG{p}{);}
+  \PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{};}
+\end{Verbatim}

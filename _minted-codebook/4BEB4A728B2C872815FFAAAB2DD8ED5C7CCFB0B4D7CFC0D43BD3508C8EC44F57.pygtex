@@ -1,0 +1,100 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{class} \PYG{n+nc}{AutoNode} \PYG{p}{\PYGZob{}}
+ \PYG{k}{private}\PYG{o}{:}
+  \PYG{n}{map}\PYG{o}{\PYGZlt{}} \PYG{k+kt}{char}\PYG{p}{,} \PYG{n}{AutoNode} \PYG{o}{*} \PYG{o}{\PYGZgt{}} \PYG{n}{nxt\PYGZus{}char}\PYG{p}{;}  \PYG{c+c1}{// Map is faster than hashtable and unsorted arrays}
+ \PYG{k}{public}\PYG{o}{:}
+  \PYG{k+kt}{int} \PYG{n}{len}\PYG{p}{;} \PYG{c+c1}{//Length of longest suffix in equivalence class.}
+  \PYG{n}{AutoNode} \PYG{o}{*}\PYG{n}{suf}\PYG{p}{;}
+  \PYG{k+kt}{bool} \PYG{n+nf}{has\PYGZus{}nxt}\PYG{p}{(}\PYG{k+kt}{char} \PYG{n}{c}\PYG{p}{)} \PYG{k}{const} \PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{n}{nxt\PYGZus{}char}\PYG{p}{.}\PYG{n}{count}\PYG{p}{(}\PYG{n}{c}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+  \PYG{n}{AutoNode} \PYG{o}{*}\PYG{n+nf}{nxt}\PYG{p}{(}\PYG{k+kt}{char} \PYG{n}{c}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{k}{if} \PYG{p}{(}\PYG{o}{!}\PYG{n}{has\PYGZus{}nxt}\PYG{p}{(}\PYG{n}{c}\PYG{p}{))}
+			\PYG{k}{return} \PYG{n+nb}{NULL}\PYG{p}{;}
+    \PYG{k}{return} \PYG{n}{nxt\PYGZus{}char}\PYG{p}{[}\PYG{n}{c}\PYG{p}{];}
+  \PYG{p}{\PYGZcb{}}
+  \PYG{k+kt}{void} \PYG{n+nf}{set\PYGZus{}nxt}\PYG{p}{(}\PYG{k+kt}{char} \PYG{n}{c}\PYG{p}{,} \PYG{n}{AutoNode} \PYG{o}{*}\PYG{n}{node}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+		\PYG{n}{nxt\PYGZus{}char}\PYG{p}{[}\PYG{n}{c}\PYG{p}{]} \PYG{o}{=} \PYG{n}{node}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+  \PYG{n}{AutoNode} \PYG{o}{*}\PYG{n+nf}{split}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{new\PYGZus{}len}\PYG{p}{,} \PYG{k+kt}{char} \PYG{n}{c}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{n}{AutoNode} \PYG{o}{*}\PYG{n}{new\PYGZus{}n} \PYG{o}{=} \PYG{k}{new} \PYG{n}{AutoNode}\PYG{p}{;}
+    \PYG{n}{new\PYGZus{}n}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{nxt\PYGZus{}char} \PYG{o}{=} \PYG{n}{nxt\PYGZus{}char}\PYG{p}{;}
+    \PYG{n}{new\PYGZus{}n}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{len} \PYG{o}{=} \PYG{n}{new\PYGZus{}len}\PYG{p}{;}
+    \PYG{n}{new\PYGZus{}n}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{suf} \PYG{o}{=} \PYG{n}{suf}\PYG{p}{;}
+    \PYG{n}{suf} \PYG{o}{=} \PYG{n}{new\PYGZus{}n}\PYG{p}{;}
+    \PYG{k}{return} \PYG{n}{new\PYGZus{}n}\PYG{p}{;}
+  \PYG{p}{\PYGZcb{}}
+  \PYG{c+c1}{// Extra functions for matching and counting}
+  \PYG{n}{AutoNode} \PYG{o}{*}\PYG{n+nf}{lower\PYGZus{}depth}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{depth}\PYG{p}{)} \PYG{p}{\PYGZob{}} \PYG{c+c1}{//move to longest suffix of current with a maximum length of depth.}
+    \PYG{k}{if} \PYG{p}{(}\PYG{n}{suf}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{len} \PYG{o}{\PYGZgt{}=} \PYG{n}{depth}\PYG{p}{)}
+			\PYG{k}{return} \PYG{n}{suf}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{lower\PYGZus{}depth}\PYG{p}{(}\PYG{n}{depth}\PYG{p}{);}
+    \PYG{k}{return} \PYG{k}{this}\PYG{p}{;}
+  \PYG{p}{\PYGZcb{}}
+  \PYG{n}{AutoNode} \PYG{o}{*}\PYG{n+nf}{walk}\PYG{p}{(}\PYG{k+kt}{char} \PYG{n}{c}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{depth}\PYG{p}{,} \PYG{k+kt}{int} \PYG{o}{\PYGZam{}}\PYG{n}{match\PYGZus{}len}\PYG{p}{)} \PYG{p}{\PYGZob{}} \PYG{c+c1}{//move to longest suffix of walked path that is a substring}
+    \PYG{n}{match\PYGZus{}len} \PYG{o}{=} \PYG{n}{min}\PYG{p}{(}\PYG{n}{match\PYGZus{}len}\PYG{p}{,} \PYG{n}{len}\PYG{p}{);}									\PYG{c+c1}{//includes depth limit(needed for finding matches)}
+    \PYG{k}{if} \PYG{p}{(}\PYG{n}{has\PYGZus{}nxt}\PYG{p}{(}\PYG{n}{c}\PYG{p}{))} \PYG{p}{\PYGZob{}}																	\PYG{c+c1}{//as suffixes are in classes match\PYGZus{}len must be tracte eternally}
+      \PYG{o}{++}\PYG{n}{match\PYGZus{}len}\PYG{p}{;}
+      \PYG{k}{return} \PYG{n}{nxt}\PYG{p}{(}\PYG{n}{c}\PYG{p}{)}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{lower\PYGZus{}depth}\PYG{p}{(}\PYG{n}{depth}\PYG{p}{);}
+    \PYG{p}{\PYGZcb{}}
+    \PYG{k}{if} \PYG{p}{(}\PYG{n}{suf}\PYG{p}{)}
+			\PYG{k}{return} \PYG{n}{suf}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{walk}\PYG{p}{(}\PYG{n}{c}\PYG{p}{,} \PYG{n}{depth}\PYG{p}{,} \PYG{n}{match\PYGZus{}len}\PYG{p}{);}
+    \PYG{k}{return} \PYG{k}{this}\PYG{p}{;}
+  \PYG{p}{\PYGZcb{}}
+  \PYG{k+kt}{int} \PYG{n}{paths\PYGZus{}to\PYGZus{}end} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+  \PYG{k+kt}{void} \PYG{n+nf}{set\PYGZus{}as\PYGZus{}end}\PYG{p}{()} \PYG{p}{\PYGZob{}} \PYG{c+c1}{//All suffixes of current node are marked as ending nodes.}
+    \PYG{n}{paths\PYGZus{}to\PYGZus{}end} \PYG{o}{=} \PYG{l+m+mi}{1}\PYG{p}{;}
+    \PYG{k}{if} \PYG{p}{(}\PYG{n}{suf}\PYG{p}{)} \PYG{n}{suf}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{set\PYGZus{}as\PYGZus{}end}\PYG{p}{();}
+  \PYG{p}{\PYGZcb{}}
+  \PYG{k+kt}{bool} \PYG{n}{vis} \PYG{o}{=} \PYG{n+nb}{false}\PYG{p}{;}
+  \PYG{k+kt}{void} \PYG{n+nf}{calc\PYGZus{}paths\PYGZus{}to\PYGZus{}end}\PYG{p}{()} \PYG{p}{\PYGZob{}} 	\PYG{c+c1}{//Call ONCE from ROOT. For each node calculates number of ways to reach an end node.}
+    \PYG{k}{if} \PYG{p}{(}\PYG{o}{!}\PYG{n}{vis}\PYG{p}{)} \PYG{p}{\PYGZob{}}							 	\PYG{c+c1}{//paths\PYGZus{}to\PYGZus{}end is ocurence count for any strings in current suffix equivalence class.}
+      \PYG{n}{vis} \PYG{o}{=} \PYG{n+nb}{true}\PYG{p}{;}
+      \PYG{k}{for} \PYG{p}{(}\PYG{k}{auto} \PYG{n+nl}{cur} \PYG{p}{:} \PYG{n}{nxt\PYGZus{}char}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+        \PYG{n}{cur}\PYG{p}{.}\PYG{n}{second}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{calc\PYGZus{}paths\PYGZus{}to\PYGZus{}end}\PYG{p}{();}
+        \PYG{n}{paths\PYGZus{}to\PYGZus{}end} \PYG{o}{+=} \PYG{n}{cur}\PYG{p}{.}\PYG{n}{second}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{paths\PYGZus{}to\PYGZus{}end}\PYG{p}{;}
+      \PYG{p}{\PYGZcb{}}
+    \PYG{p}{\PYGZcb{}}
+  \PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{};}
+\PYG{k}{struct} \PYG{n}{SufAutomaton} \PYG{p}{\PYGZob{}}
+  \PYG{n}{AutoNode} \PYG{o}{*}\PYG{n}{last}\PYG{p}{;}
+  \PYG{n}{AutoNode} \PYG{o}{*}\PYG{n}{root}\PYG{p}{;}
+  \PYG{k+kt}{void} \PYG{n+nf}{extend}\PYG{p}{(}\PYG{k+kt}{char} \PYG{n}{new\PYGZus{}c}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{n}{AutoNode} \PYG{o}{*}\PYG{n}{new\PYGZus{}end} \PYG{o}{=} \PYG{k}{new} \PYG{n}{AutoNode}\PYG{p}{;}  \PYG{c+c1}{// The equivalence class containing the whole new string}
+    \PYG{n}{new\PYGZus{}end}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{len} \PYG{o}{=} \PYG{n}{last}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{len} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{;}
+    \PYG{n}{AutoNode} \PYG{o}{*}\PYG{n}{suf\PYGZus{}w\PYGZus{}nxt} \PYG{o}{=} \PYG{n}{last}\PYG{p}{;}                        \PYG{c+c1}{// The whole old string class}
+    \PYG{k}{while} \PYG{p}{(}\PYG{n}{suf\PYGZus{}w\PYGZus{}nxt} \PYG{o}{\PYGZam{}\PYGZam{}} \PYG{o}{!}\PYG{n}{suf\PYGZus{}w\PYGZus{}nxt}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{has\PYGZus{}nxt}\PYG{p}{(}\PYG{n}{new\PYGZus{}c}\PYG{p}{))} \PYG{p}{\PYGZob{}}  \PYG{c+c1}{// is turned into the longest suffix which}
+                                                       \PYG{c+c1}{// can be turned into a substring of old state}
+                                                       \PYG{c+c1}{// by appending new\PYGZus{}c}
+      \PYG{n}{suf\PYGZus{}w\PYGZus{}nxt}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{set\PYGZus{}nxt}\PYG{p}{(}\PYG{n}{new\PYGZus{}c}\PYG{p}{,} \PYG{n}{new\PYGZus{}end}\PYG{p}{);}
+      \PYG{n}{suf\PYGZus{}w\PYGZus{}nxt} \PYG{o}{=} \PYG{n}{suf\PYGZus{}w\PYGZus{}nxt}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{suf}\PYG{p}{;}
+    \PYG{p}{\PYGZcb{}}
+    \PYG{k}{if} \PYG{p}{(}\PYG{o}{!}\PYG{n}{suf\PYGZus{}w\PYGZus{}nxt}\PYG{p}{)} \PYG{p}{\PYGZob{}}  \PYG{c+c1}{// The new character isn\PYGZsq{}t part of the old string}
+      \PYG{n}{new\PYGZus{}end}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{suf} \PYG{o}{=} \PYG{n}{root}\PYG{p}{;}
+    \PYG{p}{\PYGZcb{}} \PYG{k}{else} \PYG{p}{\PYGZob{}}
+      \PYG{n}{AutoNode} \PYG{o}{*}\PYG{n}{max\PYGZus{}sbstr} \PYG{o}{=} \PYG{n}{suf\PYGZus{}w\PYGZus{}nxt}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{nxt}\PYG{p}{(}\PYG{n}{new\PYGZus{}c}\PYG{p}{);}  \PYG{c+c1}{// Equivalence class containing longest}
+                                                    \PYG{c+c1}{// substring which is a suffix of the new state.}
+      \PYG{k}{if} \PYG{p}{(}\PYG{n}{suf\PYGZus{}w\PYGZus{}nxt}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{len} \PYG{o}{+} \PYG{l+m+mi}{1} \PYG{o}{==} \PYG{n}{max\PYGZus{}sbstr}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{len}\PYG{p}{)} \PYG{p}{\PYGZob{}} \PYG{c+c1}{// Check whether splitting is needed}
+        \PYG{n}{new\PYGZus{}end}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{suf} \PYG{o}{=} \PYG{n}{max\PYGZus{}sbstr}\PYG{p}{;}
+      \PYG{p}{\PYGZcb{}} \PYG{k}{else} \PYG{p}{\PYGZob{}}
+        \PYG{n}{AutoNode} \PYG{o}{*}\PYG{n}{eq\PYGZus{}sbstr} \PYG{o}{=} \PYG{n}{max\PYGZus{}sbstr}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{split}\PYG{p}{(}\PYG{n}{suf\PYGZus{}w\PYGZus{}nxt}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{len} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{new\PYGZus{}c}\PYG{p}{);}
+        \PYG{n}{new\PYGZus{}end}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{suf} \PYG{o}{=} \PYG{n}{eq\PYGZus{}sbstr}\PYG{p}{;}
+        \PYG{c+c1}{// Make suffixes of suf\PYGZus{}w\PYGZus{}nxt point to eq\PYGZus{}sbstr instead of mox\PYGZus{}sbstr}
+        \PYG{n}{AutoNode} \PYG{o}{*}\PYG{n}{w\PYGZus{}edge\PYGZus{}to\PYGZus{}eq\PYGZus{}sbstr} \PYG{o}{=} \PYG{n}{suf\PYGZus{}w\PYGZus{}nxt}\PYG{p}{;}
+        \PYG{k}{while} \PYG{p}{(}\PYG{n}{w\PYGZus{}edge\PYGZus{}to\PYGZus{}eq\PYGZus{}sbstr} \PYG{o}{!=} \PYG{l+m+mi}{0} \PYG{o}{\PYGZam{}\PYGZam{}} \PYG{n}{w\PYGZus{}edge\PYGZus{}to\PYGZus{}eq\PYGZus{}sbstr}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{nxt}\PYG{p}{(}\PYG{n}{new\PYGZus{}c}\PYG{p}{)} \PYG{o}{==} \PYG{n}{max\PYGZus{}sbstr}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+          \PYG{n}{w\PYGZus{}edge\PYGZus{}to\PYGZus{}eq\PYGZus{}sbstr}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{set\PYGZus{}nxt}\PYG{p}{(}\PYG{n}{new\PYGZus{}c}\PYG{p}{,} \PYG{n}{eq\PYGZus{}sbstr}\PYG{p}{);}
+          \PYG{n}{w\PYGZus{}edge\PYGZus{}to\PYGZus{}eq\PYGZus{}sbstr} \PYG{o}{=} \PYG{n}{w\PYGZus{}edge\PYGZus{}to\PYGZus{}eq\PYGZus{}sbstr}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{suf}\PYG{p}{;}
+        \PYG{p}{\PYGZcb{}}
+      \PYG{p}{\PYGZcb{}}
+    \PYG{p}{\PYGZcb{}}
+    \PYG{n}{last} \PYG{o}{=} \PYG{n}{new\PYGZus{}end}\PYG{p}{;}
+  \PYG{p}{\PYGZcb{}}
+  \PYG{n}{SufAutomaton}\PYG{p}{(}\PYG{n}{string} \PYG{n}{to\PYGZus{}suffix}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+    \PYG{n}{root} \PYG{o}{=} \PYG{k}{new} \PYG{n}{AutoNode}\PYG{p}{;}
+    \PYG{n}{root}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{len} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+    \PYG{n}{root}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{suf} \PYG{o}{=} \PYG{n+nb}{NULL}\PYG{p}{;}
+    \PYG{n}{last} \PYG{o}{=} \PYG{n}{root}\PYG{p}{;}
+    \PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{char} \PYG{n+nl}{c} \PYG{p}{:} \PYG{n}{to\PYGZus{}suffix}\PYG{p}{)} \PYG{n}{extend}\PYG{p}{(}\PYG{n}{c}\PYG{p}{);}
+  \PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{};}
+\end{Verbatim}
