@@ -4,7 +4,7 @@ using namespace std;
 
 typedef long long               ll;
 
-//!escape \section{Min cost max flow O($\text{flow} \cdot n^2$)}
+//!escape \section{Min Cost Max Flow with succesive dijkstra O($\text{flow} \cdot n^2$)}
 
 //!begin_codebook
 const int nmax=1055;
@@ -17,8 +17,8 @@ int prev_node[nmax];
 ll node_flow[nmax];
 bool visited[nmax];
 ll tot_cost, tot_flow; //output
-void min_cost_max_flow(){
-	tot_cost=0;
+void min_cost_max_flow(){ //incase of negative edges have to add Bellman-Ford that is run once. 
+	tot_cost=0;							//Does not work with negative cycles.
 	tot_flow=0;
 	ll sink_pot=0;
 	while(true){
@@ -29,7 +29,7 @@ void min_cost_max_flow(){
 		min_dist[0]=0;
 		node_flow[0]=inf;
 		int min_node;
-		while(true){
+		while(true){ //Use Dijkstra to calculate potentials
 			int min_node=v;
 			for(int i=0; i<v; ++i){
 				if((!visited[i]) && min_dist[i]<min_dist[min_node]){
@@ -51,8 +51,8 @@ void min_cost_max_flow(){
 		if(min_dist[v-1]==inf){
 			break;
 		}
-		for(int i=0; i<v; ++i){
-			for(int j=0; j<v; ++j){
+		for(int i=0; i<v; ++i){ 	//Apply potentials to edge costs.
+			for(int j=0; j<v; ++j){ //Found path from source to sink becomes 0 cost.
 				if(cost[i][j]!=inf){
 					cost[i][j]+=min_dist[i];
 					cost[i][j]-=min_dist[j];
@@ -63,7 +63,7 @@ void min_cost_max_flow(){
 		tot_flow+=node_flow[v-1];
 		tot_cost+=sink_pot*node_flow[v-1];
 		int cur=v-1;
-		while(cur!=0){
+		while(cur!=0){ //Backtrack along found path that now has 0 cost.
 			rem_flow[prev_node[cur]][cur]-=node_flow[v-1];
 			rem_flow[cur][prev_node[cur]]+=node_flow[v-1];
 			cost[cur][prev_node[cur]]=0;

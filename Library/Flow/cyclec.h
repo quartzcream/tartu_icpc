@@ -5,7 +5,8 @@
 #include<algorithm>
 using namespace std;
 
-
+//!escape \section{Min Cost Max Flow with Cycle Cancelling O($\text{flow} \cdot nm$)}
+//!begin_codebook
 struct Network {
 	struct Node;
 	
@@ -142,5 +143,6 @@ struct Network {
 	}
 	
 };
+//!end_codebook
 //OMLEND: Min-Cost Flow with Cycle Cancelling
 //----------------------------------------------------------------
