@@ -65,20 +65,6 @@ struct MaxFlow{
     int add_edge(int u, int v, ll c, ll rc = 0){
         return add_edge(Edge(u,v,c,rc));
     }
-    void group_edges(){
-        map<pair<int,int>,vector<Edge> > edge_groups;
-        for(auto edge: edges)
-            if(edge.u != edge.v)
-                edge_groups[edge.id()].push_back(edge);
-        vector<Edge> grouped_edges;
-        for(auto group: edge_groups){
-            Edge main_edge = group.second[0];
-            for(int i = 1; i < group.second.size(); ++i)
-                main_edge.join(group.second[i]);
-            grouped_edges.push_back(main_edge);
-        }
-        edges = grouped_edges;
-    }
     vector<int> now,lvl;
     void prep(){
         int max_id = max(source,sink);
@@ -92,8 +78,10 @@ struct MaxFlow{
             auto flow = make_shared<ll>(0);
             adj[edge.u].push_back(edge.v);
             cap[edge.u].push_back(FlowTracker(edge.c,edge.rc,flow,0));
-            adj[edge.v].push_back(edge.u);
-            cap[edge.v].push_back(FlowTracker(edge.c,edge.rc,flow,1));
+            if(edge.u != edge.v){
+                adj[edge.v].push_back(edge.u);
+                cap[edge.v].push_back(FlowTracker(edge.c,edge.rc,flow,1));
+            }
             assert(cap[edge.u].back() == edge.c);
             edge.flow = flow;
         }
@@ -131,7 +119,7 @@ struct MaxFlow{
         }
         return 0;
     }
-    ll calc(){
+    ll calc_max_flow(){
         prep();
         ll ans = 0;
         while(dinic_bfs()){
@@ -143,21 +131,24 @@ struct MaxFlow{
         }
         return ans;
     }
+    ll flow_on_edge(int edge_index){
+        assert(edge_index < edges.size());
+        return *edges[edge_index].flow;
+    }
 };
 int main(){
     int n,m;
     cin >> n >> m;
-    auto mf = MaxFlow(1,n); // arguments source and sink, memory usage O(largest node index), sink doesn't need to be last
+    auto mf = MaxFlow(1,n); // arguments source and sink, memory usage O(largest node index + input size), sink doesn't need to be last index
     int edge_index;
     for(int i = 0; i < m; ++i){
         int a,b,c;
         cin >> a >> b >> c;
-        //undirected edge is a pair of edges (a,b,c,0) and (a,b,0,c)
+        //undirected edge is a pair of edges (a,b,c) and (b,a,c) or alternatively (a,b,c,0) and (a,b,0,c)
         edge_index = mf.add_edge(a,b,c,c); //store edge index if care about flow value
     }
-    mf.group_edges(); // small auxillary to remove multiple edges, only use this if we need to know TOTAL FLOW ONLY
-    cout << mf.calc() << '\n';
-    //cout << *mf.edges[edge_index].flow << '\n'; // ONLY if group_edges() WAS NOT CALLED
+    cout << mf.calc_max_flow() << '\n';
+    //cout << mf.flow_on_edge(edge_index) << '\n'; // return flow on this edge
 }
 //!end_codebook
     // solves http://www.spoj.com/problems/FASTFLOW/
