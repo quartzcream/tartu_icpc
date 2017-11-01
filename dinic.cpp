@@ -9,20 +9,7 @@ struct MaxFlow{
         int u,v;
         ll c,rc;
         shared_ptr<ll> flow;
-        pair<int,int> id() const {
-            return make_pair(min(u,v),max(u,v));
-        }
         Edge(int _u, int _v, ll _c, ll _rc = 0):u(_u),v(_v),c(_c),rc(_rc){
-        }
-        void join(const Edge &t){
-            if(u == t.u){
-                c += t.c;
-                rc += t.rc;
-            }
-            else{
-                c += t.rc;
-                rc += t.c;
-            }
         }
     };
     struct FlowTracker{
@@ -57,13 +44,9 @@ struct MaxFlow{
     MaxFlow(int _source, int _sink):source(_source),sink(_sink){
         assert(source != sink);
     }
-    int add_edge(Edge e){
-        edges.push_back(e);
-        return edges.size()-1;
-
-    }
     int add_edge(int u, int v, ll c, ll rc = 0){
-        return add_edge(Edge(u,v,c,rc));
+        edges.push_back(Edge(u,v,c,rc));
+        return edges.size()-1;
     }
     vector<int> now,lvl;
     void prep(){
@@ -144,8 +127,8 @@ int main(){
     for(int i = 0; i < m; ++i){
         int a,b,c;
         cin >> a >> b >> c;
-        //undirected edge is a pair of edges (a,b,c) and (b,a,c) or alternatively (a,b,c,0) and (a,b,0,c)
-        edge_index = mf.add_edge(a,b,c,c); //store edge index if care about flow value
+        //mf.add_edge(a,b,c); // for directed edges
+        edge_index = mf.add_edge(a,b,c,c); // store edge index if care about flow value
     }
     cout << mf.calc_max_flow() << '\n';
     //cout << mf.flow_on_edge(edge_index) << '\n'; // return flow on this edge
