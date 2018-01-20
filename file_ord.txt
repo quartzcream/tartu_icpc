@@ -1,6 +1,7 @@
 header.tex
 ordered_set.cpp
 triangle.cpp
+convex_hull.cpp
 Library/Geometry/vector2d.h
 Library/Geometry/segment2d.h
 dinic.cpp
@@ -13,4 +14,5 @@ HLD.cpp
 persistent.cpp
 Library/Math/poly.h
 Library/Math/mod.h
+rabbin_miller.cpp
 footer.tex
