@@ -9,6 +9,7 @@
 \usepackage{graphicx}
 \usepackage{pdfpages}
 \usepackage{forloop}
+\usepackage{hyperref}
 
 \numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
 \numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
@@ -578,20 +579,7 @@ struct MaxFlow{
         int u,v;
         ll c,rc;
         shared_ptr<ll> flow;
-        pair<int,int> id() const {
-            return make_pair(min(u,v),max(u,v));
-        }
         Edge(int _u, int _v, ll _c, ll _rc = 0):u(_u),v(_v),c(_c),rc(_rc){
-        }
-        void join(const Edge &t){
-            if(u == t.u){
-                c += t.c;
-                rc += t.rc;
-            }
-            else{
-                c += t.rc;
-                rc += t.c;
-            }
         }
     };
     struct FlowTracker{
@@ -626,27 +614,9 @@ struct MaxFlow{
     MaxFlow(int _source, int _sink):source(_source),sink(_sink){
         assert(source != sink);
     }
-    int add_edge(Edge e){
-        edges.push_back(e);
-        return edges.size()-1;
-
-    }
     int add_edge(int u, int v, ll c, ll rc = 0){
-        return add_edge(Edge(u,v,c,rc));
-    }
-    void group_edges(){
-        map<pair<int,int>,vector<Edge> > edge_groups;
-        for(auto edge: edges)
-            if(edge.u != edge.v)
-                edge_groups[edge.id()].push_back(edge);
-        vector<Edge> grouped_edges;
-        for(auto group: edge_groups){
-            Edge main_edge = group.second[0];
-            for(int i = 1; i < group.second.size(); ++i)
-                main_edge.join(group.second[i]);
-            grouped_edges.push_back(main_edge);
-        }
-        edges = grouped_edges;
+        edges.push_back(Edge(u,v,c,rc));
+        return edges.size()-1;
     }
     vector<int> now,lvl;
     void prep(){
@@ -661,8 +631,10 @@ struct MaxFlow{
             auto flow = make_shared<ll>(0);
             adj[edge.u].push_back(edge.v);
             cap[edge.u].push_back(FlowTracker(edge.c,edge.rc,flow,0));
-            adj[edge.v].push_back(edge.u);
-            cap[edge.v].push_back(FlowTracker(edge.c,edge.rc,flow,1));
+            if(edge.u != edge.v){
+                adj[edge.v].push_back(edge.u);
+                cap[edge.v].push_back(FlowTracker(edge.c,edge.rc,flow,1));
+            }
             assert(cap[edge.u].back() == edge.c);
             edge.flow = flow;
         }
@@ -700,7 +672,7 @@ struct MaxFlow{
         }
         return 0;
     }
-    ll calc(){
+    ll calc_max_flow(){
         prep();
         ll ans = 0;
         while(dinic_bfs()){
@@ -712,21 +684,24 @@ struct MaxFlow{
         }
         return ans;
     }
+    ll flow_on_edge(int edge_index){
+        assert(edge_index < edges.size());
+        return *edges[edge_index].flow;
+    }
 };
 int main(){
     int n,m;
     cin >> n >> m;
-    auto mf = MaxFlow(1,n); // arguments source and sink, memory usage O(largest node index), sink doesn't need to be last
+    auto mf = MaxFlow(1,n); // arguments source and sink, memory usage O(largest node index + input size), sink doesn't need to be last index
     int edge_index;
     for(int i = 0; i < m; ++i){
         int a,b,c;
         cin >> a >> b >> c;
-        //undirected edge is a pair of edges (a,b,c,0) and (a,b,0,c)
-        edge_index = mf.add_edge(a,b,c,c); //store edge index if care about flow value
+        //mf.add_edge(a,b,c); // for directed edges
+        edge_index = mf.add_edge(a,b,c,c); // store edge index if care about flow value
     }
-    mf.group_edges(); // small auxillary to remove multiple edges, only use this if we need to know TOTAL FLOW ONLY
-    cout << mf.calc() << '\n';
-    //cout << *mf.edges[edge_index].flow << '\n'; // ONLY if group_edges() WAS NOT CALLED
+    cout << mf.calc_max_flow() << '\n';
+    //cout << mf.flow_on_edge(edge_index) << '\n'; // return flow on this edge
 }
 \end{minted}
 \section{Min Cost Max Flow with succesive dijkstra $\mathcal{O}(\text{flow} \cdot n^2)$}
@@ -741,12 +716,34 @@ int prev_node[nmax];
 ll node_flow[nmax];
 bool visited[nmax];
 ll tot_cost, tot_flow; //output
-void min_cost_max_flow(){ //incase of negative edges have to add Bellman-Ford that is run once. 
+void min_cost_max_flow(){ 
 	tot_cost=0;							//Does not work with negative cycles.
 	tot_flow=0;
 	ll sink_pot=0;
+  min_dist[0] = 0;
+  for(int i=1; i<=v; ++i){ //incase of no negative edges Bellman-Ford can be removed.
+    min_dist[i]=inf;
+  }
+  for(int i=0; i<v-1; ++i){
+    for(int j=0; j<v; ++j){
+      for(int k=0; k<v; ++k){
+        if(rem_flow[j][k] > 0 && min_dist[j]+cost[j][k] < min_dist[k]){
+          min_dist[k] = min_dist[j]+cost[j][k];
+        }
+      }
+    }
+  }
+  for(int i=0; i<v; ++i){ 	//Apply potentials to edge costs.
+    for(int j=0; j<v; ++j){
+      if(cost[i][j]!=inf){
+        cost[i][j]+=min_dist[i];
+        cost[i][j]-=min_dist[j];
+      }
+    }
+  }
+  sink_pot+=min_dist[v-1]; //Bellman-Ford end.
 	while(true){
-		for(int i=0; i<=v; ++i){
+		for(int i=0; i<=v; ++i){ //node after sink is used as start value for Dijkstra.
 			min_dist[i]=inf;
 			visited[i]=false;
 		}

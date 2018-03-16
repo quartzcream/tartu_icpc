@@ -17,12 +17,34 @@ int prev_node[nmax];
 ll node_flow[nmax];
 bool visited[nmax];
 ll tot_cost, tot_flow; //output
-void min_cost_max_flow(){ //incase of negative edges have to add Bellman-Ford that is run once. 
+void min_cost_max_flow(){ 
 	tot_cost=0;							//Does not work with negative cycles.
 	tot_flow=0;
 	ll sink_pot=0;
+  min_dist[0] = 0;
+  for(int i=1; i<=v; ++i){ //incase of no negative edges Bellman-Ford can be removed.
+    min_dist[i]=inf;
+  }
+  for(int i=0; i<v-1; ++i){
+    for(int j=0; j<v; ++j){
+      for(int k=0; k<v; ++k){
+        if(rem_flow[j][k] > 0 && min_dist[j]+cost[j][k] < min_dist[k]){
+          min_dist[k] = min_dist[j]+cost[j][k];
+        }
+      }
+    }
+  }
+  for(int i=0; i<v; ++i){ 	//Apply potentials to edge costs.
+    for(int j=0; j<v; ++j){
+      if(cost[i][j]!=inf){
+        cost[i][j]+=min_dist[i];
+        cost[i][j]-=min_dist[j];
+      }
+    }
+  }
+  sink_pot+=min_dist[v-1]; //Bellman-Ford end.
 	while(true){
-		for(int i=0; i<=v; ++i){
+		for(int i=0; i<=v; ++i){ //node after sink is used as start value for Dijkstra.
 			min_dist[i]=inf;
 			visited[i]=false;
 		}
@@ -75,7 +97,7 @@ void min_cost_max_flow(){ //incase of negative edges have to add Bellman-Ford th
 	}
 }
 //!end_codebook
-//for http://www.spoj.com/problems/GREED/
+//  http://www.spoj.com/problems/GREED/
 int main(){
 	cin>>t;
 	for(int i=0; i<t; ++i){
