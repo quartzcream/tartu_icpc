@@ -70,16 +70,16 @@ set clipboard=unnamedplus
 \end{minted}
 \section{crc.sh}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, texcomments=true, mathescape=true]{bash}
-#!/bin/env bash
+#!/bin/envbash
 starts=($(sed '/^\s*$/d' $1 | grep -n "//\!start" | cut -f1 -d:))
 finishes=($(sed '/^\s*$/d' $1 | grep -n "//\!finish" | cut -f1 -d:))
 for ((i=0;i<${#starts[@]};i++)); do
   for j in `seq 10 10 $((finishes[$i]-starts[$i]+8))`; do
     sed '/^\s*$/d' $1 | head -$((finishes[$i]-1)) | tail -$((finishes[$i]-starts[$i]-1)) | \
       head -$j | tr -d '[[:space:]]' | cksum | cut -f1 -d ' ' | tail -c 4
-  done
-  echo
-done "//check last number in each block$ \hfill %298 $
+  done #whistespaces don't matter
+  echo #there shouldn't be any comments in the checked range
+done #//check last number in each block
 \end{minted}
 \section{gcc ordered set}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
