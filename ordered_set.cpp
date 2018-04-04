@@ -1,9 +1,11 @@
-#include<bits/stdc++.h>
-using namespace std;
-
 //!escape \section{gcc ordered set}
 
 //!begin_codebook
+//!start
+#include<bits/stdc++.h>
+typedef long long   ll;
+using namespace std;
+
 #include<ext/pb_ds/assoc_container.hpp>
 #include<ext/pb_ds/tree_policy.hpp>
 using namespace __gnu_pbds;
@@ -17,4 +19,5 @@ int main(){
 	cout << *cur.find_by_order(0) << endl; // the 0-th smallest number in the set(0-based)
 	cout << *cur.find_by_order(1) << endl; // the 1-th smallest number in the set(0-based)
 }
+//!finish
 //!end_codebook

@@ -8,6 +8,7 @@ const double M_PI = acos(-1.0);
 //!escape \section{Convex polygon algorithms}
 
 //!begin_codebook
+//!start
 ll dot(const pair< int, int > &v1, const pair< int, int > &v2) {
   return (ll)v1.first * v2.first + (ll)v1.second * v2.second;
 }
@@ -20,7 +21,9 @@ ll dist_sq(const pair< int, int > &p1, const pair< int, int > &p2) {
   return (ll)(p2.first - p1.first) * (p2.first - p1.first) +
          (ll)(p2.second - p1.second) * (p2.second - p1.second);
 }
+//!finish
 
+//!start
 struct Hull {
   vector< pair< pair< int, int >, pair< int, int > > > hull;
   vector< pair< pair< int, int >, pair< int, int > > >::iterator upper_begin;
@@ -53,6 +56,8 @@ struct Hull {
     extend_hull(vert.rbegin(), vert.rend());
     upper_begin = hull.begin() + diff;
   }
+//!finish
+//!start
   bool contains(pair< int, int > p) {  // O(log(n))
     if (p < hull.front().first || p > upper_begin->first) return false;
     {
@@ -81,6 +86,8 @@ struct Hull {
     }
     return true;
   }
+//!finish
+//!start
   template < typename T >  // The function can have only one local min and max and may be constant
                            // only at min and max.
   vector< pair< pair< int, int >, pair< int, int > > >::iterator max(
@@ -136,6 +143,8 @@ struct Hull {
     }
     return best;
   }
+//!finish
+//!start
   vector< pair< pair< int, int >, pair< int, int > > >::iterator closest(
       pair< int, int >
           p) {  // p can't be internal(can be on border), hull must have atleast 3 points
@@ -166,6 +175,8 @@ struct Hull {
           return res;
         }));
   }
+//!finish
+//!start
   pair< int, int > forw_tan(pair< int, int > p) {  // can't be internal or on border
     const pair< pair< int, int >, pair< int, int > > &ref_p = hull.front();  // O(log(n))
     auto best_seg = max(function< double(const pair< pair< int, int >, pair< int, int > > &) >(
@@ -179,6 +190,7 @@ struct Hull {
         }));
     return best_seg->first;
   }
+//!finish
   //!end_codebook
   pair< int, int > back_tan(pair< int, int > p) {  // can't be internal or on border
     const pair< pair< int, int >, pair< int, int > > &ref_p = hull.front();  // O(log(n))
@@ -194,6 +206,7 @@ struct Hull {
     return best_seg->first;
   }
   //!begin_codebook
+//!start
   vector< pair< pair< int, int >, pair< int, int > > >::iterator max_in_dir(
       pair< int, int > v) {  // first is the ans. O(log(n))
     return max(function< ll(const pair< pair< int, int >, pair< int, int > > &) >(
@@ -201,6 +214,8 @@ struct Hull {
   }
   pair< vector< pair< pair< int, int >, pair< int, int > > >::iterator,
         vector< pair< pair< int, int >, pair< int, int > > >::iterator >
+//!finish
+//!start
   intersections(pair< pair< int, int >, pair< int, int > > line) {  // O(log(n))
     int x = line.second.first - line.first.first;
     int y = line.second.second - line.first.second;
@@ -241,6 +256,8 @@ struct Hull {
     }
     return make_pair(it_r1, it_r2);
   }
+//!finish
+//!start
   pair< pair< int, int >, pair< int, int > > diameter() {  // O(n)
     pair< pair< int, int >, pair< int, int > > res;
     ll dia_sq = 0;
@@ -285,6 +302,7 @@ struct Hull {
     return res;
   }
 };
+//!finish
 //!end_codebook
 
 bool intersects(pair< pair< int, int >, pair< int, int > > line,

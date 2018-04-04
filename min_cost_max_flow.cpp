@@ -7,6 +7,7 @@ typedef long long               ll;
 //!escape \section{Min Cost Max Flow with succesive dijkstra $\mathcal{O}(\text{flow} \cdot n^2)$}
 
 //!begin_codebook
+//!start
 const int nmax=1055;
 const ll inf=1e14;
 int t, n, v; //0 is source, v-1 sink
@@ -22,6 +23,8 @@ void min_cost_max_flow(){
 	tot_flow=0;
 	ll sink_pot=0;
   min_dist[0] = 0;
+//!finish
+//!start
   for(int i=1; i<=v; ++i){ //incase of no negative edges Bellman-Ford can be removed.
     min_dist[i]=inf;
   }
@@ -43,6 +46,8 @@ void min_cost_max_flow(){
     }
   }
   sink_pot+=min_dist[v-1]; //Bellman-Ford end.
+//!finish
+//!start
 	while(true){
 		for(int i=0; i<=v; ++i){ //node after sink is used as start value for Dijkstra.
 			min_dist[i]=inf;
@@ -96,6 +101,7 @@ void min_cost_max_flow(){
 		}
 	}
 }
+//!finish
 //!end_codebook
 //  http://www.spoj.com/problems/GREED/
 int main(){

@@ -8,6 +8,7 @@ const int mod = 1e9 + 7;
 //!escape \section{Triangle centers}
 
 //!begin_codebook
+//!start
 const double min_delta = 1e-13;
 const double coord_max = 1e6;
 typedef complex < double > point;
@@ -20,6 +21,8 @@ bool collinear(){
 	double ang = M_PI/2-abs(abs(arg(sp))-M_PI/2); //positive angle with the real line
 	return ang < min_delta;
 }
+//!finish
+//!start
 point circum_center(){
 	if(collinear())
 		return point(NAN,NAN);
@@ -40,6 +43,8 @@ point circum_center(){
 	// cartesian coordinates of the circumcenter
 	return c_A * A + c_B * B + c_C * C;
 }
+//!finish
+//!start
 point centroid(){ //center of mass
 	return (A + B + C) / 3.0;
 }
@@ -51,6 +56,8 @@ point nine_point_circle_center(){ //euler line
 	point O = circum_center();
 	return O + 1.5 * (centroid() - O);
 };
+//!finish
+//!start
 point in_center(){
 	if(collinear())
 		return point(NAN,NAN);
@@ -68,6 +75,7 @@ point in_center(){
 	// cartesian coordinates of the incenter
 	return c_A * A + c_B * B + c_C * C;
 }
+//!finish
 //!end_codebook
 
 int main(){

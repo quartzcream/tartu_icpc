@@ -6,6 +6,7 @@ using namespace std;
 //!escape \section{Templated HLD $\mathcal{O}(M(n) \log n)$ per query}
 
 //!begin_codebook
+//!start
 class dummy {
 public:
   dummy () {
@@ -21,6 +22,7 @@ public:
     cout << this << ' ' << left << ' ' << right << endl;
   }
 };
+//!finish
 
 /* T should be the type of the data stored in each vertex;
  * DS should be the underlying data structure that is used to peform the
@@ -31,6 +33,7 @@ public:
  * * void set (int index, T value) - set the value at index `index` to `value`
  * * T query (int left, int right) - return the "sum" of elements between left and right, inclusive.
  */
+//!start
 template<typename T, class DS>
 class HLD {
   int vertexc;
@@ -124,6 +127,7 @@ public:
 
     return aux.query(1, cur_id);
   }
+//!finish
 
   void print () {
     for (int i = 1; i <= vertexc; i++) {

@@ -5,6 +5,7 @@ typedef long long               ll;
 //!escape \section{Aho Corasick $\mathcal{O}(|\text{alpha}|\sum{\text{len}})$}
 
 //!begin_codebook
+//!start
 const int alpha_size=26;
 struct node{
 	node *nxt[alpha_size]; //May use other structures to move in trie
@@ -47,7 +48,9 @@ node *aho_corasick(vector<vector<char> > &dict){
 	}
 	return root;
 }
+//!finish
 //auxilary functions for searhing and counting
+//!start
 node *walk(node *cur, char c){ //longest prefix in dict that is suffix of walked string.
 	while(true){
 		if(cur->nxt[c])
@@ -58,6 +61,8 @@ node *walk(node *cur, char c){ //longest prefix in dict that is suffix of walked
 		cur = cur->suffix;
 	}
 }
+//!finish
+//!start
 void cnt_matches(node *root, vector<char> &match_in){
 	node *cur = root;
 	for(char c : match_in){
@@ -65,6 +70,8 @@ void cnt_matches(node *root, vector<char> &match_in){
 		++cur->cnt;
 	}
 }
+//!finish
+//!start
 void add_cnt(node *root){ //After counting matches propagete ONCE to suffixes for final counts
 	vector<node *> to_visit = {root};
 	for(int i=0; i<to_visit.size(); ++i){
@@ -79,6 +86,7 @@ void add_cnt(node *root){ //After counting matches propagete ONCE to suffixes fo
 		to_visit[i]->suffix->cnt += to_visit[i]->cnt;
 	}
 }
+//!finish
 //!end_codebook
 //http://codeforces.com/group/s3etJR5zZK/contest/212916/problem/4
 int main(){

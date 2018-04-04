@@ -5,6 +5,7 @@
 using namespace std;
 
 //!begin_codebook
+//!start
 struct Segment {
 	Vec a, b;
 	Vec d() {
@@ -121,6 +122,7 @@ long double getArea(vector<Segment> lines) {
 	}
 	return result;
 }
+//!finish
 //!end_codebook
 //OMLEND: 2D Segments
 //----------------------------------------------------------------

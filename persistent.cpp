@@ -19,6 +19,7 @@ struct sum {
 
 //!escape \section{Templated Persitent Segment Tree $\mathcal{O}(\log n)$ per query}
 //!begin_codebook
+//!start
 template<typename T, typename comp>
 class PersistentST {
   struct Node {
@@ -61,8 +62,7 @@ class PersistentST {
   Node **tree;
   vector<Node*> roots;
 public:
-  PersistentST () {
-  }
+  PersistentST () {}
 
   PersistentST (int _size, T initial) {
     for (int i = 0; i < 32; i++) {
@@ -105,4 +105,5 @@ public:
     return roots[last_revision()]->query(qleft, qright);
   }
 };
+//!finish
 //!end_codebook

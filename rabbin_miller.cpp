@@ -6,6 +6,7 @@ typedef unsigned long long ull;
 //!escape \section{Rabbin Miller prime check}
 
 //!begin_codebook
+//!start
 __int128 pow_mod(__int128 a, ll n, __int128 mod) {
   __int128 res = 1;
   for (ll i = 0; i < 64; ++i) {
@@ -37,6 +38,7 @@ bool is_prime(ll n) { //guaranteed for 64 bit numbers
   }
   return true;
 }
+//!finish
 //!end_codebook
 
 int main() {

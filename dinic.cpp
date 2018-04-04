@@ -2,6 +2,7 @@
 using namespace std;
 //!escape \section{Dinic}
 //!begin_codebook
+//!start
 struct MaxFlow{
     typedef long long ll;
     const ll INF = 1e18;
@@ -119,6 +120,7 @@ struct MaxFlow{
         return *edges[edge_index].flow;
     }
 };
+//!finish
 int main(){
     int n,m;
     cin >> n >> m;
@@ -127,11 +129,11 @@ int main(){
     for(int i = 0; i < m; ++i){
         int a,b,c;
         cin >> a >> b >> c;
-        //mf.add_edge(a,b,c); // for directed edges
+        //mf.add\_edge(a,b,c); // for directed edges
         edge_index = mf.add_edge(a,b,c,c); // store edge index if care about flow value
     }
     cout << mf.calc_max_flow() << '\n';
-    //cout << mf.flow_on_edge(edge_index) << '\n'; // return flow on this edge
+    //cout << mf.flow\_on\_edge(edge\_index) << endl; // return flow on this edge
 }
 //!end_codebook
     // solves http://www.spoj.com/problems/FASTFLOW/

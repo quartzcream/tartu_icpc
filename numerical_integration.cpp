@@ -2,6 +2,7 @@
 //!escape \section{Numerical integration with Simpson's rule}
 
 //!begin_codebook
+//!start
 //computing power = how many times function integrate gets called
 template<typename T>
 double simps(T f, double a, double b) {
@@ -14,5 +15,6 @@ double integrate(T f, double a, double b, double computing_power){
   if (computing_power < 1) return tot;
   return integrate(f,a,m,computing_power/2)+integrate(f,m,b,computing_power/2);
 }
+//!finish
 //!end_codebook
 

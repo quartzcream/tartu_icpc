@@ -2,9 +2,10 @@
 using namespace std;
 typedef long long ll;
 
-//!escape \section{Suffix automaton $O((n+q)\log(|\text{alpha}|))$}
+//!escape \section{Suffix automaton $\mathcal{O}((n+q)\log(|\text{alpha}|))$}
 
 //!begin_codebook
+//!start
 class AutoNode {
  private:
   map< char, AutoNode * > nxt_char;  // Map is faster than hashtable and unsorted arrays
@@ -38,7 +39,7 @@ class AutoNode {
   }
   AutoNode *walk(char c, int depth, int &match_len) { //move to longest suffix of walked path that is a substring
     match_len = min(match_len, len);									//includes depth limit(needed for finding matches)
-    if (has_nxt(c)) {																	//as suffixes are in classes match_len must be tracte eternally
+    if (has_nxt(c)) {																	//as suffixes are in classes match\_len must be tracked externally
       ++match_len;
       return nxt(c)->lower_depth(depth);
     }
@@ -53,7 +54,7 @@ class AutoNode {
   }
   bool vis = false;
   void calc_paths_to_end() { 	//Call ONCE from ROOT. For each node calculates number of ways to reach an end node.
-    if (!vis) {							 	//paths_to_end is ocurence count for any strings in current suffix equivalence class.
+    if (!vis) {							 	//paths\_to\_end is ocurence count for any strings in current suffix equivalence class.
       vis = true;
       for (auto cur : nxt_char) {
         cur.second->calc_paths_to_end();
@@ -71,7 +72,7 @@ struct SufAutomaton {
     AutoNode *suf_w_nxt = last;                        // The whole old string class
     while (suf_w_nxt && !suf_w_nxt->has_nxt(new_c)) {  // is turned into the longest suffix which
                                                        // can be turned into a substring of old state
-                                                       // by appending new_c
+                                                       // by appending new\_c
       suf_w_nxt->set_nxt(new_c, new_end);
       suf_w_nxt = suf_w_nxt->suf;
     }
@@ -85,7 +86,7 @@ struct SufAutomaton {
       } else {
         AutoNode *eq_sbstr = max_sbstr->split(suf_w_nxt->len + 1, new_c);
         new_end->suf = eq_sbstr;
-        // Make suffixes of suf_w_nxt point to eq_sbstr instead of mox_sbstr
+        // Make suffixes of suf\_w\_nxt point to eq\_sbstr instead of mox\_sbstr
         AutoNode *w_edge_to_eq_sbstr = suf_w_nxt;
         while (w_edge_to_eq_sbstr != 0 && w_edge_to_eq_sbstr->nxt(new_c) == max_sbstr) {
           w_edge_to_eq_sbstr->set_nxt(new_c, eq_sbstr);
@@ -103,6 +104,7 @@ struct SufAutomaton {
     for (char c : to_suffix) extend(c);
   }
 };
+//!finish
 //!end_codebook
 
 // http://codeforces.com/contest/235/problem/C

@@ -8,6 +8,7 @@ using namespace std;
 
 //!escape \section{FFT $\mathcal{O}(n\log(n))$}
 //!begin_codebook
+//!start
 //Assumes a is a power of two
 vector<complex<long double> > fastFourierTransform(vector<complex<long double> > a, bool inverse) {
 	const long double PI = acos(-1.0L);
@@ -116,6 +117,7 @@ struct Polynomial {
 		return result;
 	}
 };
+//!finish
 //!end_codebook
 
 ostream& operator<<(ostream& out, Polynomial f) {

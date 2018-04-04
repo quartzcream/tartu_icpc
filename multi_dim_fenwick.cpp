@@ -12,6 +12,7 @@ const int nmax = 1e5 + 5;
 //!escape \section{Templated multi dimensional BIT $\mathcal{O}(\log(n)^\text{dim})$}
 
 //!begin_codebook
+//!start
 // Fully overloaded any dimensional BIT, use any type for coordinates, elements, return_value.
 // Includes coordinate compression.
 template < typename elem_t, typename coord_t, coord_t n_inf, typename ret_t >
@@ -71,6 +72,7 @@ struct wrapped {
 		cerr << 'u' << endl;
 	}
 };
+//!finish
 int main() {
   // retun type should be same as type inside wrapped
   BIT< BIT< wrapped< ll >, int, INT_MIN, ll >, int, INT_MIN, ll > fenwick;
