@@ -8,4 +8,7 @@ set clipboard=unnamedplus
 
 "colorscheme elflord
 "setxkbmap -option caps:escape
+"valgrind --vgdb-error=0 ./a <inp &
+"gdb a
+"target remote | vgdb
 "!end_codebook
