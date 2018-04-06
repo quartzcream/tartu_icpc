@@ -18,4 +18,7 @@ Library/Math/poly.h
 Library/Math/mod.h
 rabbin_miller.cpp
 numerical_integration.cpp
+2sat.cpp
+treap.cpp
+lazyst.cpp
 footer.tex
