@@ -4,7 +4,7 @@
 using namespace std;
 
 
-//!escape \section{2-Sat $\mathcal{O}(n)$}
+//!escape \section{2-Sat $\mathcal{O}(n)$ and SCC $\mathcal{O}(n)$}
 //!begin_codebook
 //!start
 struct Graph {
@@ -52,6 +52,8 @@ struct Graph {
             dfs(next, result, explr);
         result.push_back(pos);
     }
+//!finish
+//!start
 	vector<vector<int> > scc(){ // tested on https://www.hackerearth.com/practice/algorithms/graphs/strongly-connected-components/practice-problems/algorithm/a-walk-to-remember-qualifier2/
         vector<int> order = topsort();
 		reverse(order.begin(),order.end());
@@ -71,8 +73,10 @@ struct Graph {
 
 //Solution for: http://codeforces.com/group/PjzGiggT71/contest/221700/problem/C
 int main() {
+//!end_codebook
     ios_base::sync_with_stdio(false);
     cin.tie(0);
+//!begin_codebook
     
     int n, m;
     cin >> n >> m;

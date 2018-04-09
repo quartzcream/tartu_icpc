@@ -1814,7 +1814,7 @@ bool is_prime(ll n) { //guaranteed for 64 bit numbers$ \hfill #406 $
   return true;
 }@ $ \hfill %043 $ @
 \end{minted}
-\section{2-Sat $\mathcal{O}(n)$}
+\section{2-Sat $\mathcal{O}(n)$ and SCC $\mathcal{O}(n)$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct Graph {
     int n;
@@ -1854,12 +1854,24 @@ struct Graph {
         for(auto next : conn[pos])
             dfs(next, result, explr);
         result.push_back(pos);
-    }
-};@ $ \hfill %956 $ @
+    }@ $ \hfill %603 $ @
+	vector<vector<int> > scc(){ // tested on https://www.hackerearth.com/practice/algorithms/graphs/strongly-connected-components/practice-problems/algorithm/a-walk-to-remember-qualifier2/
+        vector<int> order = topsort();
+		reverse(order.begin(),order.end());
+        vector<bool> explr(n, false);
+		vector<vector<int> > results;
+		for(auto it = order.rbegin(); it != order.rend(); ++it){
+			vector<int> component;
+			_topsort_dfs(*it,component,explr,conn);
+			sort(component.begin(),component.end());
+			results.push_back(component);@ $ \hfill #522 $ @
+		}
+		sort(results.begin(),results.end());
+		return results;
+	}
+};@ $ \hfill %362 $ @
 //Solution for: http://codeforces.com/group/PjzGiggT71/contest/221700/problem/C
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(0);
     int n, m;
     cin >> n >> m;
     Graph g(2*m);
