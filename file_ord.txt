@@ -12,6 +12,8 @@ suffix_automaton.cpp
 dinic.cpp
 min_cost_max_flow.cpp
 Library/Flow/cyclec.h
+bridges.cpp
+2sat.cpp
 lazyst.cpp
 persistent.cpp
 HLD.cpp
@@ -20,6 +22,5 @@ treap.cpp
 Library/Math/poly.h
 Library/Math/mod.h
 rabbin_miller.cpp
-2sat.cpp
 comb_cheatsheet.tex
 footer.tex

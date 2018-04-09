@@ -1141,6 +1141,167 @@ struct Network {
 	}
 };@ $ \hfill %455 $ @
 \end{minted}
+\section{Bridges $\mathcal{O}(n)$}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+struct vert;
+struct edge{
+  bool exists = true;
+  vert *dest;
+  edge *rev;
+  edge(vert *_dest) : dest(_dest){
+    rev = NULL;
+  }
+  vert &operator*(){
+    return *dest;@ $ \hfill #955 $ @
+  }
+  vert *operator->(){
+    return dest;
+  }
+  bool is_bridge();
+};
+struct vert{
+  deque<edge> con;
+  int val = 0;
+  int seen;@ $ \hfill #336 $ @
+  int dfs(int upd, edge *ban){ //handles multiple edges
+    if(!val){
+      val = upd;
+      seen = val;
+      for(edge &nxt : con){
+        if(nxt.exists  && (&nxt) != ban)
+          seen = min(seen, nxt->dfs(upd+1, nxt.rev));
+      }
+    }
+    return seen;@ $ \hfill #232 $ @
+  }@ $ \hfill %273 $ @
+  void remove_adj_bridges(){
+    for(edge &nxt : con){
+      if(nxt.is_bridge())
+        nxt.exists = false;
+    }
+  }@ $ \hfill %106 $ @
+  int cnt_adj_bridges(){
+    int res = 0;
+    for(edge &nxt : con)
+      res += nxt.is_bridge();
+    return res;
+  }@ $ \hfill %056 $ @
+};
+bool edge::is_bridge(){
+  return exists && (dest->seen > rev->dest->val || dest->val < rev->dest->seen);
+}@ $ \hfill %223 $ @
+vert graph[nmax];
+int main(){ //Mechanics Practice BRIDGES
+  int n, m;
+  cin>>n>>m;
+  for(int i=0; i<m; ++i){
+    int u, v;
+    scanf("%d %d", &u, &v);
+    graph[u].con.emplace_back(graph+v);
+    graph[v].con.emplace_back(graph+u);
+    graph[u].con.back().rev = &graph[v].con.back();
+    graph[v].con.back().rev = &graph[u].con.back();
+  }
+  graph[1].dfs(1, NULL);
+  int res = 0;
+  for(int i=1; i<=n; ++i)
+    res += graph[i].cnt_adj_bridges();
+  cout<<res/2<<endl;
+}
+\end{minted}
+\section{2-Sat $\mathcal{O}(n)$ and SCC $\mathcal{O}(n)$}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+struct Graph {
+    int n;
+    vector<vector<int> > conn;
+    Graph(int nsize) {
+        n = nsize;
+        conn.resize(n);
+    }
+    void add_edge(int u, int v) {
+        conn[u].push_back(v);
+    }@ $ \hfill #078 $ @
+    void _topsort_dfs(int pos, vector<int> &result, vector<bool> &explr, vector<vector<int> > &revconn) {
+        if(explr[pos])
+            return;
+        explr[pos] = true;
+        for(auto next : revconn[pos])
+            _topsort_dfs(next, result, explr, revconn);
+        result.push_back(pos);
+    }
+    vector<int> topsort() {
+        vector<vector<int> > revconn(n);@ $ \hfill #346 $ @
+        for(int u = 0; u < n; u++) {
+            for(auto v : conn[u])
+                revconn[v].push_back(u);
+        }
+        vector<int> result;
+        vector<bool> explr(n, false);
+        for(int i=0; i < n; i++)
+            _topsort_dfs(i, result, explr, revconn);
+        reverse(result.begin(), result.end());
+        return result;@ $ \hfill #991 $ @
+    }
+    void dfs(int pos, vector<int> &result, vector<bool> &explr) {
+        if(explr[pos])
+            return;
+        explr[pos] = true;
+        for(auto next : conn[pos])
+            dfs(next, result, explr);
+        result.push_back(pos);
+    }@ $ \hfill %603 $ @
+	vector<vector<int> > scc(){ // tested on https://www.hackerearth.com/practice/algorithms/graphs/strongly-connected-components/practice-problems/algorithm/a-walk-to-remember-qualifier2/
+        vector<int> order = topsort();
+		reverse(order.begin(),order.end());
+        vector<bool> explr(n, false);
+		vector<vector<int> > results;
+		for(auto it = order.rbegin(); it != order.rend(); ++it){
+			vector<int> component;
+			_topsort_dfs(*it,component,explr,conn);
+			sort(component.begin(),component.end());
+			results.push_back(component);@ $ \hfill #522 $ @
+		}
+		sort(results.begin(),results.end());
+		return results;
+	}
+};@ $ \hfill %362 $ @
+//Solution for: http://codeforces.com/group/PjzGiggT71/contest/221700/problem/C
+int main() {
+    int n, m;
+    cin >> n >> m;
+    Graph g(2*m);
+    for(int i=0; i<n; i++) {
+        int a, sa, b, sb;
+        cin >> a >> sa >> b >> sb;
+        a--, b--;
+        g.add_edge(2*a + 1 - sa, 2*b + sb);
+        g.add_edge(2*b + 1 - sb, 2*a + sa);
+    }
+    vector<int> state(2*m, 0);
+    {
+        vector<int> order = g.topsort();
+        vector<bool> explr(2*m, false);
+        for(auto u : order) {
+            vector<int> traversed;
+            g.dfs(u, traversed, explr);
+            if(traversed.size() > 0 && !state[traversed[0]^1]) {
+                for(auto c : traversed)
+                    state[c] = 1;
+            }
+        }
+    }
+    for(int i=0; i < m; i++) {
+        if(state[2*i] == state[2*i+1]) {
+            cout << "IMPOSSIBLE\n";
+            return 0;
+        }
+    }
+    for(int i=0; i < m; i++) {
+        cout << state[2*i+1] << '\n';
+    }
+    return 0;
+}
+\end{minted}
 \section{Lazy Segment Tree $\mathcal{O}(\log n)$ per query}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct SegmentTree {
@@ -1813,99 +1974,6 @@ bool is_prime(ll n) { //guaranteed for 64 bit numbers$ \hfill #406 $
   }
   return true;
 }@ $ \hfill %043 $ @
-\end{minted}
-\section{2-Sat $\mathcal{O}(n)$ and SCC $\mathcal{O}(n)$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-struct Graph {
-    int n;
-    vector<vector<int> > conn;
-    Graph(int nsize) {
-        n = nsize;
-        conn.resize(n);
-    }
-    void add_edge(int u, int v) {
-        conn[u].push_back(v);
-    }@ $ \hfill #078 $ @
-    void _topsort_dfs(int pos, vector<int> &result, vector<bool> &explr, vector<vector<int> > &revconn) {
-        if(explr[pos])
-            return;
-        explr[pos] = true;
-        for(auto next : revconn[pos])
-            _topsort_dfs(next, result, explr, revconn);
-        result.push_back(pos);
-    }
-    vector<int> topsort() {
-        vector<vector<int> > revconn(n);@ $ \hfill #346 $ @
-        for(int u = 0; u < n; u++) {
-            for(auto v : conn[u])
-                revconn[v].push_back(u);
-        }
-        vector<int> result;
-        vector<bool> explr(n, false);
-        for(int i=0; i < n; i++)
-            _topsort_dfs(i, result, explr, revconn);
-        reverse(result.begin(), result.end());
-        return result;@ $ \hfill #991 $ @
-    }
-    void dfs(int pos, vector<int> &result, vector<bool> &explr) {
-        if(explr[pos])
-            return;
-        explr[pos] = true;
-        for(auto next : conn[pos])
-            dfs(next, result, explr);
-        result.push_back(pos);
-    }@ $ \hfill %603 $ @
-	vector<vector<int> > scc(){ // tested on https://www.hackerearth.com/practice/algorithms/graphs/strongly-connected-components/practice-problems/algorithm/a-walk-to-remember-qualifier2/
-        vector<int> order = topsort();
-		reverse(order.begin(),order.end());
-        vector<bool> explr(n, false);
-		vector<vector<int> > results;
-		for(auto it = order.rbegin(); it != order.rend(); ++it){
-			vector<int> component;
-			_topsort_dfs(*it,component,explr,conn);
-			sort(component.begin(),component.end());
-			results.push_back(component);@ $ \hfill #522 $ @
-		}
-		sort(results.begin(),results.end());
-		return results;
-	}
-};@ $ \hfill %362 $ @
-//Solution for: http://codeforces.com/group/PjzGiggT71/contest/221700/problem/C
-int main() {
-    int n, m;
-    cin >> n >> m;
-    Graph g(2*m);
-    for(int i=0; i<n; i++) {
-        int a, sa, b, sb;
-        cin >> a >> sa >> b >> sb;
-        a--, b--;
-        g.add_edge(2*a + 1 - sa, 2*b + sb);
-        g.add_edge(2*b + 1 - sb, 2*a + sa);
-    }
-    vector<int> state(2*m, 0);
-    {
-        vector<int> order = g.topsort();
-        vector<bool> explr(2*m, false);
-        for(auto u : order) {
-            vector<int> traversed;
-            g.dfs(u, traversed, explr);
-            if(traversed.size() > 0 && !state[traversed[0]^1]) {
-                for(auto c : traversed)
-                    state[c] = 1;
-            }
-        }
-    }
-    for(int i=0; i < m; i++) {
-        if(state[2*i] == state[2*i+1]) {
-            cout << "IMPOSSIBLE\n";
-            return 0;
-        }
-    }
-    for(int i=0; i < m; i++) {
-        cout << state[2*i+1] << '\n';
-    }
-    return 0;
-}
 \end{minted}
 \includegraphics[scale=0.9]{comb.pdf}
 \end{document}
