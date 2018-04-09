@@ -11,12 +11,14 @@
 \usepackage{pdfpages}
 \usepackage{forloop}
 \usepackage{hyperref}
+\usepackage{pdflscape}
+\usepackage{multicol}
 
 \numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
 \numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
 \numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
 
-\usepackage[hmarginratio=1:1,top=15mm, bottom=5mm, columnsep=0mm, left=7mm, right=3mm]{geometry} % Document margins
+\usepackage[hmarginratio=1:1,top=15mm, bottom=0mm, columnsep=0mm, left=15mm, right=5mm]{geometry} % Document margins
 \usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
 \usepackage{booktabs} % Horizontal rules in tables
 
@@ -49,6 +51,10 @@
 \relpenalty=\maxdimen
 
 \begin{document}
+
+\begin{landscape}
+\setlength\columnsep{10mm}
+\begin{multicols*}{2}
 
 \begin{center}
 	\smallskip

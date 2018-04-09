@@ -10,10 +10,12 @@
 \usepackage{pdfpages}
 \usepackage{forloop}
 \usepackage{hyperref}
+\usepackage{pdflscape}
+\usepackage{multicol}
 \numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
 \numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
 \numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
-\usepackage[hmarginratio=1:1,top=15mm, bottom=5mm, columnsep=0mm, left=7mm, right=3mm]{geometry} % Document margins
+\usepackage[hmarginratio=1:1,top=15mm, bottom=0mm, columnsep=0mm, left=15mm, right=5mm]{geometry} % Document margins
 \usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
 \usepackage{booktabs} % Horizontal rules in tables
 \usepackage{enumitem} % Customized lists
@@ -37,6 +39,9 @@
 \binoppenalty=\maxdimen
 \relpenalty=\maxdimen
 \begin{document}
+\begin{landscape}
+\setlength\columnsep{10mm}
+\begin{multicols*}{2}
 \begin{center}
 	\smallskip
 	\Large{\textbf{University of Tartu ICPC Team Notebook (2017-2018)}}
@@ -101,7 +106,7 @@ double integrate(T f, double a, double b, double computing_power){
   double m = (a+b)/2;
   double l = simps(f,a,m), r = simps(f,m,b), tot=simps(f,a,b);
   if (computing_power < 1) return tot;@ $ \hfill #300 $ @
-  return integrate(f,a,m,computing_power/2)+integrate(f,m,b,computing_power/2);
+  return integrate(f, a, m, computing_power/2) + integrate(f, m, b, computing_power/2);
 }@ $ \hfill %821 $ @
 \end{minted}
 \section{Triangle centers}
@@ -822,9 +827,9 @@ struct MaxFlow{
     }
     vector<int> now,lvl;
     void prep(){
-        int max_id = max(source,sink);
+        int max_id = max(source, sink);
         for(auto edge : edges)@ $ \hfill #328 $ @
-            max_id = max(max_id,max(edge.u,edge.v));
+            max_id = max(max_id, max(edge.u, edge.v));
         adj.resize(max_id+1);
         cap.resize(max_id+1);
         now.resize(max_id+1);
@@ -832,10 +837,10 @@ struct MaxFlow{
         for(auto &edge : edges){
             auto flow = make_shared<ll>(0);
             adj[edge.u].push_back(edge.v);
-            cap[edge.u].push_back(FlowTracker(edge.c,edge.rc,flow,0));
+            cap[edge.u].push_back(FlowTracker(edge.c, edge.rc, flow, 0));
             if(edge.u != edge.v){@ $ \hfill #717 $ @
                 adj[edge.v].push_back(edge.u);
-                cap[edge.v].push_back(FlowTracker(edge.c,edge.rc,flow,1));
+                cap[edge.v].push_back(FlowTracker(edge.c, edge.rc, flow, 1));
             }
             assert(cap[edge.u].back() == edge.c);
             edge.flow = flow;
@@ -1140,6 +1145,142 @@ struct Network {
 		return result;
 	}
 };@ $ \hfill %455 $ @
+\end{minted}
+\section{DMST $\mathcal{O}(E \log V)$}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+struct EdgeDesc{
+  int from, to, w;
+};
+struct DMST{
+  struct Node;
+  struct Edge{
+    Node *from;
+    Node *tar;
+    int w;
+    bool inc;@ $ \hfill #186 $ @
+  };
+  struct Circle{
+    bool vis = false;
+    vector<Edge *> contents;
+    void clean(int idx);
+  };
+  const static greater<pair<ll, Edge *> > comp; //Can use inline static since C++17
+  static vector<Circle> to_process;
+  static bool no_dmst;
+  static Node *root;@ $ \hfill #119 $ @
+  struct Node{
+    Node *par = NULL;
+    vector<pair<int, int> > out_cands; //Circ, edge idx
+    vector<pair<ll, Edge *> > con;
+    bool in_use = false;
+    ll w = 0; //extra to add to edges in con
+    Node *anc(){
+      if(!par)
+        return this;
+      while(par->par)@ $ \hfill #025 $ @
+        par = par->par;
+      return par;
+    }
+    void clean(){
+      if(!no_dmst){
+        in_use = false;
+        for(auto &cur : out_cands)
+          to_process[cur.first].clean(cur.second);
+      }
+    }@ $ \hfill #644 $ @
+    Node *con_to_root(){
+      if(anc() == root)
+        return root;
+      in_use = true;
+      Node *super = this; //Will become root or the first Node encountered in a loop.
+      while(super == this){
+        while(!con.empty() && con.front().second->tar->anc() == anc()){
+          pop_heap(con.begin(), con.end(), comp);
+          con.pop_back();
+        }@ $ \hfill #041 $ @
+        if(con.empty()){
+          no_dmst = true;
+          return root;
+        }
+        pop_heap(con.begin(), con.end(), comp);
+        auto nxt = con.back();
+        con.pop_back();
+        w = -nxt.first;
+        if(nxt.second->tar->in_use){ //anc() wouldn't change anything
+          super = nxt.second->tar->anc();@ $ \hfill #646 $ @
+          to_process.resize(to_process.size()+1);
+        } else {
+          super = nxt.second->tar->con_to_root();
+        }
+        if(super != root){
+          to_process.back().contents.push_back(nxt.second);
+          out_cands.emplace_back(to_process.size()-1, to_process.back().contents.size()-1);
+        } else { //Clean circles
+          nxt.second->inc = true;
+          nxt.second->from->clean();@ $ \hfill #576 $ @
+        }
+      }
+      if(super != root){ //we are some loops non first Node.
+        if(con.size() > super->con.size()){
+          swap(con, super->con); //Largest con in loop should not be copied.
+          swap(w, super->w);
+        }
+        for(auto cur : con){
+          super->con.emplace_back(cur.first - super->w + w, cur.second);
+          push_heap(super->con.begin(), super->con.end(), comp);@ $ \hfill #594 $ @
+        }
+      }
+      par = super; //root or anc() of first Node encountered in a loop
+      return super;
+    }
+  };
+  Node *cur_root;
+  vector<Node> graph;
+  vector<Edge> edges;
+  DMST(int n, vector<EdgeDesc> &desc, int r){ //Self loops and multiple edges are okay.$ \hfill #940 $
+    graph.resize(n);
+    cur_root = &graph[r];
+    for(auto &cur : desc) //Edges are reversed internally
+      edges.push_back(Edge{&graph[cur.to], &graph[cur.from], cur.w});
+    for(int i=0; i<desc.size(); ++i)
+      graph[desc[i].to].con.emplace_back(desc[i].w, &edges[i]);
+    for(int i=0; i<n; ++i)
+      make_heap(graph[i].con.begin(), graph[i].con.end(), comp);
+  }
+  bool find(){@ $ \hfill #362 $ @
+    root = cur_root;
+    no_dmst = false;
+    for(auto &cur : graph){
+      cur.con_to_root();
+      to_process.clear();
+      if(no_dmst) return false;
+    }
+    return true;
+  }@ $ \hfill %600 $ @
+  ll weight(){
+    ll res = 0;
+    for(auto &cur : edges){
+      if(cur.inc)
+        res += cur.w;
+    }
+    return res;
+  }@ $ \hfill %477 $ @
+};
+void DMST::Circle::clean(int idx){
+  if(!vis){
+    vis = true;
+    for(int i=0; i<contents.size(); ++i){
+      if(i != idx){
+        contents[i]->inc = true;
+        contents[i]->from->clean();
+      }
+    }@ $ \hfill #711 $ @
+  }
+}
+const greater<pair<ll, DMST::Edge *> > DMST::comp;
+vector<DMST::Circle> DMST::to_process;
+bool DMST::no_dmst;
+DMST::Node *DMST::root;@ $ \hfill %771 $ @
 \end{minted}
 \section{Bridges $\mathcal{O}(n)$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
@@ -1975,5 +2116,7 @@ bool is_prime(ll n) { //guaranteed for 64 bit numbers$ \hfill #406 $
   return true;
 }@ $ \hfill %043 $ @
 \end{minted}
+\end{multicols}
+\end{landscape}
 \includegraphics[scale=0.9]{comb.pdf}
 \end{document}

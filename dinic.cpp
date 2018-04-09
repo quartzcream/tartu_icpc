@@ -51,9 +51,9 @@ struct MaxFlow{
     }
     vector<int> now,lvl;
     void prep(){
-        int max_id = max(source,sink);
+        int max_id = max(source, sink);
         for(auto edge : edges)
-            max_id = max(max_id,max(edge.u,edge.v));
+            max_id = max(max_id, max(edge.u, edge.v));
         adj.resize(max_id+1);
         cap.resize(max_id+1);
         now.resize(max_id+1);
@@ -61,10 +61,10 @@ struct MaxFlow{
         for(auto &edge : edges){
             auto flow = make_shared<ll>(0);
             adj[edge.u].push_back(edge.v);
-            cap[edge.u].push_back(FlowTracker(edge.c,edge.rc,flow,0));
+            cap[edge.u].push_back(FlowTracker(edge.c, edge.rc, flow, 0));
             if(edge.u != edge.v){
                 adj[edge.v].push_back(edge.u);
-                cap[edge.v].push_back(FlowTracker(edge.c,edge.rc,flow,1));
+                cap[edge.v].push_back(FlowTracker(edge.c, edge.rc, flow, 1));
             }
             assert(cap[edge.u].back() == edge.c);
             edge.flow = flow;
