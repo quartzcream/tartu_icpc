@@ -52,6 +52,7 @@ syntax enable
 set clipboard=unnamedplus
 "colorscheme elflord
 "setxkbmap -option caps:escape
+"setxkbmap -option
 "valgrind --vgdb-error=0 ./a <inp &
 "gdb a
 "target remote | vgdb
@@ -87,6 +88,21 @@ int main(){
 	cout << *cur.find_by_order(0) << endl; // the 0-th smallest number in the set(0-based)
 	cout << *cur.find_by_order(1) << endl; // the 1-th smallest number in the set(0-based)
 }@ $ \hfill %626 $ @
+\end{minted}
+\section{Numerical integration with Simpson's rule}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+//computing power = how many times function integrate gets called
+template<typename T>
+double simps(T f, double a, double b) {
+  return (f(a) + 4*f((a+b)/2) + f(b))*(b-a)/6;
+}
+template<typename T>
+double integrate(T f, double a, double b, double computing_power){
+  double m = (a+b)/2;
+  double l = simps(f,a,m), r = simps(f,m,b), tot=simps(f,a,b);
+  if (computing_power < 1) return tot;@ $ \hfill #300 $ @
+  return integrate(f,a,m,computing_power/2)+integrate(f,m,b,computing_power/2);
+}@ $ \hfill %821 $ @
 \end{minted}
 \section{Triangle centers}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
@@ -150,6 +166,156 @@ point in_center(){
 	// cartesian coordinates of the incenter
 	return c_A * A + c_B * B + c_C * C;
 }@ $ \hfill %471 $ @
+\end{minted}
+\section{2D line segment}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+const long double PI = acos(-1.0L);
+struct Vec {
+	long double x, y;
+	Vec& operator-=(Vec r) {
+		x -= r.x, y -= r.y;
+		return *this;
+	}
+	Vec operator-(Vec r) {return Vec(*this) -= r;}
+	Vec& operator+=(Vec r) {
+		x += r.x, y += r.y;@ $ \hfill #054 $ @
+		return *this;
+	}
+	Vec operator+(Vec r) {return Vec(*this) += r;}
+	Vec operator-() {return {-x, -y};}
+	Vec& operator*=(long double r) {
+		x *= r, y *= r;
+		return *this;
+	}
+	Vec operator*(long double r) {return Vec(*this) *= r;}
+	Vec& operator/=(long double r) {@ $ \hfill #673 $ @
+		x /= r, y /= r;
+		return *this;
+	}
+	Vec operator/(long double r) {return Vec(*this) /= r;}
+	long double operator*(Vec r) {
+		return x * r.x + y * r.y;
+	}
+};
+ostream& operator<<(ostream& l, Vec r) {
+	return l << '(' << r.x << ", " << r.y << ')';@ $ \hfill #724 $ @
+}
+long double len(Vec a) {
+	return hypot(a.x, a.y);
+}
+long double cross(Vec l, Vec r) {
+	return l.x * r.y - l.y * r.x;
+}
+long double angle(Vec a) {
+	return fmod(atan2(a.y, a.x)+2*PI, 2*PI);
+}@ $ \hfill #872 $ @
+Vec normal(Vec a) {
+	return Vec({-a.y, a.x}) / len(a);
+}@ $ \hfill %654 $ @
+\end{minted}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+struct Segment {
+	Vec a, b;
+	Vec d() {
+		return b-a;
+	}
+};
+ostream& operator<<(ostream& l, Segment r) {
+	return l << r.a << '-' << r.b;
+}
+Vec intersection(Segment l, Segment r) {@ $ \hfill #355 $ @
+	Vec dl = l.d(), dr = r.d();
+	if(cross(dl, dr) == 0)
+		return {nanl(""), nanl("")};
+	long double h = cross(dr, l.a-r.a) / len(dr);
+	long double dh = cross(dr, dl) / len(dr);
+	return l.a + dl * (h / -dh);
+}
+//Returns the area bounded by halfplanes
+long double getArea(vector<Segment> lines) {
+	long double lowerbound = -HUGE_VALL, upperbound = HUGE_VALL;@ $ \hfill #009 $ @
+	vector<Segment> linesBySide[2];
+	for(auto line : lines) {
+		if(line.b.y == line.a.y) {
+			if(line.a.x < line.b.x) {
+				lowerbound = max(lowerbound, line.a.y);
+      } else {
+				upperbound = min(upperbound, line.a.y);
+      }
+		} else if(line.a.y < line.b.y) {
+			linesBySide[1].push_back(line);@ $ \hfill #597 $ @
+    } else {
+			linesBySide[0].push_back({line.b, line.a});
+    }
+	}
+	sort(linesBySide[0].begin(), linesBySide[0].end(), [](Segment l, Segment r) {
+		if(cross(l.d(), r.d()) == 0) return normal(l.d())*l.a > normal(r.d())*r.a;
+		return cross(l.d(), r.d()) < 0;
+	});
+	sort(linesBySide[1].begin(), linesBySide[1].end(), [](Segment l, Segment r) {
+		if(cross(l.d(), r.d()) == 0) return normal(l.d())*l.a < normal(r.d())*r.a;@ $ \hfill #681 $ @
+		return cross(l.d(), r.d()) > 0;
+	});
+	//Now find the application area of the lines and clean up redundant ones
+	vector<long double> applyStart[2];
+	for(int side = 0; side < 2; side++) {
+		vector<long double> &apply = applyStart[side];
+		vector<Segment> curLines;
+		for(auto line : linesBySide[side]) {
+			while(curLines.size() > 0) {
+				Segment other = curLines.back();@ $ \hfill #144 $ @
+				if(cross(line.d(), other.d()) != 0) {
+					long double start = intersection(line, other).y;
+					if(start > apply.back()) break;
+				}
+				curLines.pop_back();
+				apply.pop_back();
+			}
+			if(curLines.size() == 0) {
+				apply.push_back(-HUGE_VALL);
+      } else {@ $ \hfill #417 $ @
+				apply.push_back(intersection(line, curLines.back()).y);
+      }
+			curLines.push_back(line);
+		}
+		linesBySide[side] = curLines;
+	}
+	applyStart[0].push_back(HUGE_VALL);
+	applyStart[1].push_back(HUGE_VALL);
+	long double result = 0;
+	{@ $ \hfill #994 $ @
+		long double lb = -HUGE_VALL, ub;
+		for(int i=0, j=0; i < (int)linesBySide[0].size() && j < (int)linesBySide[1].size();lb = ub) {
+			ub = min(applyStart[0][i+1], applyStart[1][j+1]);
+			long double alb = lb, aub = ub;
+			Segment l0 = linesBySide[0][i], l1 = linesBySide[1][j];
+			if(cross(l1.d(), l0.d()) > 0) {
+				alb = max(alb, intersection(l0, l1).y);
+      } else if(cross(l1.d(), l0.d()) < 0) {
+				aub = min(aub, intersection(l0, l1).y);
+      }@ $ \hfill #591 $ @
+			alb = max(alb, lowerbound);
+			aub = min(aub, upperbound);
+			aub = max(aub, alb);
+			{
+				long double x1 = l0.a.x + (alb - l0.a.y) / l0.d().y * l0.d().x;
+				long double x2 = l0.a.x + (aub - l0.a.y) / l0.d().y * l0.d().x;
+				result -= (aub - alb) * (x1 + x2) / 2;
+			}
+			{
+				long double x1 = l1.a.x + (alb - l1.a.y) / l1.d().y * l1.d().x;@ $ \hfill #346 $ @
+				long double x2 = l1.a.x + (aub - l1.a.y) / l1.d().y * l1.d().x;
+				result += (aub - alb) * (x1 + x2) / 2;
+			}
+			if(applyStart[0][i+1] < applyStart[1][j+1]) {
+				i++;
+			} else {
+				j++;
+      }
+		}
+	}@ $ \hfill #348 $ @
+	return result;
+}@ $ \hfill %183 $ @
 \end{minted}
 \section{Convex polygon algorithms}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
@@ -408,155 +574,203 @@ struct Hull {
   }
 };@ $ \hfill %204 $ @
 \end{minted}
-\section{2D line segment}
+\section{Aho Corasick $\mathcal{O}(|\text{alpha}|\sum{\text{len}})$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-const long double PI = acos(-1.0L);
-struct Vec {
-	long double x, y;
-	Vec& operator-=(Vec r) {
-		x -= r.x, y -= r.y;
-		return *this;
+const int alpha_size=26;
+struct node{
+	node *nxt[alpha_size]; //May use other structures to move in trie
+	node *suffix;
+	node(){
+		memset(nxt, 0, alpha_size*sizeof(node *));
 	}
-	Vec operator-(Vec r) {return Vec(*this) -= r;}
-	Vec& operator+=(Vec r) {
-		x += r.x, y += r.y;@ $ \hfill #054 $ @
-		return *this;
-	}
-	Vec operator+(Vec r) {return Vec(*this) += r;}
-	Vec operator-() {return {-x, -y};}
-	Vec& operator*=(long double r) {
-		x *= r, y *= r;
-		return *this;
-	}
-	Vec operator*(long double r) {return Vec(*this) *= r;}
-	Vec& operator/=(long double r) {@ $ \hfill #673 $ @
-		x /= r, y /= r;
-		return *this;
-	}
-	Vec operator/(long double r) {return Vec(*this) /= r;}
-	long double operator*(Vec r) {
-		return x * r.x + y * r.y;
-	}
+	int cnt=0;
 };
-ostream& operator<<(ostream& l, Vec r) {
-	return l << '(' << r.x << ", " << r.y << ')';@ $ \hfill #724 $ @
-}
-long double len(Vec a) {
-	return hypot(a.x, a.y);
-}
-long double cross(Vec l, Vec r) {
-	return l.x * r.y - l.y * r.x;
-}
-long double angle(Vec a) {
-	return fmod(atan2(a.y, a.x)+2*PI, 2*PI);
-}@ $ \hfill #872 $ @
-Vec normal(Vec a) {
-	return Vec({-a.y, a.x}) / len(a);
-}@ $ \hfill %654 $ @
-\end{minted}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-struct Segment {
-	Vec a, b;
-	Vec d() {
-		return b-a;
-	}
-};
-ostream& operator<<(ostream& l, Segment r) {
-	return l << r.a << '-' << r.b;
-}
-Vec intersection(Segment l, Segment r) {@ $ \hfill #355 $ @
-	Vec dl = l.d(), dr = r.d();
-	if(cross(dl, dr) == 0)
-		return {nanl(""), nanl("")};
-	long double h = cross(dr, l.a-r.a) / len(dr);
-	long double dh = cross(dr, dl) / len(dr);
-	return l.a + dl * (h / -dh);
-}
-//Returns the area bounded by halfplanes
-long double getArea(vector<Segment> lines) {
-	long double lowerbound = -HUGE_VALL, upperbound = HUGE_VALL;@ $ \hfill #009 $ @
-	vector<Segment> linesBySide[2];
-	for(auto line : lines) {
-		if(line.b.y == line.a.y) {
-			if(line.a.x < line.b.x) {
-				lowerbound = max(lowerbound, line.a.y);
-      } else {
-				upperbound = min(upperbound, line.a.y);
-      }
-		} else if(line.a.y < line.b.y) {
-			linesBySide[1].push_back(line);@ $ \hfill #597 $ @
-    } else {
-			linesBySide[0].push_back({line.b, line.a});
-    }
-	}
-	sort(linesBySide[0].begin(), linesBySide[0].end(), [](Segment l, Segment r) {
-		if(cross(l.d(), r.d()) == 0) return normal(l.d())*l.a > normal(r.d())*r.a;
-		return cross(l.d(), r.d()) < 0;
-	});
-	sort(linesBySide[1].begin(), linesBySide[1].end(), [](Segment l, Segment r) {
-		if(cross(l.d(), r.d()) == 0) return normal(l.d())*l.a < normal(r.d())*r.a;@ $ \hfill #681 $ @
-		return cross(l.d(), r.d()) > 0;
-	});
-	//Now find the application area of the lines and clean up redundant ones
-	vector<long double> applyStart[2];
-	for(int side = 0; side < 2; side++) {
-		vector<long double> &apply = applyStart[side];
-		vector<Segment> curLines;
-		for(auto line : linesBySide[side]) {
-			while(curLines.size() > 0) {
-				Segment other = curLines.back();@ $ \hfill #144 $ @
-				if(cross(line.d(), other.d()) != 0) {
-					long double start = intersection(line, other).y;
-					if(start > apply.back()) break;
+node *aho_corasick(vector<vector<char> > &dict){@ $ \hfill #666 $ @
+	node *root= new node;
+	root->suffix = 0;
+	vector<pair<vector<char> *, node *> > cur_state;
+	for(vector<char> &s : dict)
+		cur_state.emplace_back(&s, root);
+	for(int i=0; !cur_state.empty(); ++i){
+		vector<pair<vector<char> *, node *> > nxt_state;
+		for(auto &cur : cur_state){
+			node *nxt=cur.second->nxt[(*cur.first)[i]];
+			if(nxt){@ $ \hfill #251 $ @
+				cur.second=nxt;
+			}else{
+				nxt = new node;
+				cur.second->nxt[(*cur.first)[i]] = nxt;
+				node *suf = cur.second->suffix;
+				cur.second = nxt;
+				nxt->suffix = root; //set correct suffix link
+				while(suf){
+					if(suf->nxt[(*cur.first)[i]]){
+						nxt->suffix = suf->nxt[(*cur.first)[i]];@ $ \hfill #697 $ @
+						break;
+					}
+					suf=suf->suffix;
 				}
-				curLines.pop_back();
-				apply.pop_back();
 			}
-			if(curLines.size() == 0) {
-				apply.push_back(-HUGE_VALL);
-      } else {@ $ \hfill #417 $ @
-				apply.push_back(intersection(line, curLines.back()).y);
-      }
-			curLines.push_back(line);
+			if(cur.first->size() > i+1)
+				nxt_state.push_back(cur);
 		}
-		linesBySide[side] = curLines;
+		cur_state=nxt_state;
+	}@ $ \hfill #791 $ @
+	return root;
+}@ $ \hfill %670 $ @
+//auxilary functions for searhing and counting
+node *walk(node *cur, char c){ //longest prefix in dict that is suffix of walked string.
+	while(true){
+		if(cur->nxt[c])
+			return cur->nxt[c];
+		if(!cur->suffix)
+			return cur;
+		cur = cur->suffix;
 	}
-	applyStart[0].push_back(HUGE_VALL);
-	applyStart[1].push_back(HUGE_VALL);
-	long double result = 0;
-	{@ $ \hfill #994 $ @
-		long double lb = -HUGE_VALL, ub;
-		for(int i=0, j=0; i < (int)linesBySide[0].size() && j < (int)linesBySide[1].size();lb = ub) {
-			ub = min(applyStart[0][i+1], applyStart[1][j+1]);
-			long double alb = lb, aub = ub;
-			Segment l0 = linesBySide[0][i], l1 = linesBySide[1][j];
-			if(cross(l1.d(), l0.d()) > 0) {
-				alb = max(alb, intersection(l0, l1).y);
-      } else if(cross(l1.d(), l0.d()) < 0) {
-				aub = min(aub, intersection(l0, l1).y);
-      }@ $ \hfill #591 $ @
-			alb = max(alb, lowerbound);
-			aub = min(aub, upperbound);
-			aub = max(aub, alb);
-			{
-				long double x1 = l0.a.x + (alb - l0.a.y) / l0.d().y * l0.d().x;
-				long double x2 = l0.a.x + (aub - l0.a.y) / l0.d().y * l0.d().x;
-				result -= (aub - alb) * (x1 + x2) / 2;
-			}
-			{
-				long double x1 = l1.a.x + (alb - l1.a.y) / l1.d().y * l1.d().x;@ $ \hfill #346 $ @
-				long double x2 = l1.a.x + (aub - l1.a.y) / l1.d().y * l1.d().x;
-				result += (aub - alb) * (x1 + x2) / 2;
-			}
-			if(applyStart[0][i+1] < applyStart[1][j+1]) {
-				i++;
-			} else {
-				j++;
-      }
+}@ $ \hfill %570 $ @
+void cnt_matches(node *root, vector<char> &match_in){
+	node *cur = root;
+	for(char c : match_in){
+		cur = walk(cur, c);
+		++cur->cnt;
+	}
+}@ $ \hfill %286 $ @
+void add_cnt(node *root){ //After counting matches propagete ONCE to suffixes for final counts
+	vector<node *> to_visit = {root};
+	for(int i=0; i<to_visit.size(); ++i){
+		node *cur = to_visit[i];
+		for(int j=0; j<alpha_size; ++j){
+			if(cur->nxt[j])
+				to_visit.push_back(cur->nxt[j]);
 		}
-	}@ $ \hfill #348 $ @
-	return result;
-}@ $ \hfill %183 $ @
+	}
+	for(int i=to_visit.size()-1; i>0; --i)@ $ \hfill #462 $ @
+		to_visit[i]->suffix->cnt += to_visit[i]->cnt;
+}@ $ \hfill %657 $ @
+int main(){ //http://codeforces.com/group/s3etJR5zZK/contest/212916/problem/4
+	int n, len;
+	scanf("%d %d", &len, &n);
+	vector<char> a(len+1);
+	scanf("%s", a.data());
+	a.pop_back();
+	for(char &c : a)
+		c -= 'a';
+	vector<vector<char> > dict(n);
+	for(int i=0; i<n; ++i){
+		scanf("%d", &len);
+		dict[i].resize(len+1);
+		scanf("%s", dict[i].data());
+		dict[i].pop_back();
+		for(char &c : dict[i])
+			c -= 'a';
+	}
+	node *root = aho_corasick(dict);
+	cnt_matches(root, a);
+	add_cnt(root);
+	for(int i=0; i<n; ++i){
+		node *cur = root;
+		for(char c : dict[i])
+			cur = walk(cur, c);
+		printf("%d\n", cur->cnt);
+	}
+}
+\end{minted}
+\section{Suffix automaton $\mathcal{O}((n+q)\log(|\text{alpha}|))$}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+class AutoNode {
+ private:
+  map< char, AutoNode * > nxt_char;  // Map is faster than hashtable and unsorted arrays
+ public:
+  int len; //Length of longest suffix in equivalence class.
+  AutoNode *suf;
+  bool has_nxt(char c) const {
+		return nxt_char.count(c);
+	}
+  AutoNode *nxt(char c) {@ $ \hfill #388 $ @
+    if (!has_nxt(c))
+			return NULL;
+    return nxt_char[c];
+  }
+  void set_nxt(char c, AutoNode *node) {
+		nxt_char[c] = node;
+	}
+  AutoNode *split(int new_len, char c) {
+    AutoNode *new_n = new AutoNode;
+    new_n->nxt_char = nxt_char;@ $ \hfill #163 $ @
+    new_n->len = new_len;
+    new_n->suf = suf;
+    suf = new_n;
+    return new_n;
+  }
+  // Extra functions for matching and counting
+  AutoNode *lower_depth(int depth) { //move to longest suffix of current with a maximum length of depth.
+    if (suf->len >= depth)
+			return suf->lower_depth(depth);
+    return this;@ $ \hfill #239 $ @
+  }
+  AutoNode *walk(char c, int depth, int &match_len) { //move to longest suffix of walked path that is a substring
+    match_len = min(match_len, len); //includes depth limit(needed for finding matches)
+    if (has_nxt(c)) {	//as suffixes are in classes match\_len must be tracked externally
+      ++match_len;
+      return nxt(c)->lower_depth(depth);
+    }
+    if (suf)
+			return suf->walk(c, depth, match_len);
+    return this;@ $ \hfill #252 $ @
+  }
+  int paths_to_end = 0;
+  void set_as_end() { //All suffixes of current node are marked as ending nodes.
+    paths_to_end = 1;
+    if (suf) suf->set_as_end();
+  }
+  bool vis = false;
+  void calc_paths_to_end() { //Call ONCE from ROOT. For each node calculates number of ways to reach an end node.
+    if (!vis) {	//paths\_to\_end is ocurence count for any strings in current suffix equivalence class.
+      vis = true;@ $ \hfill #257 $ @
+      for (auto cur : nxt_char) {
+        cur.second->calc_paths_to_end();
+        paths_to_end += cur.second->paths_to_end;
+      }
+    }
+  }
+};
+struct SufAutomaton {
+  AutoNode *last;
+  AutoNode *root;@ $ \hfill #914 $ @
+  void extend(char new_c) {
+    AutoNode *new_end = new AutoNode;
+    new_end->len = last->len + 1;
+    AutoNode *suf_w_nxt = last;
+    while (suf_w_nxt && !suf_w_nxt->has_nxt(new_c)) {
+      suf_w_nxt->set_nxt(new_c, new_end);
+      suf_w_nxt = suf_w_nxt->suf;
+    }@ $ \hfill #458 $ @
+    if (!suf_w_nxt) {
+      new_end->suf = root;
+    } else {
+      AutoNode *max_sbstr = suf_w_nxt->nxt(new_c);
+      if (suf_w_nxt->len + 1 == max_sbstr->len) {
+        new_end->suf = max_sbstr;
+      } else {@ $ \hfill #550 $ @
+        AutoNode *eq_sbstr = max_sbstr->split(suf_w_nxt->len + 1, new_c);
+        new_end->suf = eq_sbstr
+        AutoNode *w_edge_to_eq_sbstr = suf_w_nxt;
+        while (w_edge_to_eq_sbstr != 0 && w_edge_to_eq_sbstr->nxt(new_c) == max_sbstr) {
+          w_edge_to_eq_sbstr->set_nxt(new_c, eq_sbstr);
+          w_edge_to_eq_sbstr = w_edge_to_eq_sbstr->suf;
+        }
+      }
+    }@ $ \hfill #193 $ @
+    last = new_end;
+  }
+  SufAutomaton(string to_suffix) {
+    root = new AutoNode;
+    root->len = 0;
+    root->suf = NULL;
+    last = root;
+    for (char c : to_suffix) extend(c);
+  }
+};@ $ \hfill %227 $ @
 \end{minted}
 \section{Dinic}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
@@ -927,281 +1141,192 @@ struct Network {
 	}
 };@ $ \hfill %455 $ @
 \end{minted}
-\section{Aho Corasick $\mathcal{O}(|\text{alpha}|\sum{\text{len}})$}
+\section{Lazy Segment Tree $\mathcal{O}(\log n)$ per query}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-const int alpha_size=26;
-struct node{
-	node *nxt[alpha_size]; //May use other structures to move in trie
-	node *suffix;
-	node(){
-		memset(nxt, 0, alpha_size*sizeof(node *));
-	}
-	int cnt=0;
-};
-node *aho_corasick(vector<vector<char> > &dict){@ $ \hfill #666 $ @
-	node *root= new node;
-	root->suffix = 0;
-	vector<pair<vector<char> *, node *> > cur_state;
-	for(vector<char> &s : dict)
-		cur_state.emplace_back(&s, root);
-	for(int i=0; !cur_state.empty(); ++i){
-		vector<pair<vector<char> *, node *> > nxt_state;
-		for(auto &cur : cur_state){
-			node *nxt=cur.second->nxt[(*cur.first)[i]];
-			if(nxt){@ $ \hfill #251 $ @
-				cur.second=nxt;
-			}else{
-				nxt = new node;
-				cur.second->nxt[(*cur.first)[i]] = nxt;
-				node *suf = cur.second->suffix;
-				cur.second = nxt;
-				nxt->suffix = root; //set correct suffix link
-				while(suf){
-					if(suf->nxt[(*cur.first)[i]]){
-						nxt->suffix = suf->nxt[(*cur.first)[i]];@ $ \hfill #697 $ @
-						break;
-					}
-					suf=suf->suffix;
-				}
-			}
-			if(cur.first->size() > i+1)
-				nxt_state.push_back(cur);
-		}
-		cur_state=nxt_state;
-	}@ $ \hfill #791 $ @
-	return root;
-}@ $ \hfill %670 $ @
-//auxilary functions for searhing and counting
-node *walk(node *cur, char c){ //longest prefix in dict that is suffix of walked string.
-	while(true){
-		if(cur->nxt[c])
-			return cur->nxt[c];
-		if(!cur->suffix)
-			return cur;
-		cur = cur->suffix;
-	}
-}@ $ \hfill %570 $ @
-void cnt_matches(node *root, vector<char> &match_in){
-	node *cur = root;
-	for(char c : match_in){
-		cur = walk(cur, c);
-		++cur->cnt;
-	}
-}@ $ \hfill %286 $ @
-void add_cnt(node *root){ //After counting matches propagete ONCE to suffixes for final counts
-	vector<node *> to_visit = {root};
-	for(int i=0; i<to_visit.size(); ++i){
-		node *cur = to_visit[i];
-		for(int j=0; j<alpha_size; ++j){
-			if(cur->nxt[j])
-				to_visit.push_back(cur->nxt[j]);
-		}
-	}
-	for(int i=to_visit.size()-1; i>0; --i)@ $ \hfill #462 $ @
-		to_visit[i]->suffix->cnt += to_visit[i]->cnt;
-}@ $ \hfill %657 $ @
-int main(){ //http://codeforces.com/group/s3etJR5zZK/contest/212916/problem/4
-	int n, len;
-	scanf("%d %d", &len, &n);
-	vector<char> a(len+1);
-	scanf("%s", a.data());
-	a.pop_back();
-	for(char &c : a)
-		c -= 'a';
-	vector<vector<char> > dict(n);
-	for(int i=0; i<n; ++i){
-		scanf("%d", &len);
-		dict[i].resize(len+1);
-		scanf("%s", dict[i].data());
-		dict[i].pop_back();
-		for(char &c : dict[i])
-			c -= 'a';
-	}
-	node *root = aho_corasick(dict);
-	cnt_matches(root, a);
-	add_cnt(root);
-	for(int i=0; i<n; ++i){
-		node *cur = root;
-		for(char c : dict[i])
-			cur = walk(cur, c);
-		printf("%d\n", cur->cnt);
-	}
-}
-\end{minted}
-\section{Suffix automaton $\mathcal{O}((n+q)\log(|\text{alpha}|))$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-class AutoNode {
- private:
-  map< char, AutoNode * > nxt_char;  // Map is faster than hashtable and unsorted arrays
- public:
-  int len; //Length of longest suffix in equivalence class.
-  AutoNode *suf;
-  bool has_nxt(char c) const {
-		return nxt_char.count(c);
-	}
-  AutoNode *nxt(char c) {@ $ \hfill #388 $ @
-    if (!has_nxt(c))
-			return NULL;
-    return nxt_char[c];
-  }
-  void set_nxt(char c, AutoNode *node) {
-		nxt_char[c] = node;
-	}
-  AutoNode *split(int new_len, char c) {
-    AutoNode *new_n = new AutoNode;
-    new_n->nxt_char = nxt_char;@ $ \hfill #163 $ @
-    new_n->len = new_len;
-    new_n->suf = suf;
-    suf = new_n;
-    return new_n;
-  }
-  // Extra functions for matching and counting
-  AutoNode *lower_depth(int depth) { //move to longest suffix of current with a maximum length of depth.
-    if (suf->len >= depth)
-			return suf->lower_depth(depth);
-    return this;@ $ \hfill #239 $ @
-  }
-  AutoNode *walk(char c, int depth, int &match_len) { //move to longest suffix of walked path that is a substring
-    match_len = min(match_len, len); //includes depth limit(needed for finding matches)
-    if (has_nxt(c)) {	//as suffixes are in classes match\_len must be tracked externally
-      ++match_len;
-      return nxt(c)->lower_depth(depth);
-    }
-    if (suf)
-			return suf->walk(c, depth, match_len);
-    return this;@ $ \hfill #252 $ @
-  }
-  int paths_to_end = 0;
-  void set_as_end() { //All suffixes of current node are marked as ending nodes.
-    paths_to_end = 1;
-    if (suf) suf->set_as_end();
-  }
-  bool vis = false;
-  void calc_paths_to_end() { //Call ONCE from ROOT. For each node calculates number of ways to reach an end node.
-    if (!vis) {	//paths\_to\_end is ocurence count for any strings in current suffix equivalence class.
-      vis = true;@ $ \hfill #257 $ @
-      for (auto cur : nxt_char) {
-        cur.second->calc_paths_to_end();
-        paths_to_end += cur.second->paths_to_end;
-      }
-    }
-  }
-};
-struct SufAutomaton {
-  AutoNode *last;
-  AutoNode *root;@ $ \hfill #914 $ @
-  void extend(char new_c) {
-    AutoNode *new_end = new AutoNode;
-    new_end->len = last->len + 1;
-    AutoNode *suf_w_nxt = last;
-    while (suf_w_nxt && !suf_w_nxt->has_nxt(new_c)) {
-      suf_w_nxt->set_nxt(new_c, new_end);
-      suf_w_nxt = suf_w_nxt->suf;
-    }@ $ \hfill #458 $ @
-    if (!suf_w_nxt) {
-      new_end->suf = root;
-    } else {
-      AutoNode *max_sbstr = suf_w_nxt->nxt(new_c);
-      if (suf_w_nxt->len + 1 == max_sbstr->len) {
-        new_end->suf = max_sbstr;
-      } else {@ $ \hfill #550 $ @
-        AutoNode *eq_sbstr = max_sbstr->split(suf_w_nxt->len + 1, new_c);
-        new_end->suf = eq_sbstr
-        AutoNode *w_edge_to_eq_sbstr = suf_w_nxt;
-        while (w_edge_to_eq_sbstr != 0 && w_edge_to_eq_sbstr->nxt(new_c) == max_sbstr) {
-          w_edge_to_eq_sbstr->set_nxt(new_c, eq_sbstr);
-          w_edge_to_eq_sbstr = w_edge_to_eq_sbstr->suf;
+struct SegmentTree {
+    struct Node {
+        long long value = 0;
+        int size = 1;
+        int lazy_add = 0;
+        bool lazy_set = false;
+        int lazy_to_set = 0;
+        void set(int to_set) {
+            lazy_set = true;
+            lazy_to_set = to_set;@ $ \hfill #173 $ @
+            lazy_add = 0;
         }
-      }
-    }@ $ \hfill #193 $ @
-    last = new_end;
-  }
-  SufAutomaton(string to_suffix) {
-    root = new AutoNode;
-    root->len = 0;
-    root->suf = NULL;
-    last = root;
-    for (char c : to_suffix) extend(c);
-  }
-};@ $ \hfill %227 $ @
-\end{minted}
-\section{Templated multi dimensional BIT $\mathcal{O}(\log(n)^\text{dim})$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-// Fully overloaded any dimensional BIT, use any type for coordinates, elements, return_value.
-// Includes coordinate compression.
-template < typename elem_t, typename coord_t, coord_t n_inf, typename ret_t >
-class BIT {
-  vector< coord_t > positions;
-  vector< elem_t > elems;
-  bool initiated = false;
- public:
-  BIT() {
-		positions.push_back(n_inf);@ $ \hfill #774 $ @
-	}
-  void initiate() {
-    if (initiated) {
-      for (elem_t &c_elem : elems)
-				c_elem.initiate();
-    } else {
-      initiated = true;
-      sort(positions.begin(), positions.end());
-      positions.resize(unique(positions.begin(), positions.end()) - positions.begin());
-      elems.resize(positions.size());@ $ \hfill #919 $ @
+    };
+    int n;
+    vector<Node> nodes;
+    void propagate(int pos) {
+        Node& cur = nodes[pos];
+        if(cur.lazy_set) {
+            if(pos < n) {
+                nodes[pos*2].set(cur.lazy_to_set);@ $ \hfill #388 $ @
+                nodes[pos*2+1].set(cur.lazy_to_set);
+            }
+            cur.value = 1LL * cur.size * cur.lazy_to_set;
+            cur.lazy_set = false;
+        }
+        if(cur.lazy_add != 0) {
+            if(pos < n) {
+                nodes[pos*2].lazy_add += cur.lazy_add;
+                nodes[pos*2+1].lazy_add += cur.lazy_add;
+            }@ $ \hfill #114 $ @
+            cur.value += 1LL * cur.size * cur.lazy_add;
+            cur.lazy_add = 0;
+        }
     }
-  }
-  template < typename... loc_form >
-  void update(coord_t cord, loc_form... args) {
-    if (initiated) {
-      int pos = lower_bound(positions.begin(), positions.end(), cord) - positions.begin();
-      for (; pos < positions.size(); pos += pos & -pos)
-				elems[pos].update(args...);
-    } else {
-      positions.push_back(cord);@ $ \hfill #522 $ @
+    long long get_value(int pos) {
+        propagate(pos);
+        return nodes[pos].value;
     }
-  }
-  template < typename... loc_form >
-  ret_t query(coord_t cord, loc_form... args) { //sum in open interval (-inf, cord)
-    ret_t res = 0;
-    int pos = (lower_bound(positions.begin(), positions.end(), cord) - positions.begin())-1;
-    for (; pos > 0; pos -= pos & -pos)
-			res += elems[pos].query(args...);
-    return res;
-  }@ $ \hfill #677 $ @
-};
-template < typename internal_type >
-struct wrapped {
-  internal_type a = 0;
-  void update(internal_type b) {
-		a += b;
-	}
-  internal_type query() {
-		return a;
-	}@ $ \hfill #391 $ @
-  // Should never be called, needed for compilation
-  void initiate() {
-		cerr << 'i' << endl;
-	}
-  void update() {
-		cerr << 'u' << endl;
-	}
-};@ $ \hfill %330 $ @
+    SegmentTree(int nsize) {
+        n = 1;@ $ \hfill #759 $ @
+        while(n < nsize) n*=2;
+        nodes.resize(2*n);
+        for(int i=n-1; i>0; i--)
+            nodes[i].size = nodes[2*i].size * 2;
+    }
+    void set(int l, int r, int to_set, int pos = 1, int lb = 0, int rb = -1) {
+        propagate(pos);
+        if(rb == -1) rb = n;
+        if(l <= lb && rb <= r) {
+            nodes[pos].set(to_set);@ $ \hfill #567 $ @
+            return;
+        }
+        int mid = (lb + rb) / 2;
+        if(l < mid)
+            set(l, r, to_set, pos*2, lb, mid);
+        if(mid < r)
+            set(l, r, to_set, pos*2+1, mid, rb);
+        nodes[pos].value = get_value(pos*2) + get_value(pos*2+1);
+    }
+    void add(int l, int r, int to_add, int pos = 1, int lb = 0, int rb = -1) {@ $ \hfill #168 $ @
+        propagate(pos);
+        if(rb == -1) rb = n;
+        if(l <= lb && rb <= r) {
+            nodes[pos].lazy_add += to_add;
+            return;
+        }
+        int mid = (lb + rb) / 2;
+        if(l < mid)
+            add(l, r, to_add, pos*2, lb, mid);
+        if(mid < r)@ $ \hfill #620 $ @
+            add(l, r, to_add, pos*2+1, mid, rb);
+        nodes[pos].value = get_value(pos*2) + get_value(pos*2+1);
+    }
+    long long get(int l, int r, int pos = 1, int lb = 0, int rb = -1) {
+        propagate(pos);
+        if(rb == -1) rb = n;
+        if(l <= lb && rb <= r) return get_value(pos);
+        int mid = (lb + rb) / 2;
+        long long result = 0;
+        if(l < mid)@ $ \hfill #133 $ @
+            result += get(l, r, pos*2, lb, mid);
+        if(mid < r)
+            result += get(l, r, pos*2+1, mid, rb);
+        return result;
+    }
+};@ $ \hfill %280 $ @
+//Solution for: http://codeforces.com/group/UO1GDa2Gwb/contest/219104/problem/LAZY
 int main() {
-  // retun type should be same as type inside wrapped
-  BIT< BIT< wrapped< ll >, int, INT_MIN, ll >, int, INT_MIN, ll > fenwick;
-  int dim = 2;
-  vector< tuple< int, int, ll > > to_insert;
-	to_insert.emplace_back(1, 1, 1);
-  // set up all positions that are to be used for update
-  for (int i = 0; i < dim; ++i) {
-    for (auto &cur : to_insert)
-      fenwick.update(get< 0 >(cur), get< 1 >(cur));  // May include value which won't be used
-    fenwick.initiate();
-  }
-  // actual use
-  for (auto &cur : to_insert)
-		fenwick.update(get< 0 >(cur), get< 1 >(cur), get< 2 >(cur));
-  cout << fenwick.query(2, 2)<<'\n';
+    int n, m;
+    cin >> n >> m;
+    SegmentTree stree(n);
+    for(int i=0;i<n;i++) {
+        int a;
+        cin >> a;
+        stree.set(i, i+1, a);
+    }
+    for(int i=0;i<m;i++) {
+        int type;
+        cin >> type;
+        if(type == 1) {
+            int l, r, d;
+            cin >> l >> r >> d;
+            stree.add(l-1, r, d);
+        } else if(type == 2) {
+            int l, r, x;
+            cin >> l >> r >> x;
+            stree.set(l-1, r, x);
+        } else {
+            int l, r;
+            cin >> l >> r;
+            cout << stree.get(l-1, r) << '\n';
+        }
+    }
 }
+\end{minted}
+\section{Templated Persitent Segment Tree $\mathcal{O}(\log n)$ per query}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+template<typename T, typename comp>
+class PersistentST {
+  struct Node {
+    Node *left, *right;
+    int lend, rend;
+    T value;
+    Node (int position, T _value) {
+      left = NULL;
+      right = NULL;
+      lend = position;@ $ \hfill #479 $ @
+      rend = position;
+      value = _value;
+    }
+    Node (Node *_left, Node *_right) {
+      left = _left;
+      right = _right;
+      lend = left->lend;
+      rend = right->rend;
+      value = comp()(left->value, right->value);
+    }@ $ \hfill #373 $ @
+    T query (int qleft, int qright) {
+      qleft = max(qleft, lend);
+      qright = min(qright, rend);
+      if (qleft == lend && qright == rend) {
+        return value;
+      } else if (qleft > qright) {
+        return comp().identity;
+      } else {
+        return comp()(left->query(qleft, qright), right->query(qleft, qright));
+      }@ $ \hfill #766 $ @
+    }
+  };
+  int size;
+  Node **tree;
+  vector<Node*> roots;
+public:
+  PersistentST () {}
+  PersistentST (int _size, T initial) {
+    for (int i = 0; i < 32; i++) {
+      if ((1 << i) > _size) {@ $ \hfill #250 $ @
+        size = 1 << i;
+        break;
+      }
+    }
+    tree = new Node* [2 * size + 5];
+    for (int i = size; i < 2 * size; i++)
+      tree[i] = new Node (i - size, initial);
+    for (int i = size - 1; i > 0; i--)
+      tree[i] = new Node (tree[2 * i], tree[2 * i + 1]);
+    roots = vector<Node*> (1, tree[1]);@ $ \hfill #128 $ @
+  }
+  void set (int position, T _value) {
+    tree[size + position] = new Node (position, _value);
+    for (int i = (size + position) / 2; i >= 1; i /= 2)
+      tree[i] = new Node (tree[2 * i], tree[2 * i + 1]);
+    roots.push_back(tree[1]);
+  }
+  int last_revision () {
+    return (int) roots.size() - 1;
+  }@ $ \hfill #890 $ @
+  T query (int qleft, int qright, int revision) {
+    return roots[revision]->query(qleft, qright);
+  }
+  T query (int qleft, int qright) {
+    return roots[last_revision()]->query(qleft, qright);
+  }
+};@ $ \hfill %280 $ @
 \end{minted}
 \section{Templated HLD $\mathcal{O}(M(n) \log n)$ per query}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
@@ -1329,75 +1454,194 @@ int main () {
   }
 }
 \end{minted}
-\section{Templated Persitent Segment Tree $\mathcal{O}(\log n)$ per query}
+\section{Templated multi dimensional BIT $\mathcal{O}(\log(n)^\text{dim})$ per query}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-template<typename T, typename comp>
-class PersistentST {
-  struct Node {
-    Node *left, *right;
-    int lend, rend;
-    T value;
-    Node (int position, T _value) {
-      left = NULL;
-      right = NULL;
-      lend = position;@ $ \hfill #479 $ @
-      rend = position;
-      value = _value;
+// Fully overloaded any dimensional BIT, use any type for coordinates, elements, return_value.
+// Includes coordinate compression.
+template < typename elem_t, typename coord_t, coord_t n_inf, typename ret_t >
+class BIT {
+  vector< coord_t > positions;
+  vector< elem_t > elems;
+  bool initiated = false;
+ public:
+  BIT() {
+		positions.push_back(n_inf);@ $ \hfill #774 $ @
+	}
+  void initiate() {
+    if (initiated) {
+      for (elem_t &c_elem : elems)
+				c_elem.initiate();
+    } else {
+      initiated = true;
+      sort(positions.begin(), positions.end());
+      positions.resize(unique(positions.begin(), positions.end()) - positions.begin());
+      elems.resize(positions.size());@ $ \hfill #919 $ @
     }
-    Node (Node *_left, Node *_right) {
-      left = _left;
-      right = _right;
-      lend = left->lend;
-      rend = right->rend;
-      value = comp()(left->value, right->value);
-    }@ $ \hfill #373 $ @
-    T query (int qleft, int qright) {
-      qleft = max(qleft, lend);
-      qright = min(qright, rend);
-      if (qleft == lend && qright == rend) {
-        return value;
-      } else if (qleft > qright) {
-        return comp().identity;
-      } else {
-        return comp()(left->query(qleft, qright), right->query(qleft, qright));
-      }@ $ \hfill #766 $ @
+  }
+  template < typename... loc_form >
+  void update(coord_t cord, loc_form... args) {
+    if (initiated) {
+      int pos = lower_bound(positions.begin(), positions.end(), cord) - positions.begin();
+      for (; pos < positions.size(); pos += pos & -pos)
+				elems[pos].update(args...);
+    } else {
+      positions.push_back(cord);@ $ \hfill #522 $ @
     }
-  };
-  int size;
-  Node **tree;
-  vector<Node*> roots;
-public:
-  PersistentST () {}
-  PersistentST (int _size, T initial) {
-    for (int i = 0; i < 32; i++) {
-      if ((1 << i) > _size) {@ $ \hfill #250 $ @
-        size = 1 << i;
-        break;
-      }
+  }
+  template < typename... loc_form >
+  ret_t query(coord_t cord, loc_form... args) { //sum in open interval (-inf, cord)
+    ret_t res = 0;
+    int pos = (lower_bound(positions.begin(), positions.end(), cord) - positions.begin())-1;
+    for (; pos > 0; pos -= pos & -pos)
+			res += elems[pos].query(args...);
+    return res;
+  }@ $ \hfill #677 $ @
+};
+template < typename internal_type >
+struct wrapped {
+  internal_type a = 0;
+  void update(internal_type b) {
+		a += b;
+	}
+  internal_type query() {
+		return a;
+	}@ $ \hfill #391 $ @
+  // Should never be called, needed for compilation
+  void initiate() {
+		cerr << 'i' << endl;
+	}
+  void update() {
+		cerr << 'u' << endl;
+	}
+};@ $ \hfill %330 $ @
+int main() {
+  // retun type should be same as type inside wrapped
+  BIT< BIT< wrapped< ll >, int, INT_MIN, ll >, int, INT_MIN, ll > fenwick;
+  int dim = 2;
+  vector< tuple< int, int, ll > > to_insert;
+	to_insert.emplace_back(1, 1, 1);
+  // set up all positions that are to be used for update
+  for (int i = 0; i < dim; ++i) {
+    for (auto &cur : to_insert)
+      fenwick.update(get< 0 >(cur), get< 1 >(cur));  // May include value which won't be used
+    fenwick.initiate();
+  }
+  // actual use
+  for (auto &cur : to_insert)
+		fenwick.update(get< 0 >(cur), get< 1 >(cur), get< 2 >(cur));
+  cout << fenwick.query(2, 2)<<'\n';
+}
+\end{minted}
+\section{Treap $\mathcal{O}(\log n)$ per query}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+mt19937 randgen;
+struct Treap {
+    struct Node {
+        int key;
+        int value;
+        unsigned int priority;
+        long long total;
+        Node* lch;
+        Node* rch;
+        Node(int new_key, int new_value) {@ $ \hfill #698 $ @
+            key = new_key;
+            value = new_value;
+            priority = randgen();
+            total = new_value;
+            lch = 0;
+            rch = 0;
+        }
+        void update() {
+            total = value;
+            if(lch) total += lch->total;@ $ \hfill #295 $ @
+            if(rch) total += rch->total;
+        }
+    };
+    deque<Node> nodes;
+    Node* root = 0;
+    pair<Node*, Node*> split(int key, Node* cur) {
+        if(cur == 0) return {0, 0};
+        pair<Node*, Node*> result;
+        if(key <= cur->key) {
+            auto ret = split(key, cur->lch);@ $ \hfill #233 $ @
+            cur->lch = ret.second;
+            result = {ret.first, cur};
+        } else {
+            auto ret = split(key, cur->rch);
+            cur->rch = ret.first;
+            result = {cur, ret.second};
+        }
+        cur->update();
+        return result;
+    }@ $ \hfill #230 $ @
+    Node* merge(Node* left, Node* right) {
+        if(left == 0) return right;
+        if(right == 0) return left;
+        Node* top;
+        if(left->priority < right->priority) {
+            left->rch = merge(left->rch, right);
+            top = left;
+        } else {
+            right->lch = merge(left, right->lch);
+            top = right;@ $ \hfill #510 $ @
+        }
+        top->update();
+        return top;
     }
-    tree = new Node* [2 * size + 5];
-    for (int i = size; i < 2 * size; i++)
-      tree[i] = new Node (i - size, initial);
-    for (int i = size - 1; i > 0; i--)
-      tree[i] = new Node (tree[2 * i], tree[2 * i + 1]);
-    roots = vector<Node*> (1, tree[1]);@ $ \hfill #128 $ @
-  }
-  void set (int position, T _value) {
-    tree[size + position] = new Node (position, _value);
-    for (int i = (size + position) / 2; i >= 1; i /= 2)
-      tree[i] = new Node (tree[2 * i], tree[2 * i + 1]);
-    roots.push_back(tree[1]);
-  }
-  int last_revision () {
-    return (int) roots.size() - 1;
-  }@ $ \hfill #890 $ @
-  T query (int qleft, int qright, int revision) {
-    return roots[revision]->query(qleft, qright);
-  }
-  T query (int qleft, int qright) {
-    return roots[last_revision()]->query(qleft, qright);
-  }
-};@ $ \hfill %280 $ @
+    void insert(int key, int value) {
+        nodes.push_back(Node(key, value));
+        Node* cur = &nodes.back();
+        pair<Node*, Node*> ret = split(key, root);
+        cur = merge(ret.first, cur);
+        cur = merge(cur, ret.second);@ $ \hfill #760 $ @
+        root = cur;
+    }
+    void erase(int key) {
+        Node *left, *mid, *right;
+        tie(left, mid) = split(key, root);
+        tie(mid, right) = split(key+1, mid);
+        root = merge(left, right);
+    }
+    long long sum_upto(int key, Node* cur) {
+        if(cur == 0) return 0;@ $ \hfill #634 $ @
+        if(key <= cur->key) {
+            return sum_upto(key, cur->lch);
+        } else {
+            long long result = cur->value + sum_upto(key, cur->rch);
+            if(cur->lch) result += cur->lch->total;
+            return result;
+        }
+    }
+    long long get(int l, int r) {
+        return sum_upto(r+1, root) - sum_upto(l, root);@ $ \hfill #509 $ @
+    }
+};@ $ \hfill %959 $ @
+//Solution for: http://codeforces.com/group/UO1GDa2Gwb/contest/219104/problem/TREAP
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+    int m;
+    Treap treap;
+    cin >> m;
+    for(int i=0;i<m;i++) {
+        int type;
+        cin >> type;
+        if(type == 1) {
+            int x, y;
+            cin >> x >> y;
+            treap.insert(x, y);
+        } else if(type == 2) {
+            int x;
+            cin >> x;
+            treap.erase(x);
+        } else {
+            int l, r;
+            cin >> l >> r;
+            cout << treap.get(l, r) << endl;
+        }
+    }
+    return 0;
+}
 \end{minted}
 \section{FFT $\mathcal{O}(n\log(n))$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
@@ -1570,21 +1814,6 @@ bool is_prime(ll n) { //guaranteed for 64 bit numbers$ \hfill #406 $
   return true;
 }@ $ \hfill %043 $ @
 \end{minted}
-\section{Numerical integration with Simpson's rule}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-//computing power = how many times function integrate gets called
-template<typename T>
-double simps(T f, double a, double b) {
-  return (f(a) + 4*f((a+b)/2) + f(b))*(b-a)/6;
-}
-template<typename T>
-double integrate(T f, double a, double b, double computing_power){
-  double m = (a+b)/2;
-  double l = simps(f,a,m), r = simps(f,m,b), tot=simps(f,a,b);
-  if (computing_power < 1) return tot;@ $ \hfill #300 $ @
-  return integrate(f,a,m,computing_power/2)+integrate(f,m,b,computing_power/2);
-}@ $ \hfill %821 $ @
-\end{minted}
 \section{2-Sat $\mathcal{O}(n)$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct Graph {
@@ -1664,234 +1893,6 @@ int main() {
         cout << state[2*i+1] << '\n';
     }
     return 0;
-}
-\end{minted}
-\section{Treap $\mathcal{O}(\log n)$ per query}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-mt19937 randgen;
-struct Treap {
-    struct Node {
-        int key;
-        int value;
-        unsigned int priority;
-        long long total;
-        Node* lch;
-        Node* rch;
-        Node(int new_key, int new_value) {@ $ \hfill #698 $ @
-            key = new_key;
-            value = new_value;
-            priority = randgen();
-            total = new_value;
-            lch = 0;
-            rch = 0;
-        }
-        void update() {
-            total = value;
-            if(lch) total += lch->total;@ $ \hfill #295 $ @
-            if(rch) total += rch->total;
-        }
-    };
-    deque<Node> nodes;
-    Node* root = 0;
-    pair<Node*, Node*> split(int key, Node* cur) {
-        if(cur == 0) return {0, 0};
-        pair<Node*, Node*> result;
-        if(key <= cur->key) {
-            auto ret = split(key, cur->lch);@ $ \hfill #233 $ @
-            cur->lch = ret.second;
-            result = {ret.first, cur};
-        } else {
-            auto ret = split(key, cur->rch);
-            cur->rch = ret.first;
-            result = {cur, ret.second};
-        }
-        cur->update();
-        return result;
-    }@ $ \hfill #230 $ @
-    Node* merge(Node* left, Node* right) {
-        if(left == 0) return right;
-        if(right == 0) return left;
-        Node* top;
-        if(left->priority < right->priority) {
-            left->rch = merge(left->rch, right);
-            top = left;
-        } else {
-            right->lch = merge(left, right->lch);
-            top = right;@ $ \hfill #510 $ @
-        }
-        top->update();
-        return top;
-    }
-    void insert(int key, int value) {
-        nodes.push_back(Node(key, value));
-        Node* cur = &nodes.back();
-        pair<Node*, Node*> ret = split(key, root);
-        cur = merge(ret.first, cur);
-        cur = merge(cur, ret.second);@ $ \hfill #760 $ @
-        root = cur;
-    }
-    void erase(int key) {
-        Node *left, *mid, *right;
-        tie(left, mid) = split(key, root);
-        tie(mid, right) = split(key+1, mid);
-        root = merge(left, right);
-    }
-    long long sum_upto(int key, Node* cur) {
-        if(cur == 0) return 0;@ $ \hfill #634 $ @
-        if(key <= cur->key) {
-            return sum_upto(key, cur->lch);
-        } else {
-            long long result = cur->value + sum_upto(key, cur->rch);
-            if(cur->lch) result += cur->lch->total;
-            return result;
-        }
-    }
-    long long get(int l, int r) {
-        return sum_upto(r+1, root) - sum_upto(l, root);@ $ \hfill #509 $ @
-    }
-};@ $ \hfill %959 $ @
-//Solution for: http://codeforces.com/group/UO1GDa2Gwb/contest/219104/problem/TREAP
-int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(0);
-    int m;
-    Treap treap;
-    cin >> m;
-    for(int i=0;i<m;i++) {
-        int type;
-        cin >> type;
-        if(type == 1) {
-            int x, y;
-            cin >> x >> y;
-            treap.insert(x, y);
-        } else if(type == 2) {
-            int x;
-            cin >> x;
-            treap.erase(x);
-        } else {
-            int l, r;
-            cin >> l >> r;
-            cout << treap.get(l, r) << endl;
-        }
-    }
-    return 0;
-}
-\end{minted}
-\section{Lazy Segment Tree $\mathcal{O}(\log n)$ per query}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-struct SegmentTree {
-    struct Node {
-        long long value = 0;
-        int size = 1;
-        int lazy_add = 0;
-        bool lazy_set = false;
-        int lazy_to_set = 0;
-        void set(int to_set) {
-            lazy_set = true;
-            lazy_to_set = to_set;@ $ \hfill #173 $ @
-            lazy_add = 0;
-        }
-    };
-    int n;
-    vector<Node> nodes;
-    void propagate(int pos) {
-        Node& cur = nodes[pos];
-        if(cur.lazy_set) {
-            if(pos < n) {
-                nodes[pos*2].set(cur.lazy_to_set);@ $ \hfill #388 $ @
-                nodes[pos*2+1].set(cur.lazy_to_set);
-            }
-            cur.value = 1LL * cur.size * cur.lazy_to_set;
-            cur.lazy_set = false;
-        }
-        if(cur.lazy_add != 0) {
-            if(pos < n) {
-                nodes[pos*2].lazy_add += cur.lazy_add;
-                nodes[pos*2+1].lazy_add += cur.lazy_add;
-            }@ $ \hfill #114 $ @
-            cur.value += 1LL * cur.size * cur.lazy_add;
-            cur.lazy_add = 0;
-        }
-    }
-    long long get_value(int pos) {
-        propagate(pos);
-        return nodes[pos].value;
-    }
-    SegmentTree(int nsize) {
-        n = 1;@ $ \hfill #759 $ @
-        while(n < nsize) n*=2;
-        nodes.resize(2*n);
-        for(int i=n-1; i>0; i--)
-            nodes[i].size = nodes[2*i].size * 2;
-    }
-    void set(int l, int r, int to_set, int pos = 1, int lb = 0, int rb = -1) {
-        propagate(pos);
-        if(rb == -1) rb = n;
-        if(l <= lb && rb <= r) {
-            nodes[pos].set(to_set);@ $ \hfill #567 $ @
-            return;
-        }
-        int mid = (lb + rb) / 2;
-        if(l < mid)
-            set(l, r, to_set, pos*2, lb, mid);
-        if(mid < r)
-            set(l, r, to_set, pos*2+1, mid, rb);
-        nodes[pos].value = get_value(pos*2) + get_value(pos*2+1);
-    }
-    void add(int l, int r, int to_add, int pos = 1, int lb = 0, int rb = -1) {@ $ \hfill #168 $ @
-        propagate(pos);
-        if(rb == -1) rb = n;
-        if(l <= lb && rb <= r) {
-            nodes[pos].lazy_add += to_add;
-            return;
-        }
-        int mid = (lb + rb) / 2;
-        if(l < mid)
-            add(l, r, to_add, pos*2, lb, mid);
-        if(mid < r)@ $ \hfill #620 $ @
-            add(l, r, to_add, pos*2+1, mid, rb);
-        nodes[pos].value = get_value(pos*2) + get_value(pos*2+1);
-    }
-    long long get(int l, int r, int pos = 1, int lb = 0, int rb = -1) {
-        propagate(pos);
-        if(rb == -1) rb = n;
-        if(l <= lb && rb <= r) return get_value(pos);
-        int mid = (lb + rb) / 2;
-        long long result = 0;
-        if(l < mid)@ $ \hfill #133 $ @
-            result += get(l, r, pos*2, lb, mid);
-        if(mid < r)
-            result += get(l, r, pos*2+1, mid, rb);
-        return result;
-    }
-};@ $ \hfill %280 $ @
-//Solution for: http://codeforces.com/group/UO1GDa2Gwb/contest/219104/problem/LAZY
-int main() {
-    int n, m;
-    cin >> n >> m;
-    SegmentTree stree(n);
-    for(int i=0;i<n;i++) {
-        int a;
-        cin >> a;
-        stree.set(i, i+1, a);
-    }
-    for(int i=0;i<m;i++) {
-        int type;
-        cin >> type;
-        if(type == 1) {
-            int l, r, d;
-            cin >> l >> r >> d;
-            stree.add(l-1, r, d);
-        } else if(type == 2) {
-            int l, r, x;
-            cin >> l >> r >> x;
-            stree.set(l-1, r, x);
-        } else {
-            int l, r;
-            cin >> l >> r;
-            cout << stree.get(l-1, r) << '\n';
-        }
-    }
 }
 \end{minted}
 \includegraphics[scale=0.9]{comb.pdf}
