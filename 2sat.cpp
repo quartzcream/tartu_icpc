@@ -52,6 +52,20 @@ struct Graph {
             dfs(next, result, explr);
         result.push_back(pos);
     }
+	vector<vector<int> > scc(){ // tested on https://www.hackerearth.com/practice/algorithms/graphs/strongly-connected-components/practice-problems/algorithm/a-walk-to-remember-qualifier2/
+        vector<int> order = topsort();
+		reverse(order.begin(),order.end());
+        vector<bool> explr(n, false);
+		vector<vector<int> > results;
+		for(auto it = order.rbegin(); it != order.rend(); ++it){
+			vector<int> component;
+			_topsort_dfs(*it,component,explr,conn);
+			sort(component.begin(),component.end());
+			results.push_back(component);
+		}
+		sort(results.begin(),results.end());
+		return results;
+	}
 };
 //!finish
 
