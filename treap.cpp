@@ -38,9 +38,7 @@ struct Treap {
     Node* root = 0;
     
     pair<Node*, Node*> split(int key, Node* cur) {
-        if(cur == 0) {
-            return {0, 0};
-        }
+        if(cur == 0) return {0, 0};
         
         pair<Node*, Node*> result;
         if(key <= cur->key) {
@@ -91,9 +89,7 @@ struct Treap {
     }
     
     long long sum_upto(int key, Node* cur) {
-        if(cur == 0) {
-            return 0;
-        }
+        if(cur == 0) return 0;
         
         if(key <= cur->key) {
             return sum_upto(key, cur->lch);
@@ -108,6 +104,7 @@ struct Treap {
         return sum_upto(r+1, root) - sum_upto(l, root);
     }
 };
+//!finish
 
 //Solution for: http://codeforces.com/group/UO1GDa2Gwb/contest/219104/problem/TREAP
 int main() {
@@ -139,6 +136,5 @@ int main() {
     
     return 0;
 }
-//!finish
 //!end_codebook
 

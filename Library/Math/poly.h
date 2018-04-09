@@ -19,19 +19,21 @@ vector<complex<long double> > fastFourierTransform(vector<complex<long double> >
 	for(int tpow = 1; tpow < n; tpow *= 2)
 		w[tpow] = polar(1.0L, 2*PI * tpow/n * (inverse ? -1 : 1) );
 	for(int i=3, last = 2;i<n;i++) {
-		if(w[i] == 0.0L)
+		if(w[i] == 0.0L) {
 			w[i] = w[last] * w[i-last];
-		else
+    } else {
 			last = i;
+    }
 	}
 	
 	//Rearrange a
 	for(int block = n; block > 1; block /= 2) {
 		int half = block/2;
 		vector<complex<long double> > na(n);
-		for(int s=0; s < n; s += block)
+		for(int s=0; s < n; s += block) {
 			for(int i=0;i<block;i++)
 				na[s + half*(i%2) + i/2] = a[s+i];
+    }
 		a = na;
 	}
 	
@@ -40,11 +42,12 @@ vector<complex<long double> > fastFourierTransform(vector<complex<long double> >
 		vector<complex<long double> > na(n);
 		int wb = n/block, half = block/2;
 		
-		for(int s=0; s < n; s += block)
+		for(int s=0; s < n; s += block) {
 			for(int i=0;i<half; i++) {
 				na[s+i] = a[s+i] + w[wb*i] * a[s+half+i];
 				na[s+half+i] = a[s+i] - w[wb*i] * a[s+half+i];
 			}
+    }
 		a = na;
 	}
 	

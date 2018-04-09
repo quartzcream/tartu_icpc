@@ -17,6 +17,8 @@ ll min_dist[nmax];
 int prev_node[nmax];
 ll node_flow[nmax];
 bool visited[nmax];
+//!finish
+//!start
 ll tot_cost, tot_flow; //output
 void min_cost_max_flow(){ 
 	tot_cost=0;							//Does not work with negative cycles.
@@ -31,9 +33,8 @@ void min_cost_max_flow(){
   for(int i=0; i<v-1; ++i){
     for(int j=0; j<v; ++j){
       for(int k=0; k<v; ++k){
-        if(rem_flow[j][k] > 0 && min_dist[j]+cost[j][k] < min_dist[k]){
+        if(rem_flow[j][k] > 0 && min_dist[j]+cost[j][k] < min_dist[k])
           min_dist[k] = min_dist[j]+cost[j][k];
-        }
       }
     }
   }
@@ -59,13 +60,10 @@ void min_cost_max_flow(){
 		while(true){ //Use Dijkstra to calculate potentials
 			int min_node=v;
 			for(int i=0; i<v; ++i){
-				if((!visited[i]) && min_dist[i]<min_dist[min_node]){
+				if((!visited[i]) && min_dist[i]<min_dist[min_node])
 					min_node=i;
-				}
 			}
-			if(min_node==v){
-				break;
-			}
+			if(min_node==v) break
 			visited[min_node]=true;
 			for(int i=0; i<v; ++i){
 				if((!visited[i]) && min_dist[min_node]+cost[min_node][i] < min_dist[i]){
@@ -75,9 +73,7 @@ void min_cost_max_flow(){
 				}
 			}
 		}
-		if(min_dist[v-1]==inf){
-			break;
-		}
+		if(min_dist[v-1]==inf) break
 		for(int i=0; i<v; ++i){ 	//Apply potentials to edge costs.
 			for(int j=0; j<v; ++j){ //Found path from source to sink becomes 0 cost.
 				if(cost[i][j]!=inf){
@@ -94,17 +90,14 @@ void min_cost_max_flow(){
 			rem_flow[prev_node[cur]][cur]-=node_flow[v-1];
 			rem_flow[cur][prev_node[cur]]+=node_flow[v-1];
 			cost[cur][prev_node[cur]]=0;
-			if(rem_flow[prev_node[cur]][cur]==0){
+			if(rem_flow[prev_node[cur]][cur]==0)
 				cost[prev_node[cur]][cur]=inf;
-			}
 			cur=prev_node[cur];
 		}
 	}
 }
 //!finish
-//!end_codebook
-//  http://www.spoj.com/problems/GREED/
-int main(){
+int main(){//http://www.spoj.com/problems/GREED/
 	cin>>t;
 	for(int i=0; i<t; ++i){
 		cin>>n;
@@ -129,9 +122,7 @@ int main(){
 		for(int j=0; j<ex_c; ++j){
 			int a, b;
 			cin>>a>>b;
-			if(b<a){
-				swap(a,b);
-			}
+			if(b<a) swap(a,b);
 			cost[a][b]=1;
 			rem_flow[a][b]=nmax;
 			cost[b][n+b]=0;
@@ -142,7 +133,6 @@ int main(){
 		v=2*n+2;
 		min_cost_max_flow();
 		cout<<tot_cost<<'\n';
-		//cout<<tot_flow<<'\n';
 	}
-	return 0;
 }
+//!end_codebook

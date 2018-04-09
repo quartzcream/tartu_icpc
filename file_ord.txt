@@ -21,4 +21,5 @@ numerical_integration.cpp
 2sat.cpp
 treap.cpp
 lazyst.cpp
+comb_cheatsheet.tex
 footer.tex

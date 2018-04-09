@@ -16,7 +16,7 @@
 \numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
 \numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
 
-\usepackage[hmarginratio=1:1,top=15mm, bottom=5mm, columnsep=0mm, left=16mm, right=3mm]{geometry} % Document margins
+\usepackage[hmarginratio=1:1,top=15mm, bottom=5mm, columnsep=0mm, left=7mm, right=3mm]{geometry} % Document margins
 \usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
 \usepackage{booktabs} % Horizontal rules in tables
 
@@ -29,10 +29,12 @@
 \usepackage{minted}
 \usepackage{etoolbox}
 \AtBeginEnvironment{minted}{\fontsize{10}{10}\selectfont}
+\BeforeBeginEnvironment{minted}{\vspace*{-2.5mm}}
+\AfterEndEnvironment{minted}{\vspace*{-4.5mm}}
 \usemintedstyle{emacs}
-\titlespacing{\section}{10mm}{0mm}{0mm}
 
-
+\titleformat*{\section}{\bfseries}
+\titlespacing*{\section}{10mm}{0ex}{0ex}
 
 \title{\textbf{University of Tartu ICPC Team Notebook (2017-2018)}}
 \date{\today}

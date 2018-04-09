@@ -52,8 +52,7 @@ class PersistentST {
       } else if (qleft > qright) {
         return comp().identity;
       } else {
-        return comp()(left->query(qleft, qright),
-                      right->query(qleft, qright));
+        return comp()(left->query(qleft, qright), right->query(qleft, qright));
       }
     }
   };
@@ -74,22 +73,19 @@ public:
     
     tree = new Node* [2 * size + 5];
 
-    for (int i = size; i < 2 * size; i++) {
+    for (int i = size; i < 2 * size; i++)
       tree[i] = new Node (i - size, initial);
-    }
 
-    for (int i = size - 1; i > 0; i--) {
+    for (int i = size - 1; i > 0; i--)
       tree[i] = new Node (tree[2 * i], tree[2 * i + 1]);
-    }
 
     roots = vector<Node*> (1, tree[1]);
   }
 
   void set (int position, T _value) {
     tree[size + position] = new Node (position, _value);
-    for (int i = (size + position) / 2; i >= 1; i /= 2) {
+    for (int i = (size + position) / 2; i >= 1; i /= 2)
       tree[i] = new Node (tree[2 * i], tree[2 * i + 1]);
-    }
     roots.push_back(tree[1]);
   }
 

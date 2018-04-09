@@ -10,5 +10,5 @@ for ((i=0;i<${#starts[@]};i++)); do
       head -$j | tr -d '[[:space:]]' | cksum | cut -f1 -d ' ' | tail -c 4
   done #whistespaces don't matter
   echo #there shouldn't be any comments in the checked range
-done #//check last number in each block
+done #check last number in each block
 # !end_codebook

@@ -50,13 +50,10 @@ struct SegmentTree {
     
     SegmentTree(int nsize) {
         n = 1;
-        while(n < nsize) {
-            n *= 2;
-        }
+        while(n < nsize) n*=2;
         nodes.resize(2*n);
-        for(int i=n-1; i>0; i--) {
+        for(int i=n-1; i>0; i--)
             nodes[i].size = nodes[2*i].size * 2;
-        }
     }
     
     void set(int l, int r, int to_set, int pos = 1, int lb = 0, int rb = -1) {
@@ -67,12 +64,10 @@ struct SegmentTree {
             return;
         }
         int mid = (lb + rb) / 2;
-        if(l < mid) {
+        if(l < mid)
             set(l, r, to_set, pos*2, lb, mid);
-        }
-        if(mid < r) {
+        if(mid < r)
             set(l, r, to_set, pos*2+1, mid, rb);
-        }
         nodes[pos].value = get_value(pos*2) + get_value(pos*2+1);
     }
     
@@ -84,37 +79,34 @@ struct SegmentTree {
             return;
         }
         int mid = (lb + rb) / 2;
-        if(l < mid) {
+        if(l < mid)
             add(l, r, to_add, pos*2, lb, mid);
-        }
-        if(mid < r) {
+        if(mid < r)
             add(l, r, to_add, pos*2+1, mid, rb);
-        }
         nodes[pos].value = get_value(pos*2) + get_value(pos*2+1);
     }
     
     long long get(int l, int r, int pos = 1, int lb = 0, int rb = -1) {
         propagate(pos);
         if(rb == -1) rb = n;
-        if(l <= lb && rb <= r) {
-            return get_value(pos);
-        }
+        if(l <= lb && rb <= r) return get_value(pos);
         int mid = (lb + rb) / 2;
         long long result = 0;
-        if(l < mid) {
+        if(l < mid)
             result += get(l, r, pos*2, lb, mid);
-        }
-        if(mid < r) {
+        if(mid < r)
             result += get(l, r, pos*2+1, mid, rb);
-        }
         return result;
     }
 };
+//!finish
 
 //Solution for: http://codeforces.com/group/UO1GDa2Gwb/contest/219104/problem/LAZY
 int main() {
+//!end_codebook
     ios_base::sync_with_stdio(false);
     cin.tie(0);
+//!begin_codebook
     
     int n, m;
     cin >> n >> m;
@@ -145,7 +137,5 @@ int main() {
         }
     }
     
-    return 0;
 }
-//!finish
 //!end_codebook

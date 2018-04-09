@@ -29,8 +29,7 @@ struct Network {
 			if(pos == u) {
 				f += toAdd;
 				return toAdd * cost;
-			}
-			else {
+			} else {
 				f -= toAdd;
 				return -toAdd * cost;
 			}
@@ -73,19 +72,22 @@ struct Network {
 			
 			for(int lev = 0; lev < n; lev++) {
 				state.push_back(state[lev]);
-				for(int i=0;i<n;i++)
+				for(int i=0;i<n;i++){
 					if(lev == 0 || state[lev][i].p < state[lev-1][i].p) {
 						
-						for(Edge* edge : nodes[i].conn) if(edge->getCap(&nodes[i]) > 0) {
-							int np = state[lev][i].p + (edge->u == &nodes[i] ? edge->cost : -edge->cost);
-							int ni = edge->from(&nodes[i])->index;
-							
-							if(np < state[lev+1][ni].p) {
-								state[lev+1][ni].p = np;
-								state[lev+1][ni].used = edge;
-							}
-						}
+            for(Edge* edge : nodes[i].conn){
+              if(edge->getCap(&nodes[i]) > 0) {
+                int np = state[lev][i].p + (edge->u == &nodes[i] ? edge->cost : -edge->cost);
+                int ni = edge->from(&nodes[i])->index;
+
+                if(np < state[lev+1][ni].p) {
+                  state[lev+1][ni].p = np;
+                  state[lev+1][ni].used = edge;
+                }
+              }
+            }
 					}
+        }
 			}
 			
 			//Now look at the last level
@@ -121,7 +123,7 @@ struct Network {
 						do {
 							cur2 = path[i]->from(cur2);
 							i++;
-						}while(cur2 != cur);
+						} while(cur2 != cur);
 						
 						path.resize(i);
 					}

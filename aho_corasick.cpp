@@ -55,9 +55,8 @@ node *walk(node *cur, char c){ //longest prefix in dict that is suffix of walked
 	while(true){
 		if(cur->nxt[c])
 			return cur->nxt[c];
-		if(!cur->suffix){
+		if(!cur->suffix)
 			return cur;
-		}
 		cur = cur->suffix;
 	}
 }
@@ -77,46 +76,39 @@ void add_cnt(node *root){ //After counting matches propagete ONCE to suffixes fo
 	for(int i=0; i<to_visit.size(); ++i){
 		node *cur = to_visit[i];
 		for(int j=0; j<alpha_size; ++j){
-			if(cur->nxt[j]){
+			if(cur->nxt[j])
 				to_visit.push_back(cur->nxt[j]);
-			}
 		}
 	}
-	for(int i=to_visit.size()-1; i>0; --i){
+	for(int i=to_visit.size()-1; i>0; --i)
 		to_visit[i]->suffix->cnt += to_visit[i]->cnt;
-	}
 }
 //!finish
-//!end_codebook
-//http://codeforces.com/group/s3etJR5zZK/contest/212916/problem/4
-int main(){
+int main(){ //http://codeforces.com/group/s3etJR5zZK/contest/212916/problem/4
 	int n, len;
 	scanf("%d %d", &len, &n);
 	vector<char> a(len+1);
 	scanf("%s", a.data());
 	a.pop_back();
-	for(char &c : a){
+	for(char &c : a)
 		c -= 'a';
-	}
 	vector<vector<char> > dict(n);
 	for(int i=0; i<n; ++i){
 		scanf("%d", &len);
 		dict[i].resize(len+1);
 		scanf("%s", dict[i].data());
 		dict[i].pop_back();
-		for(char &c : dict[i]){
+		for(char &c : dict[i])
 			c -= 'a';
-		}
 	}
 	node *root = aho_corasick(dict);
 	cnt_matches(root, a);
 	add_cnt(root);
 	for(int i=0; i<n; ++i){
 		node *cur = root;
-		for(char c : dict[i]){
+		for(char c : dict[i])
 			cur = walk(cur, c);
-		}
 		printf("%d\n", cur->cnt);
 	}
-	return 0;
 }
+//!end_codebook

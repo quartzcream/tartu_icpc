@@ -21,44 +21,39 @@ struct Graph {
     }
     
     void _topsort_dfs(int pos, vector<int> &result, vector<bool> &explr, vector<vector<int> > &revconn) {
-        if(explr[pos]) {
+        if(explr[pos])
             return;
-        }
         explr[pos] = true;
-        for(auto next : revconn[pos]) {
+        for(auto next : revconn[pos])
             _topsort_dfs(next, result, explr, revconn);
-        }
         result.push_back(pos);
     }
     
     vector<int> topsort() {
         vector<vector<int> > revconn(n);
         for(int u = 0; u < n; u++) {
-            for(auto v : conn[u]) {
+            for(auto v : conn[u])
                 revconn[v].push_back(u);
-            }
         }
         
         vector<int> result;
         vector<bool> explr(n, false);
-        for(int i=0; i < n; i++) {
+        for(int i=0; i < n; i++)
             _topsort_dfs(i, result, explr, revconn);
-        }
         reverse(result.begin(), result.end());
         return result;
     }
     
     void dfs(int pos, vector<int> &result, vector<bool> &explr) {
-        if(explr[pos]) {
+        if(explr[pos])
             return;
-        }
         explr[pos] = true;
-        for(auto next : conn[pos]) {
+        for(auto next : conn[pos])
             dfs(next, result, explr);
-        }
         result.push_back(pos);
     }
 };
+//!finish
 
 //Solution for: http://codeforces.com/group/PjzGiggT71/contest/221700/problem/C
 int main() {
@@ -89,9 +84,8 @@ int main() {
             g.dfs(u, traversed, explr);
             
             if(traversed.size() > 0 && !state[traversed[0]^1]) {
-                for(auto c : traversed) {
+                for(auto c : traversed)
                     state[c] = 1;
-                }
             }
         }
     }
@@ -108,7 +102,6 @@ int main() {
     }
     return 0;
 }
-//!finish
 //!end_codebook
 
 

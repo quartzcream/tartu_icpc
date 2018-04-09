@@ -34,15 +34,16 @@ long double getArea(vector<Segment> lines) {
 	vector<Segment> linesBySide[2];
 	for(auto line : lines) {
 		if(line.b.y == line.a.y) {
-			if(line.a.x < line.b.x)
+			if(line.a.x < line.b.x) {
 				lowerbound = max(lowerbound, line.a.y);
-			else
+      } else {
 				upperbound = min(upperbound, line.a.y);
-		}
-		else if(line.a.y < line.b.y)
+      }
+		} else if(line.a.y < line.b.y) {
 			linesBySide[1].push_back(line);
-		else
+    } else {
 			linesBySide[0].push_back({line.b, line.a});
+    }
 	}
 	
 	sort(linesBySide[0].begin(), linesBySide[0].end(), [](Segment l, Segment r) {
@@ -66,18 +67,18 @@ long double getArea(vector<Segment> lines) {
 				
 				if(cross(line.d(), other.d()) != 0) {
 					long double start = intersection(line, other).y;
-					if(start > apply.back())
-						break;
+					if(start > apply.back()) break;
 				}
 				
 				curLines.pop_back();
 				apply.pop_back();
 			}
 			
-			if(curLines.size() == 0)
+			if(curLines.size() == 0) {
 				apply.push_back(-HUGE_VALL);
-			else
+      } else {
 				apply.push_back(intersection(line, curLines.back()).y);
+      }
 			curLines.push_back(line);
 		}
 		
@@ -95,10 +96,11 @@ long double getArea(vector<Segment> lines) {
 			long double alb = lb, aub = ub;
 			Segment l0 = linesBySide[0][i], l1 = linesBySide[1][j];
 			
-			if(cross(l1.d(), l0.d()) > 0)
+			if(cross(l1.d(), l0.d()) > 0) {
 				alb = max(alb, intersection(l0, l1).y);
-			else if(cross(l1.d(), l0.d()) < 0)
+      } else if(cross(l1.d(), l0.d()) < 0) {
 				aub = min(aub, intersection(l0, l1).y);
+      }
 			alb = max(alb, lowerbound);
 			aub = min(aub, upperbound);
 			aub = max(aub, alb);
@@ -114,10 +116,11 @@ long double getArea(vector<Segment> lines) {
 				result += (aub - alb) * (x1 + x2) / 2;
 			}
 			
-			if(applyStart[0][i+1] < applyStart[1][j+1])
+			if(applyStart[0][i+1] < applyStart[1][j+1]) {
 				i++;
-			else
+			} else {
 				j++;
+      }
 		}
 	}
 	return result;

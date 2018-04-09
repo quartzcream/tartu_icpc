@@ -37,17 +37,15 @@ struct Hull {
                               res[res.size() - 1].second - res[res.size() - 2].second);
           auto v2 = make_pair(it->first - res[res.size() - 2].first,
                               it->second - res[res.size() - 2].second);
-          if (cross(v1, v2) > 0) {
+          if (cross(v1, v2) > 0)
             break;
-          }
           res.pop_back();
         }
         res.push_back(*it);
       }
     }
-    for (int i = 0; i < res.size() - 1; ++i) {
+    for (int i = 0; i < res.size() - 1; ++i)
       hull.emplace_back(res[i], res[i + 1]);
-    }
   }
   Hull(vector< pair< int, int > > &vert) {  // atleast 2 distinct points
     sort(vert.begin(), vert.end());         // O(n log(n))
@@ -63,9 +61,8 @@ struct Hull {
     {
       auto it_low = lower_bound(hull.begin(), upper_begin,
                                 make_pair(make_pair(p.first, (int)-2e9), make_pair(0, 0)));
-      if (it_low != hull.begin()) {
+      if (it_low != hull.begin())
         --it_low;
-      }
       auto v1 = make_pair(it_low->second.first - it_low->first.first,
                           it_low->second.second - it_low->first.second);
       auto v2 = make_pair(p.first - it_low->first.first, p.second - it_low->first.second);
@@ -75,9 +72,8 @@ struct Hull {
     {
       auto it_up = lower_bound(hull.rbegin(), hull.rbegin() + (hull.end() - upper_begin),
                                make_pair(make_pair(p.first, (int)2e9), make_pair(0, 0)));
-      if (it_up - hull.rbegin() == hull.end() - upper_begin) {
+      if (it_up - hull.rbegin() == hull.end() - upper_begin)
         --it_up;
-      }
       auto v1 = make_pair(it_up->first.first - it_up->second.first,
                           it_up->first.second - it_up->second.second);
       auto v2 = make_pair(p.first - it_up->second.first, p.second - it_up->second.second);
@@ -223,9 +219,8 @@ struct Hull {
     auto it_max = max_in_dir(dir);
     auto it_min = max_in_dir(make_pair(y, -x));
     ll opt_val = dot(dir, line.first);
-    if (dot(dir, it_max->first) < opt_val || dot(dir, it_min->first) > opt_val) {
+    if (dot(dir, it_max->first) < opt_val || dot(dir, it_min->first) > opt_val)
       return make_pair(hull.end(), hull.end());
-    }
     vector< pair< pair< int, int >, pair< int, int > > >::iterator it_r1, it_r2;
     function< bool(const pair< pair< int, int >, pair< int, int > > &,
                    const pair< pair< int, int >, pair< int, int > > &) >

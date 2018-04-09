@@ -38,8 +38,8 @@ class AutoNode {
     return this;
   }
   AutoNode *walk(char c, int depth, int &match_len) { //move to longest suffix of walked path that is a substring
-    match_len = min(match_len, len);									//includes depth limit(needed for finding matches)
-    if (has_nxt(c)) {																	//as suffixes are in classes match\_len must be tracked externally
+    match_len = min(match_len, len); //includes depth limit(needed for finding matches)
+    if (has_nxt(c)) {	//as suffixes are in classes match\_len must be tracked externally
       ++match_len;
       return nxt(c)->lower_depth(depth);
     }
@@ -53,8 +53,8 @@ class AutoNode {
     if (suf) suf->set_as_end();
   }
   bool vis = false;
-  void calc_paths_to_end() { 	//Call ONCE from ROOT. For each node calculates number of ways to reach an end node.
-    if (!vis) {							 	//paths\_to\_end is ocurence count for any strings in current suffix equivalence class.
+  void calc_paths_to_end() { //Call ONCE from ROOT. For each node calculates number of ways to reach an end node.
+    if (!vis) {	//paths\_to\_end is ocurence count for any strings in current suffix equivalence class.
       vis = true;
       for (auto cur : nxt_char) {
         cur.second->calc_paths_to_end();
@@ -67,26 +67,40 @@ struct SufAutomaton {
   AutoNode *last;
   AutoNode *root;
   void extend(char new_c) {
-    AutoNode *new_end = new AutoNode;  // The equivalence class containing the whole new string
+    AutoNode *new_end = new AutoNode; 
+//!end_codebook
+    //The equivalence class containing the whole new string
+//!begin_codebook
     new_end->len = last->len + 1;
-    AutoNode *suf_w_nxt = last;                        // The whole old string class
-    while (suf_w_nxt && !suf_w_nxt->has_nxt(new_c)) {  // is turned into the longest suffix which
-                                                       // can be turned into a substring of old state
-                                                       // by appending new\_c
+    AutoNode *suf_w_nxt = last;                       
+    while (suf_w_nxt && !suf_w_nxt->has_nxt(new_c)) { 
+//!end_codebook
+    /* The whole old string class is turned into the longest suffix which can be turned into a substring of old state by appending new\_c */
+//!begin_codebook
       suf_w_nxt->set_nxt(new_c, new_end);
       suf_w_nxt = suf_w_nxt->suf;
     }
-    if (!suf_w_nxt) {  // The new character isn't part of the old string
+    if (!suf_w_nxt) { 
+//!end_codebook
+      // The new character isn't part of the old string
+//!begin_codebook
       new_end->suf = root;
     } else {
-      AutoNode *max_sbstr = suf_w_nxt->nxt(new_c);  // Equivalence class containing longest
-                                                    // substring which is a suffix of the new state.
-      if (suf_w_nxt->len + 1 == max_sbstr->len) { // Check whether splitting is needed
+      AutoNode *max_sbstr = suf_w_nxt->nxt(new_c);
+//!end_codebook
+      //Equivalence class containing longest substring which is a suffix of the new state.
+//!begin_codebook
+      if (suf_w_nxt->len + 1 == max_sbstr->len) {
+//!end_codebook
+        // Check whether splitting is needed
+//!begin_codebook
         new_end->suf = max_sbstr;
       } else {
         AutoNode *eq_sbstr = max_sbstr->split(suf_w_nxt->len + 1, new_c);
-        new_end->suf = eq_sbstr;
+        new_end->suf = eq_sbstr
+//!end_codebook
         // Make suffixes of suf\_w\_nxt point to eq\_sbstr instead of mox\_sbstr
+//!begin_codebook
         AutoNode *w_edge_to_eq_sbstr = suf_w_nxt;
         while (w_edge_to_eq_sbstr != 0 && w_edge_to_eq_sbstr->nxt(new_c) == max_sbstr) {
           w_edge_to_eq_sbstr->set_nxt(new_c, eq_sbstr);

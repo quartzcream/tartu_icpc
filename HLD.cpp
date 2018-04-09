@@ -9,14 +9,11 @@ using namespace std;
 //!start
 class dummy {
 public:
-  dummy () {
-  }
+  dummy () {}
   
-  dummy (int, int) {
-  }
+  dummy (int, int) {}
 
-  void set (int, int) {
-  }
+  void set (int, int) {}
 
   int query (int left, int right) {
     cout << this << ' ' << left << ' ' << right << endl;
@@ -65,8 +62,7 @@ class HLD {
     if (adj[vertex].size() > 1) {
       int big_child, big_size = -1;
       for (int child : adj[vertex]) {
-        if ((child != parent) &&
-            (subtree_size[child] > big_size)) {
+        if ((child != parent) && (subtree_size[child] > big_size)) {
           big_child = child;
           big_size = subtree_size[child];
         }
@@ -74,9 +70,8 @@ class HLD {
 
       build_hld(big_child, vertex, chain_source);
       for (int child : adj[vertex]) {
-        if ((child != parent) && (child != big_child)) {
+        if ((child != parent) && (child != big_child))
           build_hld(child, vertex, child);
-        }
       }
     }
   }
@@ -130,9 +125,8 @@ public:
 //!finish
 
   void print () {
-    for (int i = 1; i <= vertexc; i++) {
+    for (int i = 1; i <= vertexc; i++)
       cout << i << ' ' << ord[i] << ' ' << chain_root[i] << ' ' << par[i] << endl;
-    }
   }
 };
 

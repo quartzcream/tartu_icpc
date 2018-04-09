@@ -45,25 +45,30 @@ for file in file_ord:
     last_needs_end = False
     need_write_hash = False
     escape_str = "!escape "
-    beg_str = "!begin_codebook\n"
-    end_str = "!end_codebook\n"
-    beg_hash_str = "//!start\n"
-    end_hash_str = "//!finish\n"
+    beg_str = "!begin_codebook"
+    end_str = "!end_codebook"
+    beg_hash_str = "//!start"
+    end_hash_str = "//!finish"
 
     if(use_minted):
         fin = open(file, "r")
         ftmp = open("tmp", "w")
         for line in fin.readlines():
             escape_idx = line.find(escape_str)
+            beg_idx = line.find(beg_str)
+            end_idx = line.find(end_str)
+            hash_beg_idx = line.find(beg_hash_str)
+            hash_end_idx = line.find(end_hash_str)
             if(escape_idx != -1):
                 line = line[escape_idx+len(escape_str):]
-            elif(line[-len(beg_str):] == beg_str):
+            elif(beg_idx != -1):
                 outputting = True
-            elif(line[-len(end_str):] == end_str):
+            elif(end_idx != -1):
                 outputting = False
-            elif(line[-len(beg_hash_str):] == beg_hash_str):
+            elif(hash_beg_idx != -1):
+                crc_line_start = crc_line_num
                 hashing = True
-            elif(line[-len(end_hash_str):] == end_hash_str):
+            elif(hash_end_idx != -1):
                 hashing = False
             else:
                 if(hashing):
@@ -71,22 +76,27 @@ for file in file_ord:
         ftmp.close()
         os.system("./remccoms.py <tmp | sponge tmp") #requires moreutils package
     fin = open(file, "r")
-    ftmp = open("tmp", "r")
-    crc_line_num = 0
-    it = iter(ftmp.readlines())
+    if(use_minted):
+        ftmp = open("tmp", "r")
+        crc_line_num = 0
+        it = iter(ftmp.readlines())
     for line in fin.readlines():
         escape_idx = line.find(escape_str)
+        beg_idx = line.find(beg_str)
+        end_idx = line.find(end_str)
+        hash_beg_idx = line.find(beg_hash_str)
+        hash_end_idx = line.find(end_hash_str)
         if(escape_idx != -1):
             line = line[escape_idx+len(escape_str):]
             fout.write(line)
-        elif(line[-len(beg_str):] == beg_str):
+        elif(beg_idx != -1):
             outputting = True
-        elif(line[-len(end_str):] == end_str):
+        elif(end_idx != -1):
             outputting = False
-        elif(line[-len(beg_hash_str):] == beg_hash_str):
+        elif(hash_beg_idx != -1):
             crc_line_start = crc_line_num
             hashing = True
-        elif(line[-len(end_hash_str):] == end_hash_str):
+        elif(hash_end_idx != -1):
             hash_str = add_hash("", crc_line_start, crc_line_num, comment, '%');
             hash_str = hash_str.rstrip()
             fout.write(hash_str)
@@ -98,7 +108,7 @@ for file in file_ord:
                 hash_str = hash_str.rstrip()
                 fout.write(hash_str)
                 need_write_hash = False
-            if(outputting):
+            if(outputting and not line.isspace()):
                 idx1 = line.rfind("/*") #not perfect
                 idx2 = line.rfind("*/")
                 idx3 = line.rfind("//")
@@ -130,7 +140,8 @@ for file in file_ord:
         fout.write("\n")
     if(use_minted and not need_minted):
         fout.write("\\end{minted}\n")
-    ftmp.close()
+    if(use_minted):
+        ftmp.close()
 fout.close()
 
 os.system("printf '\n%.0s' {1..1000}  | pdflatex --shell-escape codebook.tex >/dev/null") #Run latex twice to fix links

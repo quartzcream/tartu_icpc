@@ -10,9 +10,8 @@ typedef unsigned long long ull;
 __int128 pow_mod(__int128 a, ll n, __int128 mod) {
   __int128 res = 1;
   for (ll i = 0; i < 64; ++i) {
-    if (n & (1LL << i)) {
+    if (n & (1LL << i))
       res = (res * a) % mod;
-    }
     a = (a * a) % mod;
   }
   return res;
