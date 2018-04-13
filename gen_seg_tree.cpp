@@ -6,6 +6,8 @@ const int mod = 1e9+7;
 const double M_PI = acos(-1.0);
 #endif
 
+//!escape \section{Generic segment tree(lazy, noncommutative)}
+
 //!begin_codebook
 //!start
 struct Segment{
@@ -49,6 +51,8 @@ struct Lazy{
 		cur.min_val += add_val;
 		cur.sum_val += seg_len * add_val;
 	} //Following code should not need to be modified
+//!finish
+//!start
 	void split(int seg_len, Lazy &lhs_lazy, Lazy &rhs_lazy){
     apply_to_lazy(seg_len, lhs_lazy); //Empty current and pass on to chidlren
     apply_to_lazy(seg_len, rhs_lazy);
@@ -153,9 +157,7 @@ int val_rand(){
 }
 
 //!begin_codebook
-//!start
 int main(){
-//!finish
 //!end_codebook
   int run_test;
   cin>>run_test;
@@ -221,7 +223,6 @@ int main(){
     }
   }
 //!begin_codebook
-//!start
   int n, m; //solves Mechanics Practice LAZY
   cin>>n>>m;
 	SegTree seg_tree(n);
@@ -250,5 +251,4 @@ int main(){
     }
   }
 }
-//!finish
 //!end_codebook

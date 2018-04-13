@@ -16,6 +16,7 @@ DMST.cpp
 bridges.cpp
 2sat.cpp
 lazyst.cpp
+gen_seg_tree.cpp
 persistent.cpp
 HLD.cpp
 multi_dim_fenwick.cpp
