@@ -21,8 +21,7 @@ persistent.cpp
 HLD.cpp
 multi_dim_fenwick.cpp
 treap.cpp
-Library/Math/poly.h
-Library/Math/mod.h
+fft.cpp
 rabbin_miller.cpp
 comb_cheatsheet.tex
 footer.tex

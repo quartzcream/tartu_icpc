@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/python3
 import os
 import shlex
 import subprocess
@@ -144,5 +144,5 @@ for file in file_ord:
         ftmp.close()
 fout.close()
 
-os.system("printf '\n%.0s' {1..1000}  | pdflatex --shell-escape codebook.tex >/dev/null") #Run latex twice to fix links
-os.system("printf '\n%.0s' {1..1000}  | pdflatex --shell-escape codebook.tex >/dev/null")
+for i in range(2):
+    os.system("""/bin/bash -c "printf '\n%.0s' {1..1000}  | pdflatex --shell-escape codebook.tex >/dev/null" """) #Run latex twice to fix links
