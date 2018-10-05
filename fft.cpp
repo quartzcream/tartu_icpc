@@ -6,9 +6,10 @@ const int mod = 998244353;
 const double M_PI = acos(-1.0L);
 #endif
 
-//! escape \section{FFT 5M length/sec}
-//! begin_codebook
-//! start
+//!escape \section{FFT 5M length/sec}
+//!escape integer $c = a*b$ is accurate if $c_i < 2^{49}$
+//!begin_codebook
+//!start
 struct Complex {
   double a = 0, b = 0;
   Complex &operator/=(const int &oth) {
@@ -58,20 +59,22 @@ void fft(vector< Complex > &arr, int ord, bool invert) {
     is_inv = invert;
     for (Complex &cur : root_pow) cur.b = -cur.b;
   }
-  int rev = 0;
-  for (int i = 0; i < (1 << ord) - 1; ++i) {
-    if (i < rev) swap(arr[i], arr[rev]);
-    int j = 0;
-    do {
-      rev ^= 1 << (ord - 1 - j);
-    } while (i & 1 << (j++));
+  for (int i = 1, j=0; i < (1 << ord); ++i) {
+    int m = 1<<(ord-1);
+    bool cont = true;
+    while(cont){
+      cont = j & m;
+      j ^= m;
+      m>>=1;
+    }
+    if (i < j) swap(arr[i], arr[j]);
   }
   fft_rec(arr.data(), root_pow.data(), 1 << (ord - 1));
   if (invert)
     for (int i = 0; i < (1 << ord); ++i) arr[i] /= (1 << ord);
 }
-//! finish
-//! start
+//!finish
+//!start
 void mult_poly_mod(vector< int > &a, vector< int > &b, vector< int > &c) {  // c += a*b
   static vector< Complex > arr[7];  // correct upto 0.5-2M elements(mod ~= 1e9)
   if (c.size() < 400) {
@@ -80,7 +83,7 @@ void mult_poly_mod(vector< int > &a, vector< int > &b, vector< int > &c) {  // c
         c[i + j] = ((ll)a[i] * b[j] + c[i + j]) % mod;
   } else {
     int fft_ord = 32 - __builtin_clz(c.size());
-    if (arr[0].size() < 1 << fft_ord)
+    if (arr[0].size() != 1 << fft_ord)
       for (int i = 0; i < 7; ++i) arr[i].resize(1 << fft_ord);
     for (int i = 0; i < 7; ++i) fill(arr[i].begin(), arr[i].end(), Complex{});
     for (int &cur : a)
@@ -112,8 +115,8 @@ void mult_poly_mod(vector< int > &a, vector< int > &b, vector< int > &c) {  // c
     }
   }
 }
-//! finish
-//! end_codebook
+//!finish
+//!end_codebook
 
 int main() {
   int n = 15;

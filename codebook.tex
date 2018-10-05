@@ -2119,116 +2119,111 @@ int main() {
 }
 \end{minted}
 \section{FFT 5M length/sec}
+integer $c = a*b$ is accurate if $c_i < 2^{49}$
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-struct Complex{
-  double a=0, b=0;
-  Complex &operator/=(const int &oth){
+struct Complex {
+  double a = 0, b = 0;
+  Complex &operator/=(const int &oth) {
     a /= oth;
     b /= oth;
     return *this;
   }
 };
-Complex operator+(const Complex &lft, const Complex &rgt){
-  return Complex {lft.a+rgt.a, lft.b+rgt.b};@ $ \hfill #384 $ @
+Complex operator+(const Complex &lft, const Complex &rgt) {
+  return Complex{lft.a + rgt.a, lft.b + rgt.b};@ $ \hfill #384 $ @
 }
-Complex operator-(const Complex &lft, const Complex &rgt){
-  return Complex {lft.a-rgt.a, lft.b-rgt.b};
+Complex operator-(const Complex &lft, const Complex &rgt) {
+  return Complex{lft.a - rgt.a, lft.b - rgt.b};
 }
-Complex operator*(const Complex &lft, const Complex &rgt){
-  return Complex {lft.a*rgt.a-lft.b*rgt.b, lft.a*rgt.b+lft.b*rgt.a};
+Complex operator*(const Complex &lft, const Complex &rgt) {
+  return Complex{lft.a * rgt.a - lft.b * rgt.b, lft.a * rgt.b + lft.b * rgt.a};
 }
-void fft_rec(Complex *arr, Complex *root_pow, int len){
-  if(len != 1){
-    fft_rec(arr, root_pow, len>>1);@ $ \hfill #767 $ @
-    fft_rec(arr+len, root_pow, len>>1);
+void fft_rec(Complex *arr, Complex *root_pow, int len) {
+  if (len != 1) {
+    fft_rec(arr, root_pow, len >> 1);@ $ \hfill #767 $ @
+    fft_rec(arr + len, root_pow, len >> 1);
   }
   root_pow += len;
-  for(int i=0; i < len; ++i){
-    Complex tmp = arr[i]+root_pow[i]*arr[i+len];
-    arr[i+len] = arr[i]-root_pow[i]*arr[i+len];
+  for (int i = 0; i < len; ++i) {
+    Complex tmp = arr[i] + root_pow[i] * arr[i + len];
+    arr[i + len] = arr[i] - root_pow[i] * arr[i + len];
     arr[i] = tmp;
   }
 }
-void fft(vector<Complex> &arr, int ord, bool invert){@ $ \hfill #689 $ @
-  assert(arr.size() == 1<<ord);
-  static vector<Complex> root_pow(1);
+void fft(vector< Complex > &arr, int ord, bool invert) {@ $ \hfill #689 $ @
+  assert(arr.size() == 1 << ord);
+  static vector< Complex > root_pow(1);
   static int inc_pow = 1;
   static bool is_inv = false;
-  if(inc_pow <= ord){
+  if (inc_pow <= ord) {
     int idx = root_pow.size();
-    root_pow.resize(1<<ord);
-    for(; inc_pow<=ord; ++inc_pow){
-      for(int idx_p = 0; idx_p < 1<<(ord-1); idx_p += 1<<(ord-inc_pow), ++idx){
-        root_pow[idx] = Complex {cos(-idx_p*M_PI/(1<<(ord-1))), sin(-idx_p*M_PI/(1<<(ord-1)))};@ $ \hfill #830 $ @
-        if(is_inv)
-          root_pow[idx].b = -root_pow[idx].b;
+    root_pow.resize(1 << ord);
+    for (; inc_pow <= ord; ++inc_pow) {
+      for (int idx_p = 0; idx_p < 1 << (ord - 1); idx_p += 1 << (ord - inc_pow), ++idx) {
+        root_pow[idx] =@ $ \hfill #053 $ @
+            Complex{cos(-idx_p * M_PI / (1 << (ord - 1))), sin(-idx_p * M_PI / (1 << (ord - 1)))};
+        if (is_inv) root_pow[idx].b = -root_pow[idx].b;
       }
     }
   }
-  if(invert != is_inv){
+  if (invert != is_inv) {
     is_inv = invert;
-    for(Complex &cur : root_pow)
-      cur.b = -cur.b;
-  }@ $ \hfill #717 $ @
-  int rev = 0;
-  for(int i=0; i < (1<<ord)-1; ++i){
-    if(i < rev)
-      swap(arr[i], arr[rev]);
-    int j=0;
-    do{
-      rev ^= 1<<(ord-1-j);
-    } while(i & 1<<(j++));
+    for (Complex &cur : root_pow) cur.b = -cur.b;
   }
-  fft_rec(arr.data(), root_pow.data(), 1<<(ord-1));@ $ \hfill #351 $ @
-  if(invert)
-    for(int i=0; i< (1<<ord); ++i)
-      arr[i] /= (1<<ord);
-}@ $ \hfill %402 $ @
-void mult_poly_mod(vector<int> &a, vector<int> &b, vector<int> &c){ // c += a*b
-  static vector<Complex> arr[7]; //correct upto 0.5-2M elements(mod ~= 1e9)
-  if(c.size() < 400){
-    for(int i=0; i < (int)a.size(); ++i)
-      for(int j=0; j < (int)b.size() && i+j < (int)c.size(); ++j)
-        c[i+j] = ((ll)a[i]*b[j]+c[i+j])%mod;
+  for (int i = 1, j=0; i < (1 << ord); ++i) {@ $ \hfill #565 $ @
+    int m = 1<<(ord-1);
+    bool cont = true;
+    while(cont){
+      cont = j & m;
+      j ^= m;
+      m>>=1;
+    }
+    if (i < j) swap(arr[i], arr[j]);
+  }
+  fft_rec(arr.data(), root_pow.data(), 1 << (ord - 1));@ $ \hfill #847 $ @
+  if (invert)
+    for (int i = 0; i < (1 << ord); ++i) arr[i] /= (1 << ord);
+}@ $ \hfill %836 $ @
+void mult_poly_mod(vector< int > &a, vector< int > &b, vector< int > &c) {  // c += a*b
+  static vector< Complex > arr[7];  // correct upto 0.5-2M elements(mod ~= 1e9)
+  if (c.size() < 400) {
+    for (int i = 0; i < a.size(); ++i)
+      for (int j = 0; j < b.size() && i + j < c.size(); ++j)
+        c[i + j] = ((ll)a[i] * b[j] + c[i + j]) % mod;
   } else {
-    int fft_ord = 32-__builtin_clz(c.size());
-    if((int)arr[0].size() < 1<<fft_ord)
-      for(int i=0; i<7; ++i)@ $ \hfill #082 $ @
-        arr[i].resize(1<<fft_ord);
-    for(int i=0; i<7; ++i)
-      fill(arr[i].begin(), arr[i].end(), Complex{});
-    for(int &cur : a)
-      if(cur < 0)
-        cur += mod;
-    for(int &cur : b)
-      if(cur < 0)
-        cur += mod;
-    const int shift = 15;@ $ \hfill #019 $ @
-    const int mask = (1<<shift)-1;
-    for(int i=0; i < (int)min(a.size(), c.size()); ++i){
-      arr[0][i].a = a[i]&mask;
-      arr[1][i].a = a[i]>>shift;
+    int fft_ord = 32 - __builtin_clz(c.size());
+    if (arr[0].size() != 1 << fft_ord)
+      for (int i = 0; i < 7; ++i) arr[i].resize(1 << fft_ord);@ $ \hfill #672 $ @
+    for (int i = 0; i < 7; ++i) fill(arr[i].begin(), arr[i].end(), Complex{});
+    for (int &cur : a)
+      if (cur < 0) cur += mod;
+    for (int &cur : b)
+      if (cur < 0) cur += mod;
+    const int shift = 15;
+    const int mask = (1 << shift) - 1;
+    for (int i = 0; i < min(a.size(), c.size()); ++i) {
+      arr[0][i].a = a[i] & mask;
+      arr[1][i].a = a[i] >> shift;@ $ \hfill #762 $ @
     }
-    for(int i=0; i < (int)min(b.size(), c.size()); ++i){
-      arr[2][i].a = b[i]&mask;
-      arr[3][i].a = b[i]>>shift;
+    for (int i = 0; i < min(b.size(), c.size()); ++i) {
+      arr[2][i].a = b[i] & mask;
+      arr[3][i].a = b[i] >> shift;
     }
-    for(int i=0; i<4; ++i)@ $ \hfill #432 $ @
-      fft(arr[i], fft_ord, false);
-    for(int i=0; i<2; ++i){
-      for(int j=0; j<2; ++j){
-        int tar = 4+i+j;
-        for(int k=0; k<(1<<fft_ord); ++k)
-          arr[tar][k] = arr[tar][k] + arr[i][k] * arr[2+j][k];
+    for (int i = 0; i < 4; ++i) fft(arr[i], fft_ord, false);
+    for (int i = 0; i < 2; ++i) {
+      for (int j = 0; j < 2; ++j) {
+        int tar = 4 + i + j;
+        for (int k = 0; k < (1 << fft_ord); ++k)@ $ \hfill #694 $ @
+          arr[tar][k] = arr[tar][k] + arr[i][k] * arr[2 + j][k];
       }
     }
-    for(int i=4; i<7; ++i){
-      fft(arr[i], fft_ord, true);@ $ \hfill #272 $ @
-      for(int k=0; k<(int)c.size(); ++k)
-        c[k] = (c[k]+(((ll)(arr[i][k].a+0.5)%mod)<<(shift*(i-4))))%mod;
+    for (int i = 4; i < 7; ++i) {
+      fft(arr[i], fft_ord, true);
+      for (int k = 0; k < (int)c.size(); ++k)
+        c[k] = (c[k] + (((ll)(arr[i][k].a + 0.5) % mod) << (shift * (i - 4)))) % mod;
     }
   }
-}@ $ \hfill %089 $ @
+}@ $ \hfill %002 $ @
 \end{minted}
 \section{Rabbin Miller prime check}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
