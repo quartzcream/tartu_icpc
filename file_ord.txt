@@ -22,6 +22,6 @@ HLD.cpp
 multi_dim_fenwick.cpp
 treap.cpp
 fft.cpp
-rabbin_miller.cpp
+pollard_rho_slow.cpp
 comb_cheatsheet.tex
 footer.tex

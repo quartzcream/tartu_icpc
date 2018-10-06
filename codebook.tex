@@ -2225,28 +2225,28 @@ void mult_poly_mod(vector< int > &a, vector< int > &b, vector< int > &c) {  // c
   }
 }@ $ \hfill %002 $ @
 \end{minted}
-\section{Rabbin Miller prime check}
+\section{Rabbin Miller prime check, Pollard rho factorization $\mathcal{O}(\sqrt{p})$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+static vector< char > small_primes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
 __int128 pow_mod(__int128 a, ll n, __int128 mod) {
   __int128 res = 1;
-  for (ll i = 0; i < 64; ++i) {
-    if (n & (1LL << i))
+  for (ll i = 1; i <= n; i<<=1) {
+    if (n & i)
       res = (res * a) % mod;
     a = (a * a) % mod;
   }
   return res;
-}
-bool is_prime(ll n) { //guaranteed for 64 bit numbers$ \hfill #280 $
+}@ $ \hfill #180 $ @
+bool is_prime(ll n) { //guaranteed for 64 bit numbers
   if (n == 2 || n == 3) return true;
   if (!(n & 1) || n == 1) return false;
-  static vector< char > witnesses = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
   ll s = __builtin_ctz(n - 1);
   ll d = (n - 1) >> s;
   __int128 mod = n;
-  for (__int128 a : witnesses) {
+  for (__int128 a : small_primes) {
     if (a >= mod) break;
     a = pow_mod(a, d, mod);
-    if (a == 1 || a == mod - 1) continue;@ $ \hfill #667 $ @
+    if (a == 1 || a == mod - 1) continue;@ $ \hfill #754 $ @
     for (ll r = 1; r < s; ++r) {
       a = a * a % mod;
       if (a == 1) return false;
@@ -2255,7 +2255,51 @@ bool is_prime(ll n) { //guaranteed for 64 bit numbers$ \hfill #280 $
     if (a != mod - 1) return false;
   }
   return true;
-}@ $ \hfill %083 $ @
+}@ $ \hfill %457 $ @
+ll sqp1(ll x, ll n){
+  return ((__int128)x*x+1)%n;
+};
+ll pollard_rho(ll n){
+  while(true){
+    ll lv = rand()%n;
+    ll v = sqp1(lv, n);
+    int tar = 1;
+    for(int i=1; ; ++i){
+      ll g = __gcd(abs(v-lv), n);@ $ \hfill #695 $ @
+      if(g == n){
+        break;
+      } else if(g != 1){
+        return g;
+      }
+      if(i == tar){
+        lv = v;
+        tar <<= 1;
+      }
+      v = sqp1(v, n);@ $ \hfill #852 $ @
+    }
+  }
+}
+void prime_factor(ll n, map<ll, int> &res){
+  while(!(n&1)){
+    ++res[2];
+    n >>=1;
+  }
+  for(int i=3; n>1 && i<=1000; i += 2){
+    while(!(n%i)){@ $ \hfill #475 $ @
+      ++res[i];
+      n /= i;
+    }
+  }
+  if(n != 1){
+    if(is_prime(n)){
+      ++res[n];
+    } else {
+      ll factor = pollard_rho(n);
+      prime_factor(factor, res);@ $ \hfill #850 $ @
+      prime_factor(n/factor, res);
+    }
+  }
+}@ $ \hfill %047 $ @
 \end{minted}
 \nopagebreak
 \end{multicols}
