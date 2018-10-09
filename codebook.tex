@@ -1451,266 +1451,135 @@ int main() {
     return 0;
 }
 \end{minted}
-\section{Lazy Segment Tree $\mathcal{O}(\log n)$ per query}
+\section{Generic persistent compressed lazy segment tree}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-struct SegmentTree {
-    struct Node {
-        long long value = 0;
-        int size = 1;
-        int lazy_add = 0;
-        bool lazy_set = false;
-        int lazy_to_set = 0;
-        void set(int to_set) {
-            lazy_set = true;
-            lazy_to_set = to_set;@ $ \hfill #173 $ @
-            lazy_add = 0;
-        }
-    };
-    int n;
-    vector<Node> nodes;
-    void propagate(int pos) {
-        Node& cur = nodes[pos];
-        if(cur.lazy_set) {
-            if(pos < n) {
-                nodes[pos*2].set(cur.lazy_to_set);@ $ \hfill #388 $ @
-                nodes[pos*2+1].set(cur.lazy_to_set);
-            }
-            cur.value = 1LL * cur.size * cur.lazy_to_set;
-            cur.lazy_set = false;
-        }
-        if(cur.lazy_add != 0) {
-            if(pos < n) {
-                nodes[pos*2].lazy_add += cur.lazy_add;
-                nodes[pos*2+1].lazy_add += cur.lazy_add;
-            }@ $ \hfill #114 $ @
-            cur.value += 1LL * cur.size * cur.lazy_add;
-            cur.lazy_add = 0;
-        }
-    }
-    long long get_value(int pos) {
-        propagate(pos);
-        return nodes[pos].value;
-    }
-    SegmentTree(int nsize) {
-        n = 1;@ $ \hfill #759 $ @
-        while(n < nsize) n*=2;
-        nodes.resize(2*n);
-        for(int i=n-1; i>0; i--)
-            nodes[i].size = nodes[2*i].size * 2;
-    }
-    void set(int l, int r, int to_set, int pos = 1, int lb = 0, int rb = -1) {
-        propagate(pos);
-        if(rb == -1) rb = n;
-        if(l <= lb && rb <= r) {
-            nodes[pos].set(to_set);@ $ \hfill #567 $ @
-            return;
-        }
-        int mid = (lb + rb) / 2;
-        if(l < mid)
-            set(l, r, to_set, pos*2, lb, mid);
-        if(mid < r)
-            set(l, r, to_set, pos*2+1, mid, rb);
-        nodes[pos].value = get_value(pos*2) + get_value(pos*2+1);
-    }
-    void add(int l, int r, int to_add, int pos = 1, int lb = 0, int rb = -1) {@ $ \hfill #168 $ @
-        propagate(pos);
-        if(rb == -1) rb = n;
-        if(l <= lb && rb <= r) {
-            nodes[pos].lazy_add += to_add;
-            return;
-        }
-        int mid = (lb + rb) / 2;
-        if(l < mid)
-            add(l, r, to_add, pos*2, lb, mid);
-        if(mid < r)@ $ \hfill #620 $ @
-            add(l, r, to_add, pos*2+1, mid, rb);
-        nodes[pos].value = get_value(pos*2) + get_value(pos*2+1);
-    }
-    long long get(int l, int r, int pos = 1, int lb = 0, int rb = -1) {
-        propagate(pos);
-        if(rb == -1) rb = n;
-        if(l <= lb && rb <= r) return get_value(pos);
-        int mid = (lb + rb) / 2;
-        long long result = 0;
-        if(l < mid)@ $ \hfill #133 $ @
-            result += get(l, r, pos*2, lb, mid);
-        if(mid < r)
-            result += get(l, r, pos*2+1, mid, rb);
-        return result;
-    }
-};@ $ \hfill %280 $ @
-//Solution for: http://codeforces.com/group/UO1GDa2Gwb/contest/219104/problem/LAZY
-int main() {
-    int n, m;
-    cin >> n >> m;
-    SegmentTree stree(n);
-    for(int i=0;i<n;i++) {
-        int a;
-        cin >> a;
-        stree.set(i, i+1, a);
-    }
-    for(int i=0;i<m;i++) {
-        int type;
-        cin >> type;
-        if(type == 1) {
-            int l, r, d;
-            cin >> l >> r >> d;
-            stree.add(l-1, r, d);
-        } else if(type == 2) {
-            int l, r, x;
-            cin >> l >> r >> x;
-            stree.set(l-1, r, x);
-        } else {
-            int l, r;
-            cin >> l >> r;
-            cout << stree.get(l-1, r) << '\n';
-        }
-    }
-}
-\end{minted}
-\section{Generic segment tree(lazy, noncommutative)}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-struct Segment{
-	ll sum_val=0;
-	ll min_val=0;
-	void find_sum(int seg_len, ll &cur_sum){
-		cur_sum = cur_sum + sum_val;
+struct Seg{
+	ll sum=0;
+	void recalc(const Seg &lhs_seg, int lhs_len, const Seg &rhs_seg, int rhs_len){
+		sum = lhs_seg.sum + rhs_seg.sum;
 	}
-	void find_min(int seg_len, ll &cur_min){
-		cur_min = min(cur_min, min_val);
-	}
-	void recalc(int seg_len, const Segment &lhs_seg, const Segment &rhs_seg){@ $ \hfill #599 $ @
-		sum_val = lhs_seg.sum_val + rhs_seg.sum_val;
-		min_val = min(lhs_seg.min_val, rhs_seg.min_val);
-	}
-};
+} __attribute__((packed));
 struct Lazy{
-	ll add_val;
+	ll add;
 	ll assign_val; //LLONG\_MIN if no assign;
-	void init(){
-		add_val = 0;
-		assign_val = LLONG_MIN;@ $ \hfill #577 $ @
+	void init(){@ $ \hfill #883 $ @
+		add = 0;
+		assign_val = LLONG_MIN;
 	}
 	Lazy(){ init(); }
-  void apply_to_lazy(int seg_len, Lazy &child) const{
-		if(assign_val != LLONG_MIN){
-			child.add_val = 0;
-      child.assign_val = assign_val;
-    }
-    child.add_val += add_val;
-  }
-	void apply_to_seg(int seg_len, Segment &cur) const{@ $ \hfill #523 $ @
-		if(assign_val != LLONG_MIN){
-			cur.min_val =	assign_val;
-			cur.sum_val =	seg_len * assign_val;
-		}
-		cur.min_val += add_val;
-		cur.sum_val += seg_len * add_val;
-	} //Following code should not need to be modified$ \hfill %992 $
-	void split(int seg_len, Lazy &lhs_lazy, Lazy &rhs_lazy){
-    apply_to_lazy(seg_len, lhs_lazy); //Empty current and pass on to chidlren
-    apply_to_lazy(seg_len, rhs_lazy);
+	void split(Lazy &lhs_lazy, Lazy &rhs_lazy, int len){
+    lhs_lazy = *this;
+    rhs_lazy = *this;
     init();
-	}
-};
-// Highly optimized generic segment tree with lazy propagation
-class SegTree{ //indexes start from 0, ranges are [beg, end)
-private:
-	int offset;
-	int height;@ $ \hfill #678 $ @
-	Segment *segs;
-	Lazy *lazys;
-  vector<bool> is_lazy;
-  void split(int len, int idx){
-    is_lazy[idx] = false;
-    lazys[idx].apply_to_seg(len/2, segs[2*idx]);
-    lazys[idx].apply_to_seg(len/2, segs[2*idx+1]);
-    lazys[idx].split(len/2, lazys[2*idx], lazys[2*idx+1]);
-    is_lazy[2*idx] = true;
-    is_lazy[2*idx+1] = true;@ $ \hfill #984 $ @
   }
-	void push(int bot_idx){
-		for(int s = height-1; s>0; --s){
-			int idx = bot_idx>>s;
-			if(is_lazy[idx]){ //Lazys can be below other lazys
-        split(1<<s, idx);
-			}
-		}
-	}
-	void build(int len, int idx){@ $ \hfill #201 $ @
-		for(; idx; len<<=1, idx>>=1){
-			segs[idx].recalc(len, segs[2*idx], segs[2*idx+1]);
-		}
-	}
-public:
-	SegTree(int tree_size){
-		offset = tree_size;
-		height = 32 - __builtin_clz(tree_size);
-		segs = new Segment[2*tree_size];
-		lazys = new Lazy[2*tree_size];@ $ \hfill #920 $ @
-		is_lazy.resize(2*tree_size, false);
-	}
-	~SegTree(){
-		delete[] segs;
-		delete[] lazys;
-	}
-	void modify(int l, int r, const Lazy &upd){
-		l+=offset;
-		r+=offset;
-		push(l);@ $ \hfill #744 $ @
-		push(r-1);
-		int len = 1;
-		for(int l_tmp = l, r_tmp = r; l_tmp<r_tmp; l_tmp >>= 1, r_tmp >>= 1, len <<= 1){
-			if(l_tmp & 1){
-        upd.apply_to_lazy(len, lazys[l_tmp]);
-        upd.apply_to_seg(len, segs[l_tmp]);
-				is_lazy[l_tmp] = true;
-				++l_tmp;
-			}
-			if(r_tmp & 1){@ $ \hfill #347 $ @
-				--r_tmp;
-        upd.apply_to_lazy(len, lazys[r_tmp]);
-        upd.apply_to_seg(len, segs[r_tmp]);
-				is_lazy[r_tmp] = true;
-			}
-		}
-		len = 1<<(__builtin_ctz(l)+1);
-		l >>=  __builtin_ctz(l) + 1;
-		build(len, l);
-		len = 1<<(__builtin_ctz(r)+1);@ $ \hfill #339 $ @
-		r >>= __builtin_ctz(r) + 1;
-		build(len, r);
-	}
-	template< typename ...QueryArgs >
-	void query(int l, int r, void (Segment::*query_func)(int, QueryArgs...), QueryArgs &&...query_args){
-		l+=offset;
-		r+=offset;
-		push(l);
-		push(r-1);
-		int len = 1;@ $ \hfill #008 $ @
-    int r_orig = r;
-		for(; l< r; l>>=1, r>>=1, len <<= 1){ //Segments apllied in order to querry
-			if(l & 1){
-				(segs[l++].*query_func)(len, query_args...);
-			}
-		}
-    for(;r < r_orig;){
-      r<<=1;
-      len>>=1;
-      if(r_orig & len){@ $ \hfill #766 $ @
-        (segs[r++].*query_func)(len, query_args...);
-      }
+  void merge(Lazy &oth, int len){@ $ \hfill #470 $ @
+		if(oth.assign_val != LLONG_MIN){
+			add = 0;
+      assign_val = oth.assign_val;
     }
+    add += oth.add;
+  }
+	void apply_to_seg(Seg &cur, int len) const{
+		if(assign_val != LLONG_MIN){
+			cur.sum =	len * assign_val;
+		}@ $ \hfill #216 $ @
+		cur.sum += len * add;
 	}
-};@ $ \hfill %509 $ @
+} __attribute__((packed));@ $ \hfill %625 $ @
+struct Node{ //Following code should not need to be modified
+  int ver;
+  bool is_lazy = false;
+  Seg seg;
+  Lazy lazy;
+	Node *lc=NULL, *rc=NULL;
+	void init(){
+		if(!lc){
+			lc = new Node {ver};
+			rc = new Node {ver};@ $ \hfill #313 $ @
+		}
+	}
+  Node *upd(int L, int R, int l, int r, Lazy &val, int tar_ver){
+    if(ver != tar_ver){
+      Node *rep = new Node(*this);
+      rep->ver = tar_ver;
+      return rep->upd(L, R, l, r, val, tar_ver);
+    }
+    if(L >= l && R <= r){
+      val.apply_to_seg(seg, R-L);@ $ \hfill #138 $ @
+      lazy.merge(val, R-L);
+      is_lazy = true;
+    } else {
+      init();
+      int M = (L+R)/2;
+      if(is_lazy){
+        Lazy l_val , r_val;
+        lazy.split(l_val, r_val, R-L);
+        lc = lc->upd(L, M, L, M, l_val, ver);
+        rc = rc->upd(M, R, M, R, r_val, ver);@ $ \hfill #104 $ @
+        is_lazy = false;
+      }
+      Lazy l_val , r_val;
+      val.split(l_val, r_val, R-L);
+      if(l < M)
+        lc = lc->upd(L, M, l, r, l_val, ver);
+      if(M < r)
+        rc = rc->upd(M, R, l, r, r_val, ver);
+      seg.recalc(lc->seg, M-L, rc->seg, R-M);
+    }@ $ \hfill #245 $ @
+    return this;
+  }
+  void get(int L, int R, int l, int r, Seg *&lft_res, Seg *&tmp, bool last_ver){
+    if(L >= l && R <= r){
+      tmp->recalc(*lft_res, L-l, seg, R-L);
+      swap(lft_res, tmp);
+    } else {
+      init();
+      int M = (L+R)/2;
+      if(is_lazy){@ $ \hfill #726 $ @
+        Lazy l_val , r_val;
+        lazy.split(l_val, r_val, R-L);
+        lc = lc->upd(L, M, L, M, l_val, ver+last_ver);
+        lc->ver = ver;
+        rc = rc->upd(M, R, M, R, r_val, ver+last_ver);
+        rc->ver = ver;
+        is_lazy = false;
+      }
+      if(l < M)
+        lc->get(L, M, l, r, lft_res, tmp, last_ver);@ $ \hfill #696 $ @
+      if(M < r)
+        rc->get(M, R, l, r, lft_res, tmp, last_ver);
+    }
+  }
+} __attribute__((packed));
+struct SegTree{ //indexes start from 0, ranges are [beg, end)
+  vector<Node *> roots; //versions start from 0
+  int len;
+  SegTree(int _len) : len(_len){
+    roots.push_back(new Node {0});@ $ \hfill #295 $ @
+  }
+  int upd(int l, int r, Lazy &val, bool new_ver = false){
+    Node *cur_root = roots.back()->upd(0, len, l, r, val, roots.size()-!new_ver);
+    if(cur_root != roots.back())
+      roots.push_back(cur_root);
+    return roots.size()-1;
+  }
+  Seg get(int l, int r, int ver = -1){
+    if(ver == -1)
+      ver = roots.size()-1;@ $ \hfill #977 $ @
+    Seg seg1, seg2;
+    Seg *pres = &seg1, *ptmp = &seg2;
+    roots[ver]->get(0, len, l, r, pres, ptmp, roots.size()-1);
+    return *pres;
+  }
+};@ $ \hfill %542 $ @
 int main(){
   int n, m; //solves Mechanics Practice LAZY
   cin>>n>>m;
-	SegTree seg_tree(n);
+	SegTree seg_tree(1<<17);
   for(int i=0; i<n; ++i){
     Lazy tmp;
     scanf("%lld", &tmp.assign_val);
-    seg_tree.modify(i, i+1, tmp);
+    seg_tree.upd(i, i+1, tmp);
   }
   for(int i=0; i<m; ++i){
     int o;
@@ -1719,89 +1588,18 @@ int main(){
     --l;
     if(o==1){
       Lazy tmp;
-      scanf("%lld", &tmp.add_val);
-      seg_tree.modify(l, r, tmp);
+      scanf("%lld", &tmp.add);
+      seg_tree.upd(l, r, tmp);
     } else if(o==2){
       Lazy tmp;
       scanf("%lld", &tmp.assign_val);
-      seg_tree.modify(l, r, tmp);
+      seg_tree.upd(l, r, tmp);
     } else {
-      ll res=0;
-      seg_tree.query(l, r, &Segment::find_sum, res);
-      printf("%lld\n",res);
+      Seg res = seg_tree.get(l, r);
+      printf("%lld\n",res.sum);
     }
   }
 }
-\end{minted}
-\section{Templated Persitent Segment Tree $\mathcal{O}(\log n)$ per query}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-template<typename T, typename comp>
-class PersistentST {
-  struct Node {
-    Node *left, *right;
-    int lend, rend;
-    T value;
-    Node (int position, T _value) {
-      left = NULL;
-      right = NULL;
-      lend = position;@ $ \hfill #479 $ @
-      rend = position;
-      value = _value;
-    }
-    Node (Node *_left, Node *_right) {
-      left = _left;
-      right = _right;
-      lend = left->lend;
-      rend = right->rend;
-      value = comp()(left->value, right->value);
-    }@ $ \hfill #373 $ @
-    T query (int qleft, int qright) {
-      qleft = max(qleft, lend);
-      qright = min(qright, rend);
-      if (qleft == lend && qright == rend) {
-        return value;
-      } else if (qleft > qright) {
-        return comp().identity;
-      } else {
-        return comp()(left->query(qleft, qright), right->query(qleft, qright));
-      }@ $ \hfill #766 $ @
-    }
-  };
-  int size;
-  Node **tree;
-  vector<Node*> roots;
-public:
-  PersistentST () {}
-  PersistentST (int _size, T initial) {
-    for (int i = 0; i < 32; i++) {
-      if ((1 << i) > _size) {@ $ \hfill #250 $ @
-        size = 1 << i;
-        break;
-      }
-    }
-    tree = new Node* [2 * size + 5];
-    for (int i = size; i < 2 * size; i++)
-      tree[i] = new Node (i - size, initial);
-    for (int i = size - 1; i > 0; i--)
-      tree[i] = new Node (tree[2 * i], tree[2 * i + 1]);
-    roots = vector<Node*> (1, tree[1]);@ $ \hfill #128 $ @
-  }
-  void set (int position, T _value) {
-    tree[size + position] = new Node (position, _value);
-    for (int i = (size + position) / 2; i >= 1; i /= 2)
-      tree[i] = new Node (tree[2 * i], tree[2 * i + 1]);
-    roots.push_back(tree[1]);
-  }
-  int last_revision () {
-    return (int) roots.size() - 1;
-  }@ $ \hfill #890 $ @
-  T query (int qleft, int qright, int revision) {
-    return roots[revision]->query(qleft, qright);
-  }
-  T query (int qleft, int qright) {
-    return roots[last_revision()]->query(qleft, qright);
-  }
-};@ $ \hfill %280 $ @
 \end{minted}
 \section{Templated HLD $\mathcal{O}(M(n) \log n)$ per query}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
