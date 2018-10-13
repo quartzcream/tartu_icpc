@@ -20,6 +20,6 @@ HLD.cpp
 multi_dim_fenwick.cpp
 treap.cpp
 fft.cpp
-pollard_rho_slow.cpp
+pollard_rho.cpp
 comb_cheatsheet.tex
 footer.tex
