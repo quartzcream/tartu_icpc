@@ -2027,64 +2027,26 @@ void mult_poly_mod(vector< int > &a, vector< int > &b, vector< int > &c) {  // c
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct ModArithm {
   ull n;
-  ull q = 0;  // (1<<(shift+64))/n
-  char shift = -1;
-  ModArithm(ull _n) : n(_n) {  // n in [2, 1<<63]
-    ull rem = 1;
-    while (rem < n) {
-      ++shift;
-      rem <<= 1;
-    }@ $ \hfill #679 $ @
-    for (int i = 63; i >= 0; --i) {
-      if (rem >= n) {
-        q |= 1LL << i;
-        rem -= n;
-      }
-      rem *= 2;
-    }
+  ld rec;
+  ModArithm(ull _n) : n(_n) {  // n in [2, 1<<63)
+    rec = 1.0L/n;
   }
   ull multf(ull a, ull b) {  // a, b in [0, min(2*n, 1<<63))
-    ull res;@ $ \hfill #489 $ @
-    ull tmp;
-    __asm__(
-        "mulq %[b];\n\t"           // a*b
-        "movq %%rax, %[res];\n\t"  // ab_l = (a*b) & ((1 << 64)-1)
-        "movq %%rdx, %[tmp];\n\t"  // ab_h = (a*b) >> 64
-        "mulq %[q];\n\t"           // ab_l * q
-        "movq %[tmp], %%rax;\n\t"
-        "movq %%rdx, %[tmp];\n\t"  // abq_m = (ab_l * q) >> 64
-        "mulq %[q];\n\t"           // ab_h * q
-        "addq %[tmp], %%rax;\n\t"  // abq_m += (ab_h * q) & ((1 << 64)-1)$ \hfill #376 $
-        "adcq $0, %%rdx;\n\t"      // abq_h = ((ab_h * q) >> 64) + carry
-        "mov %[shift], %%cl;\n\t"
-        "shrq %%cl, %%rax;\n\t"
-        "neg %%cl;\n\t"
-        "shlq %%cl, %%rdx;\n\t"
-        "orq %%rdx, %%rax;\n\t"  // d = (a*b)/n = (abq_m >> shift) | (abq_h << (64 -shift)) //may be
-                                 // smaller by one
-        "mulq %[n];\n\t"         // d*n
-        "subq %%rax, %[res];\n\t"  // ab_l - = dn_l
-        : [res] "=&r"(res), [tmp] "=&r"(tmp)
-        : [a] "%a"(a), [b] "rm"(b), [q] "r"(q), [shift] "rm"(shift), [n] "rm"(n)@ $ \hfill #499 $ @
-        : "%rdx", "%cl", "cc");
-    return res;  // in [0, 2n-1)
+    ull mult = (ld)a*b*rec+0.5L;
+    ll res = a*b-mult*n;
+    if(res < 0) res += n;@ $ \hfill #780 $ @
+    return res; // in [0, n-1)
   }
-  ull fix(ull a) {
-    if (a >= n) a -= n;
-    return a;
-  }
-  ull mult(ull a, ull b) { return fix(multf(a, b)); }@ $ \hfill %440 $ @
-  ull sqp1(ull a) { return multf(a, a) + 1; }@ $ \hfill %880 $ @
-  ull mults(ull a, ull b) { return (unsigned __int128)a * b % n; }
-};@ $ \hfill %328 $ @
+  ull sqp1(ull a) { return multf(a, a) + 1; }
+};@ $ \hfill %493 $ @
 ull pow_mod(ull a, ull n, ModArithm &arithm) {
   ull res = 1;
   for (ull i = 1; i <= n; i <<= 1) {
     if (n & i) res = arithm.multf(res, a);
     a = arithm.multf(a, a);
   }
-  return arithm.fix(res);
-}@ $ \hfill %156 $ @
+  return res;
+}@ $ \hfill %144 $ @
 vector< char > small_primes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
 bool is_prime(ull n) {  // n <= 1<<63, 1M rand/s
   ModArithm arithm(n);
@@ -2097,35 +2059,35 @@ bool is_prime(ull n) {  // n <= 1<<63, 1M rand/s
     a = pow_mod(a, d, arithm);@ $ \hfill #356 $ @
     if (a == 1 || a == n - 1) continue;
     for (ull r = 1; r < s; ++r) {
-      a = arithm.mult(a, a);
+      a = arithm.multf(a, a);
       if (a == 1) return false;
       if (a == n - 1) break;
     }
     if (a != n - 1) return false;
   }
   return true;
-}@ $ \hfill #797 $ @@ $ \hfill %797 $ @
+}@ $ \hfill %975 $ @
 ll pollard_rho(ll n) {
   ModArithm arithm(n);
   int cum_cnt = 64 - __builtin_clz(n);
-  cum_cnt *= cum_cnt / 8 + 1;
+  cum_cnt *= cum_cnt / 5 + 1;
   while (true) {
     ll lv = rand() % n;
     ll v = arithm.sqp1(lv);
     int idx = 1;
     int tar = 1;
-    while (true) {@ $ \hfill #896 $ @
+    while (true) {@ $ \hfill #290 $ @
       ll cur = 1;
       ll v_cur = v;
-      for (int j = 0; j < cum_cnt && idx != tar; ++j) {
+      int j_stop = min(cum_cnt, tar-idx);
+      for (int j = 0; j < j_stop; ++j) {
         cur = arithm.multf(cur, abs(v_cur -lv));
         v_cur = arithm.sqp1(v_cur);
         ++idx;
       }
-      cur = arithm.fix(cur);
       if (!cur) {
-        for (int j = 0; j < cum_cnt; ++j) {@ $ \hfill #866 $ @
-          ll g = __gcd(abs(v_cur -lv), n);
+        for (int j = 0; j < cum_cnt; ++j) {@ $ \hfill #912 $ @
+          ll g = __gcd(abs(v-lv), n);
           if (g == 1) {
             v = arithm.sqp1(v);
           } else if (g == n) {
@@ -2134,22 +2096,23 @@ ll pollard_rho(ll n) {
             return g;
           }
         }
-        break;@ $ \hfill #171 $ @
+        break;@ $ \hfill #208 $ @
       } else {
         ll g = __gcd(cur, n);
         if (g != 1) return g;
       }
       v = v_cur;
+      idx += j_stop;
       if (idx == tar) {
         lv = v;
         tar *= 2;
-        v = arithm.sqp1(v);
-        ++idx;@ $ \hfill #967 $ @
+        v = arithm.sqp1(v);@ $ \hfill #174 $ @
+        ++idx;
       }
     }
   }
-}@ $ \hfill %040 $ @
-map< ll, int > prime_factor(ll n, map< ll, int > *res = NULL) {  // n <= 1<<61, 1500/s
+}@ $ \hfill %542 $ @
+map< ll, int > prime_factor(ll n, map< ll, int > *res = NULL) {  // n <= 1<<61, ~1000/s (<500/s on CF)
   if (!res) {
     map< ll, int > res_act;
     for (int p : small_primes) {

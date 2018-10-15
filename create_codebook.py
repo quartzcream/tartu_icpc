@@ -49,6 +49,8 @@ for file in file_ord:
     end_str = "!end_codebook"
     beg_hash_str = "//!start"
     end_hash_str = "//!finish"
+    pause_hash_str = "//!pause"
+    unpause_hash_str = "//!unpause"
 
     if(use_minted):
         fin = open(file, "r")
@@ -59,6 +61,8 @@ for file in file_ord:
             end_idx = line.find(end_str)
             hash_beg_idx = line.find(beg_hash_str)
             hash_end_idx = line.find(end_hash_str)
+            hash_pause_idx = line.find(pause_hash_str)
+            hash_unpause_idx = line.find(unpause_hash_str)
             if(escape_idx != -1):
                 line = line[escape_idx+len(escape_str):]
             elif(beg_idx != -1):
@@ -70,6 +74,10 @@ for file in file_ord:
                 hashing = True
             elif(hash_end_idx != -1):
                 hashing = False
+            elif(hash_pause_idx != -1):
+                hashing = False
+            elif(hash_unpause_idx != -1):
+                hashing = True;
             else:
                 if(hashing):
                     ftmp.write(line)
@@ -86,6 +94,8 @@ for file in file_ord:
         end_idx = line.find(end_str)
         hash_beg_idx = line.find(beg_hash_str)
         hash_end_idx = line.find(end_hash_str)
+        hash_pause_idx = line.find(pause_hash_str)
+        hash_unpause_idx = line.find(unpause_hash_str)
         if(escape_idx != -1):
             line = line[escape_idx+len(escape_str):]
             fout.write(line)
@@ -102,6 +112,10 @@ for file in file_ord:
             fout.write(hash_str)
             need_write_hash = False
             hashing = False
+        elif(hash_pause_idx != -1):
+            hashing = False
+        elif(hash_unpause_idx != -1):
+            hashing = True;
         else:
             if(need_write_hash):
                 hash_str = add_hash("", crc_line_start, crc_line_num, comment, '#');
