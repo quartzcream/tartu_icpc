@@ -27,6 +27,9 @@ Complex operator-(const Complex &lft, const Complex &rgt) {
 Complex operator*(const Complex &lft, const Complex &rgt) {
   return Complex{lft.a * rgt.a - lft.b * rgt.b, lft.a * rgt.b + lft.b * rgt.a};
 }
+Complex conj(const Complex &cur){
+  return Complex{cur.a, -cur.b};
+}
 void fft_rec(Complex *arr, Complex *root_pow, int len) {
   if (len != 1) {
     fft_rec(arr, root_pow, len >> 1);
@@ -76,7 +79,7 @@ void fft(vector< Complex > &arr, int ord, bool invert) {
 //!finish
 //!start
 void mult_poly_mod(vector< int > &a, vector< int > &b, vector< int > &c) {  // c += a*b
-  static vector< Complex > arr[7];  // correct upto 0.5-2M elements(mod ~= 1e9)
+  static vector< Complex > arr[4];  // correct upto 0.5-2M elements(mod ~= 1e9)
   if (c.size() < 400) {
     for (int i = 0; i < a.size(); ++i)
       for (int j = 0; j < b.size() && i + j < c.size(); ++j)
@@ -84,8 +87,8 @@ void mult_poly_mod(vector< int > &a, vector< int > &b, vector< int > &c) {  // c
   } else {
     int fft_ord = 32 - __builtin_clz(c.size());
     if (arr[0].size() != 1 << fft_ord)
-      for (int i = 0; i < 7; ++i) arr[i].resize(1 << fft_ord);
-    for (int i = 0; i < 7; ++i) fill(arr[i].begin(), arr[i].end(), Complex{});
+      for (int i = 0; i < 4; ++i) arr[i].resize(1 << fft_ord);
+    for (int i = 0; i < 4; ++i) fill(arr[i].begin(), arr[i].end(), Complex{});
     for (int &cur : a)
       if (cur < 0) cur += mod;
     for (int &cur : b)
@@ -97,21 +100,30 @@ void mult_poly_mod(vector< int > &a, vector< int > &b, vector< int > &c) {  // c
       arr[1][i].a = a[i] >> shift;
     }
     for (int i = 0; i < min(b.size(), c.size()); ++i) {
-      arr[2][i].a = b[i] & mask;
-      arr[3][i].a = b[i] >> shift;
+      arr[0][i].b = b[i] & mask;
+      arr[1][i].b = b[i] >> shift;
     }
-    for (int i = 0; i < 4; ++i) fft(arr[i], fft_ord, false);
+    for (int i = 0; i < 2; ++i) fft(arr[i], fft_ord, false);
     for (int i = 0; i < 2; ++i) {
       for (int j = 0; j < 2; ++j) {
-        int tar = 4 + i + j;
-        for (int k = 0; k < (1 << fft_ord); ++k)
-          arr[tar][k] = arr[tar][k] + arr[i][k] * arr[2 + j][k];
+        int tar = 2 + (i + j)/2;
+        Complex mult = {0, -0.25};
+        if(i^j)
+          mult = {0.25, 0};
+        for (int k = 0; k < (1 << fft_ord); ++k){
+          int rev_k = ((1 << fft_ord)-k)%(1 << fft_ord);
+          Complex ca = arr[i][k] + conj(arr[i][rev_k]);
+          Complex cb = arr[j][k] - conj(arr[j][rev_k]);
+          arr[tar][k] = arr[tar][k] + mult*ca*cb;
+        }
       }
     }
-    for (int i = 4; i < 7; ++i) {
+    for (int i = 2; i < 4; ++i) {
       fft(arr[i], fft_ord, true);
-      for (int k = 0; k < (int)c.size(); ++k)
-        c[k] = (c[k] + (((ll)(arr[i][k].a + 0.5) % mod) << (shift * (i - 4)))) % mod;
+      for (int k = 0; k < (int)c.size(); ++k){
+        c[k] = (c[k] + (((ll)(arr[i][k].a + 0.5) % mod) << (shift * 2*(i - 2)))) % mod;
+        c[k] = (c[k] + (((ll)(arr[i][k].b + 0.5) % mod) << (shift * (2*(i - 2)+1)))) % mod;
+      }
     }
   }
 }
@@ -119,36 +131,41 @@ void mult_poly_mod(vector< int > &a, vector< int > &b, vector< int > &c) {  // c
 //!end_codebook
 
 int main() {
-  int n = 15;
+  int n = 20;
   int s = 1 << n;
-  vector< Complex > p1(2 * s), p2(2 * s), p3(2 * s), tmp(2 * s);
+  vector< Complex > p1(2 * s), p2(2 * s), tmp(2 * s);
   vector< int > i1(s), i2(s), i3(2 * s);
   vector< ll > i4(2 * s), i5(2 * s);
   for (int i = 0; i < s; ++i) {
     i1[i] = rand() % (int)(1 << 18);
     i2[i] = rand() % (int)(1 << 18);
-    p1[i] = {(double)i1[i], 0};
-    p2[i] = {(double)i2[i], 0};
+    p1[i] = {(double)i1[i], (double)i2[i]};
   }
+  /*
   for (int i = 0; i < s; ++i) {
     for (int j = 0; j < s; ++j) {
       i4[i + j] += (ll)i1[i] * i2[j];
     }
   }
+  */
   fft(p1, n + 1, false);
-  fft(p2, n + 1, false);
+  Complex mult = {0, -0.25};
   for (int i = 0; i < 2 * s; ++i) {
-    p3[i] = p2[i] * p1[i];
+    int rev_i = (2*s-i)%(2*s);
+    Complex ca = p1[i] + conj(p1[rev_i]);
+    Complex cb = p1[i] - conj(p1[rev_i]);
+    p2[i] = mult*ca*cb;
   }
-  fft(p3, n + 1, true);
+  fft(p2, n + 1, true);
   for (int i = 0; i < 2 * s; ++i) {
-    i5[i] = p3[i].a + 0.5;
+    i5[i] = p2[i].a + 0.5;
   }
   ll max_err = 0;
   for (int i = 0; i < 2 * s; ++i) {
     max_err = max(max_err, abs(i5[i] - i4[i]));
   }
   cout << max_err << '\n';
+  /*
   for (int i = 0; i < s; ++i) {
     i1[i] = rand();
     i2[i] = rand();
@@ -166,5 +183,6 @@ int main() {
     max_err = max(max_err, abs(i3[i] - i4[i]));
   }
   cout << max_err << '\n';
+  */
   return 0;
 }
