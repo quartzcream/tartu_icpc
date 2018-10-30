@@ -84,6 +84,7 @@ for file in file_ord:
         ftmp.close()
         os.system("./remccoms.py <tmp | sponge tmp") #requires moreutils package
     fin = open(file, "r")
+    outputting = False
     if(use_minted):
         ftmp = open("tmp", "r")
         crc_line_num = 0

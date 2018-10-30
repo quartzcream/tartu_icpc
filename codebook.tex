@@ -680,7 +680,7 @@ int main(){ //http://codeforces.com/group/s3etJR5zZK/contest/212916/problem/4
 	}
 }
 \end{minted}
-\section{Suffix automaton $\mathcal{O}((n+q)\log(|\text{alpha}|))$}
+\section{Suffix automaton and tree $\mathcal{O}((n+q)\log(|\text{alpha}|))$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 class AutoNode {
  private:
@@ -706,82 +706,103 @@ class AutoNode {
     new_n->suf = suf;
     suf = new_n;
     return new_n;
-  }
+  }@ $ \hfill %677 $ @
   // Extra functions for matching and counting
   AutoNode *lower_depth(int depth) { //move to longest suffix of current with a maximum length of depth.
     if (suf->len >= depth)
 			return suf->lower_depth(depth);
     return this;
-  }@ $ \hfill #795 $ @
+  }
   AutoNode *walk(char c, int depth, int &match_len) { //move to longest suffix of walked path that is a substring
     match_len = min(match_len, len); //includes depth limit(needed for finding matches)
     if (has_nxt(c)) {	//as suffixes are in classes match\_len must be tracked externally
       ++match_len;
-      return nxt(c)->lower_depth(depth);
+      return nxt(c)->lower_depth(depth);@ $ \hfill #227 $ @
     }
     if (suf)
 			return suf->walk(c, depth, match_len);
     return this;
-  }@ $ \hfill #152 $ @
+  }@ $ \hfill %955 $ @
   int paths_to_end = 0;
   void set_as_end() { //All suffixes of current node are marked as ending nodes.
-    paths_to_end = 1;
+    paths_to_end += 1;
     if (suf) suf->set_as_end();
   }
   bool vis = false;
   void calc_paths_to_end() { //Call ONCE from ROOT. For each node calculates number of ways to reach an end node.
     if (!vis) {	//paths\_to\_end is ocurence count for any strings in current suffix equivalence class.
       vis = true;
-      for (auto cur : nxt_char) {@ $ \hfill #738 $ @
+      for (auto cur : nxt_char) {@ $ \hfill #035 $ @
         cur.second->calc_paths_to_end();
         paths_to_end += cur.second->paths_to_end;
       }
     }
+  }@ $ \hfill %996 $ @
+  //Transform into suffix tree of reverse string
+  map<char, AutoNode * > tree_links;
+  int end_dist = 1<<30;
+  int calc_end_dist(){
+    if(end_dist == 1<<30){
+      if(nxt_char.empty())
+        end_dist = 0;
+      for (auto cur : nxt_char)
+        end_dist = min(end_dist, 1+cur.second->calc_end_dist());
+    }
+    return end_dist;@ $ \hfill #412 $ @
+  }
+  bool vis_t = false;
+  void build_suffix_tree(string &s) { //Call ONCE from ROOT.
+    if (!vis_t) {
+      vis_t = true;
+      if(suf)
+        suf->tree_links[s[s.size()-end_dist-suf->len-1]] = this;
+      for (auto cur : nxt_char)
+        cur.second->build_suffix_tree(s);
+    }@ $ \hfill #202 $ @
   }
 };
 struct SufAutomaton {
   AutoNode *last;
   AutoNode *root;
-  void extend(char new_c) {@ $ \hfill #885 $ @
+  void extend(char new_c) {
     AutoNode *new_end = new AutoNode;
     new_end->len = last->len + 1;
     AutoNode *suf_w_nxt = last;
-    while (suf_w_nxt && !suf_w_nxt->has_nxt(new_c)) {
+    while (suf_w_nxt && !suf_w_nxt->has_nxt(new_c)) {@ $ \hfill #308 $ @
       suf_w_nxt->set_nxt(new_c, new_end);
       suf_w_nxt = suf_w_nxt->suf;
     }
     if (!suf_w_nxt) {
       new_end->suf = root;
-    } else {@ $ \hfill #873 $ @
+    } else {
       AutoNode *max_sbstr = suf_w_nxt->nxt(new_c);
       if (suf_w_nxt->len + 1 == max_sbstr->len) {
         new_end->suf = max_sbstr;
-      } else {
+      } else {@ $ \hfill #865 $ @
         AutoNode *eq_sbstr = max_sbstr->split(suf_w_nxt->len + 1, new_c);
-        new_end->suf = eq_sbstr
+        new_end->suf = eq_sbstr;
         AutoNode *w_edge_to_eq_sbstr = suf_w_nxt;
         while (w_edge_to_eq_sbstr != 0 && w_edge_to_eq_sbstr->nxt(new_c) == max_sbstr) {
           w_edge_to_eq_sbstr->set_nxt(new_c, eq_sbstr);
-          w_edge_to_eq_sbstr = w_edge_to_eq_sbstr->suf;@ $ \hfill #881 $ @
+          w_edge_to_eq_sbstr = w_edge_to_eq_sbstr->suf;
         }
       }
     }
-    last = new_end;
-  }
-  SufAutomaton(string to_suffix) {
+    last = new_end;@ $ \hfill #356 $ @
+  }@ $ \hfill %628 $ @
+  SufAutomaton(string &s) {
     root = new AutoNode;
     root->len = 0;
     root->suf = NULL;
-    last = root;@ $ \hfill #935 $ @
-    for (char c : to_suffix) extend(c);
+    last = root;
+    for (char c : s) extend(c);
+    root->calc_end_dist(); //To build suffix tree use reversed string
+    root->build_suffix_tree(s);
   }
-};@ $ \hfill %543 $ @
+};@ $ \hfill %034 $ @
 \end{minted}
+\section{Dinic}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-#include <bits/stdc++.h>
-using namespace std;
-typedef long long               ll;\section{Dinic}
-
 struct MaxFlow{
   typedef long long ll;
   const ll INF = 1e18;
@@ -1916,6 +1937,58 @@ int main() {
     return 0;
 }
 \end{minted}
+\section{Radixsort 50M 64 bit integers as single array in 1 sec}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+typedef unsigned char uchar;
+template<typename T>
+void msd_radixsort(T *start, T *sec_start, int arr_size, int d=sizeof(T)-1){
+  const int msd_radix_lim = 100;
+  const T mask = 255;
+	int bucket_sizes[256]{};
+	for(T *it = start; it!=start+arr_size; ++it){
+		++bucket_sizes[((*it)>>(d*8))&mask];
+		//++bucket_sizes[*((uchar*)it+d)];
+	}
+	T *locs_mem[257];@ $ \hfill #947 $ @
+	locs_mem[0] = sec_start;
+  T **locs = locs_mem+1;
+	locs[0] = sec_start;
+	for(int j=0; j<255; ++j){
+		locs[j+1] = locs[j]+bucket_sizes[j];
+	}
+	for(T *it = start; it!=start+arr_size; ++it){
+    uchar bucket_id = ((*it)>>(d*8))&mask;
+    *(locs[bucket_id]++) = *it;
+	}@ $ \hfill #770 $ @
+  locs = locs_mem;
+	if(d){
+    T *locs_old[256];
+    locs_old[0] = start;
+    for(int j=0; j<255; ++j){
+      locs_old[j+1] = locs_old[j]+bucket_sizes[j];
+    }
+		for(int j=0; j<256; ++j){
+			if(locs[j+1]-locs[j] < msd_radix_lim){
+				std::sort(locs[j], locs[j+1]);@ $ \hfill #018 $ @
+        if(d & 1){
+          copy(locs[j], locs[j+1], locs_old[j]);
+        }
+			}
+			else{
+				msd_radixsort(locs[j], locs_old[j], bucket_sizes[j], d-1);
+			}
+		}
+	}
+}@ $ \hfill %225 $ @
+const int nmax = 5e7;
+ll arr[nmax], tmp[nmax];
+int main(){
+  for(int i=0; i<nmax; ++i)
+    arr[i] = ((ll)rand()<<32)|rand();
+  msd_radixsort(arr, tmp, nmax);
+  assert(is_sorted(arr, arr+nmax));
+}
+\end{minted}
 \section{FFT 5M length/sec}
 integer $c = a*b$ is accurate if $c_i < 2^{49}$
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
@@ -1936,54 +2009,57 @@ Complex operator-(const Complex &lft, const Complex &rgt) {
 Complex operator*(const Complex &lft, const Complex &rgt) {
   return Complex{lft.a * rgt.a - lft.b * rgt.b, lft.a * rgt.b + lft.b * rgt.a};
 }
+Complex conj(const Complex &cur){
+  return Complex{cur.a, -cur.b};
+}@ $ \hfill #957 $ @
 void fft_rec(Complex *arr, Complex *root_pow, int len) {
   if (len != 1) {
-    fft_rec(arr, root_pow, len >> 1);@ $ \hfill #767 $ @
+    fft_rec(arr, root_pow, len >> 1);
     fft_rec(arr + len, root_pow, len >> 1);
   }
   root_pow += len;
   for (int i = 0; i < len; ++i) {
     Complex tmp = arr[i] + root_pow[i] * arr[i + len];
     arr[i + len] = arr[i] - root_pow[i] * arr[i + len];
-    arr[i] = tmp;
+    arr[i] = tmp;@ $ \hfill #048 $ @
   }
 }
-void fft(vector< Complex > &arr, int ord, bool invert) {@ $ \hfill #689 $ @
+void fft(vector< Complex > &arr, int ord, bool invert) {
   assert(arr.size() == 1 << ord);
   static vector< Complex > root_pow(1);
   static int inc_pow = 1;
   static bool is_inv = false;
   if (inc_pow <= ord) {
     int idx = root_pow.size();
-    root_pow.resize(1 << ord);
+    root_pow.resize(1 << ord);@ $ \hfill #710 $ @
     for (; inc_pow <= ord; ++inc_pow) {
       for (int idx_p = 0; idx_p < 1 << (ord - 1); idx_p += 1 << (ord - inc_pow), ++idx) {
-        root_pow[idx] =@ $ \hfill #053 $ @
+        root_pow[idx] =
             Complex{cos(-idx_p * M_PI / (1 << (ord - 1))), sin(-idx_p * M_PI / (1 << (ord - 1)))};
         if (is_inv) root_pow[idx].b = -root_pow[idx].b;
       }
     }
   }
   if (invert != is_inv) {
-    is_inv = invert;
+    is_inv = invert;@ $ \hfill #750 $ @
     for (Complex &cur : root_pow) cur.b = -cur.b;
   }
-  for (int i = 1, j=0; i < (1 << ord); ++i) {@ $ \hfill #565 $ @
+  for (int i = 1, j=0; i < (1 << ord); ++i) {
     int m = 1<<(ord-1);
     bool cont = true;
     while(cont){
       cont = j & m;
       j ^= m;
       m>>=1;
-    }
+    }@ $ \hfill #844 $ @
     if (i < j) swap(arr[i], arr[j]);
   }
-  fft_rec(arr.data(), root_pow.data(), 1 << (ord - 1));@ $ \hfill #847 $ @
+  fft_rec(arr.data(), root_pow.data(), 1 << (ord - 1));
   if (invert)
     for (int i = 0; i < (1 << ord); ++i) arr[i] /= (1 << ord);
-}@ $ \hfill %836 $ @
+}@ $ \hfill %380 $ @
 void mult_poly_mod(vector< int > &a, vector< int > &b, vector< int > &c) {  // c += a*b
-  static vector< Complex > arr[7];  // correct upto 0.5-2M elements(mod ~= 1e9)
+  static vector< Complex > arr[4];  // correct upto 0.5-2M elements(mod ~= 1e9)
   if (c.size() < 400) {
     for (int i = 0; i < a.size(); ++i)
       for (int j = 0; j < b.size() && i + j < c.size(); ++j)
@@ -1991,8 +2067,8 @@ void mult_poly_mod(vector< int > &a, vector< int > &b, vector< int > &c) {  // c
   } else {
     int fft_ord = 32 - __builtin_clz(c.size());
     if (arr[0].size() != 1 << fft_ord)
-      for (int i = 0; i < 7; ++i) arr[i].resize(1 << fft_ord);@ $ \hfill #672 $ @
-    for (int i = 0; i < 7; ++i) fill(arr[i].begin(), arr[i].end(), Complex{});
+      for (int i = 0; i < 4; ++i) arr[i].resize(1 << fft_ord);@ $ \hfill #811 $ @
+    for (int i = 0; i < 4; ++i) fill(arr[i].begin(), arr[i].end(), Complex{});
     for (int &cur : a)
       if (cur < 0) cur += mod;
     for (int &cur : b)
@@ -2001,27 +2077,36 @@ void mult_poly_mod(vector< int > &a, vector< int > &b, vector< int > &c) {  // c
     const int mask = (1 << shift) - 1;
     for (int i = 0; i < min(a.size(), c.size()); ++i) {
       arr[0][i].a = a[i] & mask;
-      arr[1][i].a = a[i] >> shift;@ $ \hfill #762 $ @
+      arr[1][i].a = a[i] >> shift;@ $ \hfill #809 $ @
     }
     for (int i = 0; i < min(b.size(), c.size()); ++i) {
-      arr[2][i].a = b[i] & mask;
-      arr[3][i].a = b[i] >> shift;
+      arr[0][i].b = b[i] & mask;
+      arr[1][i].b = b[i] >> shift;
     }
-    for (int i = 0; i < 4; ++i) fft(arr[i], fft_ord, false);
+    for (int i = 0; i < 2; ++i) fft(arr[i], fft_ord, false);
     for (int i = 0; i < 2; ++i) {
       for (int j = 0; j < 2; ++j) {
-        int tar = 4 + i + j;
-        for (int k = 0; k < (1 << fft_ord); ++k)@ $ \hfill #694 $ @
-          arr[tar][k] = arr[tar][k] + arr[i][k] * arr[2 + j][k];
+        int tar = 2 + (i + j)/2;
+        Complex mult = {0, -0.25};@ $ \hfill #066 $ @
+        if(i^j)
+          mult = {0.25, 0};
+        for (int k = 0; k < (1 << fft_ord); ++k){
+          int rev_k = ((1 << fft_ord)-k)%(1 << fft_ord);
+          Complex ca = arr[i][k] + conj(arr[i][rev_k]);
+          Complex cb = arr[j][k] - conj(arr[j][rev_k]);
+          arr[tar][k] = arr[tar][k] + mult*ca*cb;
+        }
+      }
+    }@ $ \hfill #623 $ @
+    for (int i = 2; i < 4; ++i) {
+      fft(arr[i], fft_ord, true);
+      for (int k = 0; k < (int)c.size(); ++k){
+        c[k] = (c[k] + (((ll)(arr[i][k].a + 0.5) % mod) << (shift * 2*(i - 2)))) % mod;
+        c[k] = (c[k] + (((ll)(arr[i][k].b + 0.5) % mod) << (shift * (2*(i - 2)+1)))) % mod;
       }
     }
-    for (int i = 4; i < 7; ++i) {
-      fft(arr[i], fft_ord, true);
-      for (int k = 0; k < (int)c.size(); ++k)
-        c[k] = (c[k] + (((ll)(arr[i][k].a + 0.5) % mod) << (shift * (i - 4)))) % mod;
-    }
   }
-}@ $ \hfill %002 $ @
+}@ $ \hfill %231 $ @
 \end{minted}
 \section{Fast mod mult, Rabbin Miller prime check, Pollard rho factorization $\mathcal{O}(\sqrt{p})$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}

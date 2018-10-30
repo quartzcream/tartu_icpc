@@ -2,7 +2,7 @@
 using namespace std;
 typedef long long ll;
 
-//!escape \section{Suffix automaton $\mathcal{O}((n+q)\log(|\text{alpha}|))$}
+//!escape \section{Suffix automaton and tree $\mathcal{O}((n+q)\log(|\text{alpha}|))$}
 
 //!begin_codebook
 //!start
@@ -31,6 +31,8 @@ class AutoNode {
     suf = new_n;
     return new_n;
   }
+//!finish
+//!start
   // Extra functions for matching and counting
   AutoNode *lower_depth(int depth) { //move to longest suffix of current with a maximum length of depth.
     if (suf->len >= depth) 
@@ -47,9 +49,11 @@ class AutoNode {
 			return suf->walk(c, depth, match_len);
     return this;
   }
+//!finish
+//!start
   int paths_to_end = 0;
   void set_as_end() { //All suffixes of current node are marked as ending nodes. 
-    paths_to_end = 1;
+    paths_to_end += 1;
     if (suf) suf->set_as_end();
   }
   bool vis = false;
@@ -60,6 +64,30 @@ class AutoNode {
         cur.second->calc_paths_to_end();
         paths_to_end += cur.second->paths_to_end;
       }
+    }
+  }
+//!finish
+//!start
+  //Transform into suffix tree of reverse string
+  map<char, AutoNode * > tree_links;
+  int end_dist = 1<<30;
+  int calc_end_dist(){
+    if(end_dist == 1<<30){
+      if(nxt_char.empty())
+        end_dist = 0;
+      for (auto cur : nxt_char)
+        end_dist = min(end_dist, 1+cur.second->calc_end_dist());
+    }
+    return end_dist;
+  }
+  bool vis_t = false;
+  void build_suffix_tree(string &s) { //Call ONCE from ROOT.
+    if (!vis_t) {	
+      vis_t = true;
+      if(suf)
+        suf->tree_links[s[s.size()-end_dist-suf->len-1]] = this;
+      for (auto cur : nxt_char)
+        cur.second->build_suffix_tree(s);
     }
   }
 };
@@ -97,7 +125,7 @@ struct SufAutomaton {
         new_end->suf = max_sbstr;
       } else {
         AutoNode *eq_sbstr = max_sbstr->split(suf_w_nxt->len + 1, new_c);
-        new_end->suf = eq_sbstr
+        new_end->suf = eq_sbstr;
 //!end_codebook
         // Make suffixes of suf\_w\_nxt point to eq\_sbstr instead of mox\_sbstr
 //!begin_codebook
@@ -110,12 +138,16 @@ struct SufAutomaton {
     }
     last = new_end;
   }
-  SufAutomaton(string to_suffix) {
+//!finish
+//!start
+  SufAutomaton(string &s) {
     root = new AutoNode;
     root->len = 0;
     root->suf = NULL;
     last = root;
-    for (char c : to_suffix) extend(c);
+    for (char c : s) extend(c);
+    root->calc_end_dist(); //To build suffix tree use reversed string
+    root->build_suffix_tree(s);
   }
 };
 //!finish
