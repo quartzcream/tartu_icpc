@@ -1,12 +1,16 @@
+\documentclass[a4paper]{article}
+\begin{document}
+
+% !begin_codebook
 \section{Symmetric Submodular Functions; Queyrannes's algorithm}
 
-{\bf SSF}: such function $f : V \rightarrow R$ that satisfies $f(A) = f(V/A)$
+\noindent {\bf SSF}: such function $f : V \rightarrow R$ that satisfies $f(A) = f(V/A)$
 and for all $x \in V, X \subseteq Y \subseteq V$ it holds that
 $f(X+x) - f(X) \leq f(Y+x) - f(Y)$.
 
-{\bf Hereditary family}: such set $I \subseteq 2^V$ so that $X \subset Y \wedge Y \in I \Rightarrow \X \in I$.
+\noindent {\bf Hereditary family}: such set $I \subseteq 2^V$ so that $X \subset Y \wedge Y \in I \Rightarrow X \in I$.
 
-{\bf Loop}: such $v \in V$ so that ${v} \notin I$.
+\noindent {\bf Loop}: such $v \in V$ so that ${v} \notin I$.
 
 \begin{minted}{python}
 def minimize():
@@ -46,3 +50,6 @@ def enum_all_minimal_minimizers(X): # X is a inclusionwise minimal minimizer
 			yield tu
 			s = merge(tu, s)
 \end{minted}
+% !end_codebook
+
+\end{document}
