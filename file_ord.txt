@@ -22,5 +22,6 @@ treap.cpp
 radixsort.cpp
 fft.cpp
 pollard_rho.cpp
+queyranne.tex
 comb_cheatsheet.tex
 footer.tex
