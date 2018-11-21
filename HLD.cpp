@@ -59,7 +59,7 @@ class HLD {
     chain_root[vertex] = chain_source;
     par[vertex] = parent;
 
-    if (adj[vertex].size() > 1) {
+    if (adj[vertex].size() > 1 || (vertex == 1 && adj[vertex].size() == 1)) {
       int big_child, big_size = -1;
       for (int child : adj[vertex]) {
         if ((child != parent) && (subtree_size[child] > big_size)) {
