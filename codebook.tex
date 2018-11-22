@@ -12,6 +12,38 @@
 \usepackage{hyperref}
 \usepackage{pdflscape}
 \usepackage{multicol}
+\usepackage{physics}
+\usepackage{harpoon}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\epsilon}{\varepsilon}
+\renewcommand{\phi}{\varphi}
+\renewcommand{\theta}{\vartheta}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\qed}{\hfill$\blacksquare$}
+\newcommand{\amp}{\, \& \,}
+\newcommand{\imp}{\Rightarrow}
+\renewcommand{\O}{\mathcal{O}}
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset{language=C++,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\color{blue}\ttfamily,
+  stringstyle=\color{purple}\ttfamily,
+  commentstyle=\color{red}\ttfamily,
+  breaklines = true}
+\renewcommand{\theenumi}{\alph{enumi}}
+\DeclareMathOperator{\orient}{orient}
+\DeclareMathOperator{\side}{side}
+\DeclareMathOperator{\dist}{dist}
+\DeclareMathOperator{\prp}{perp}
+%\newcommand*{\vv}[1]{\overrightharp{\ensuremath{#1}}}
+\newcommand{\vv}[1]{\overline{#1}}
 \numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
 \numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
 \numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
@@ -36,8 +68,12 @@
 \lhead{University of Tartu}
 \rhead{\thepage}
 \setlength{\headsep}{0mm}
-\binoppenalty=\maxdimen
-\relpenalty=\maxdimen
+\hyphenpenalty=2000
+\exhyphenpenalty=2000
+\tolerance=2000
+\emergencystretch=10pt
+\binoppenalty=10
+\relpenalty=10
 \begin{document}
 \begin{landscape}
 \setlength\columnsep{10mm}
@@ -55,9 +91,7 @@ set smartindent cindent
 set ts=4 sw=4 expandtab
 syntax enable
 set clipboard=unnamedplus
-"colorscheme elflord
 "setxkbmap -option caps:escape
-"setxkbmap -option
 "valgrind --vgdb-error=0 ./a <inp &
 "gdb a
 "target remote | vgdb
@@ -65,15 +99,11 @@ set clipboard=unnamedplus
 \section{crc.sh}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, texcomments=true, mathescape=true]{bash}
 #!/bin/envbash
-starts=($(sed '/^\s*$/d' $1 | grep -n "//\!start" | cut -f1 -d:))
-finishes=($(sed '/^\s*$/d' $1 | grep -n "//\!finish" | cut -f1 -d:))
-for ((i=0;i<${#starts[@]};i++)); do
-  for j in `seq 10 10 $((finishes[$i]-starts[$i]+8))`; do
-    sed '/^\s*$/d' $1 | head -$((finishes[$i]-1)) | tail -$((finishes[$i]-starts[$i]-1)) | \
-      head -$j | tr -d '[[:space:]]' | cksum | cut -f1 -d ' ' | tail -c 4
-  done #whistespaces don't matter
-  echo #there shouldn't be any comments in the checked range
-done #check last number in each block
+for j in `seq 10 10 200`; do
+  sed '/^\s*$/d' $1 | head -$j | tr -d '[[:space:]]' | cksum | cut -f1 -d ' ' | tail -c 4 #whistespaces don't matter.
+done #there shouldn't be any COMMENTS.
+#copy lines being checked to separate file.
+# \$ ./crc.sh tmp.cpp
 \end{minted}
 \section{gcc ordered set}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
@@ -94,6 +124,67 @@ int main(){
 	cout << *cur.find_by_order(1) << endl; // the 1-th smallest number in the set(0-based)
 }@ $ \hfill %574 $ @
 \end{minted}
+\end{multicols}
+\boldmath
+\setlength\columnsep{5mm}
+\begin{multicols}{3}
+\section{2D geometry}
+\noindent
+Define $\orient(A, B, C) = \vv{AB} \times \vv{AC}$. CCW iff $>0$. \\
+Define $\prp((a, b)) = (-b, a)$. The vectors are orthogonal. \\
+For line $ax + by = c$ def $\vv{v} = (-b, a)$. \\
+Line through $P$ and $Q$ has $\vv{v} = \vv{PQ}$ and $c = \vv{v} \times P$. \\
+$\side_l (P) = \vv{v_l} \times P - c_l$ sign determines which side $P$ is on from $l$. \\
+$\dist_l (P) = \side_l (P) / \norm{v_l}$ squared is integer. \\
+Sorting points along a line: comparator is $\vv{v} \cdot A < \vv{v} \cdot B$. \\
+Translating line by $\vv{t}$: new line has $c' = c + \vv{v} \times \vv{t}$. \\
+Line intersection: is $(c_{l} \vv{v}_m - c_m \vv{v}_l) / (\vv{v}_l \times \vv{v}_m)$. \\
+Project $P$ onto $l$: is $P - \prp(v) \side_l(P) / \norm{v}^2$. \\
+Angle bisectors: $\vv{v} = \vv{v}_l / \norm{\vv{v}_l} + \vv{v}_m / \norm{\vv{v}_m}$ \\
+$c = c_l / \norm{\vv{v}_l} + c_m / \norm{\vv{v}_m}$. \\
+$P$ is on segment $AB$ iff $\orient(A, B, P) = 0$ and $\vv{PA} \cdot \vv{PB} \le 0$. \\
+Proper intersection of $AB$ and $CD$ exists iff $\orient(C, D, A)$ and $\orient(C, D, B)$
+have opp. signs and $\orient(A, B, C)$ and $\orient(A, B, D)$ have opp. signs. Coordinates: \\
+\begin{equation*}
+  \frac{A \orient(C, D, B) - B \orient(C, D, A)}{\orient(C, D, B) - \orient(C, D, A)}.
+\end{equation*}
+Circumcircle center:
+\lstinputlisting[firstline = 1, lastline = 4]{geometry_snippets.cpp}
+Circle-line intersect:
+\lstinputlisting[firstline = 7, lastline = 14]{geometry_snippets.cpp}
+Circle-circle intersect:
+\lstinputlisting[firstline = 17, lastline = 25]{geometry_snippets.cpp}
+Tangent lines:
+\lstinputlisting[firstline = 28, lastline = 36]{geometry_snippets.cpp}
+\section{3D geometry}
+\noindent
+$\orient(P, Q, R, S) = (\vv{PQ} \times \vv{PR}) \cdot \vv{PS}$. \\
+  $S$ above $PQR$ iff $>0$. \\
+For plane $ax + by + cz = d$ def $\vv{n} = (a, b, c)$. \\
+Line with normal $\vv{n}$ through point $P$ has $d = \vv{n} \cdot P$. \\
+$\side_\Pi (P) = \vv{n} \cdot P - d$ sign determines side from $\Pi$. \\
+$\dist_\Pi (P) = \side_\Pi (P) / \norm{\vv{n}}$. \\
+Translating plane by $\vv{t}$ makes $d' = d + \vv{n} \cdot \vv{t}$. \\
+Plane-plane intersection of has direction $\vv{n}_1 \times \vv{n}_2$ and
+goes through $((d_1 \vv{n}_2 - d_2 \vv{n}_1) \times \vv{d}) / \norm{\vv{d}}^2$. \\
+Line-line distance:
+\lstinputlisting[firstline = 39, lastline = 43]{geometry_snippets.cpp}
+Spherical to Cartesian: \\ $(r \cos \phi \cos \lambda, r \cos \phi \sin \lambda, r \sin \phi)$. \\
+Sphere-line intersection:
+\lstinputlisting[firstline = 46, lastline = 52]{geometry_snippets.cpp}
+Great-circle distance between points $A$ and $B$ is $r \angle AOB$. \\
+Spherical segment intersection:
+\lstinputlisting[firstline = 55, lastline = 87]{geometry_snippets.cpp}
+Angle between spherical segments $AB$ and $AC$ is angle between $A \times B$ and $A \times C$. \\
+Oriented angle: subtract from $2\pi$ if mixed product is negative. \\
+Area of a spherical polygon:
+\begin{equation*}
+  r^2 [ \text{sum of interior angles} - (n - 2)\pi ].
+\end{equation*}
+\end{multicols}
+\unboldmath
+\setlength\columnsep{10mm}
+\begin{multicols*}{2}
 \section{Numerical integration with Simpson's rule}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 //computing power = how many times function integrate gets called
@@ -172,52 +263,7 @@ point in_center(){
 	return c_A * A + c_B * B + c_C * C;
 }@ $ \hfill %980 $ @
 \end{minted}
-\section{2D line segment}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-const long double PI = acos(-1.0L);
-struct Vec {
-	long double x, y;
-	Vec& operator-=(Vec r) {
-		x -= r.x, y -= r.y;
-		return *this;
-	}
-	Vec operator-(Vec r) {return Vec(*this) -= r;}
-	Vec& operator+=(Vec r) {
-		x += r.x, y += r.y;@ $ \hfill #054 $ @
-		return *this;
-	}
-	Vec operator+(Vec r) {return Vec(*this) += r;}
-	Vec operator-() {return {-x, -y};}
-	Vec& operator*=(long double r) {
-		x *= r, y *= r;
-		return *this;
-	}
-	Vec operator*(long double r) {return Vec(*this) *= r;}
-	Vec& operator/=(long double r) {@ $ \hfill #673 $ @
-		x /= r, y /= r;
-		return *this;
-	}
-	Vec operator/(long double r) {return Vec(*this) /= r;}
-	long double operator*(Vec r) {
-		return x * r.x + y * r.y;
-	}
-};
-ostream& operator<<(ostream& l, Vec r) {
-	return l << '(' << r.x << ", " << r.y << ')';@ $ \hfill #724 $ @
-}
-long double len(Vec a) {
-	return hypot(a.x, a.y);
-}
-long double cross(Vec l, Vec r) {
-	return l.x * r.y - l.y * r.x;
-}
-long double angle(Vec a) {
-	return fmod(atan2(a.y, a.x)+2*PI, 2*PI);
-}@ $ \hfill #872 $ @
-Vec normal(Vec a) {
-	return Vec({-a.y, a.x}) / len(a);
-}@ $ \hfill %654 $ @
-\end{minted}
+\section{Seg-Seg intersection, halfplane intersection area}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct Segment {
 	Vec a, b;
@@ -324,246 +370,283 @@ long double getArea(vector<Segment> lines) {
 \end{minted}
 \section{Convex polygon algorithms}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-ll dot(const pair< int, int > &v1, const pair< int, int > &v2) {
+ll dot(const pair<int, int> &v1, const pair<int, int> &v2) {
   return (ll)v1.first * v2.first + (ll)v1.second * v2.second;
 }
-ll cross(const pair< int, int > &v1, const pair< int, int > &v2) {
+ll cross(const pair<int, int> &v1, const pair<int, int> &v2) {
   return (ll)v1.first * v2.second - (ll)v2.first * v1.second;
 }
-ll dist_sq(const pair< int, int > &p1, const pair< int, int > &p2) {
+ll dist_sq(const pair<int, int> &p1, const pair<int, int> &p2) {
   return (ll)(p2.first - p1.first) * (p2.first - p1.first) +
          (ll)(p2.second - p1.second) * (p2.second - p1.second);
 }@ $ \hfill %025 $ @
 struct Hull {
-  vector< pair< pair< int, int >, pair< int, int > > > hull;
-  vector< pair< pair< int, int >, pair< int, int > > >::iterator upper_begin;
-  template < typename Iterator >
-  void extend_hull(Iterator begin, Iterator end) {  // O(n)
-    vector< pair< int, int > > res;
+  vector<pair<pair<int, int>, pair<int, int> > > hull;
+  vector<pair<pair<int, int>, pair<int, int> > >::iterator
+    upper_begin;
+  template <typename Iterator>
+  void extend_hull(Iterator begin, Iterator end) { // O(n)
+    vector<pair<int, int> > res;
     for (auto it = begin; it != end; ++it) {
       if (res.empty() || *it != res.back()) {
-        while (res.size() >= 2) {
-          auto v1 = make_pair(res[res.size() - 1].first - res[res.size() - 2].first,@ $ \hfill #048 $ @
-                              res[res.size() - 1].second - res[res.size() - 2].second);
-          auto v2 = make_pair(it->first - res[res.size() - 2].first,
-                              it->second - res[res.size() - 2].second);
-          if (cross(v1, v2) > 0)
-            break;
+        while (res.size() >= 2) {@ $ \hfill #678 $ @
+          auto v1 = make_pair(
+            res[res.size() - 1].first - res[res.size() - 2].first,
+            res[res.size() - 1].second - res[res.size() - 2].second);
+          auto v2 =
+            make_pair(it->first - res[res.size() - 2].first,
+                      it->second - res[res.size() - 2].second);
+          if (cross(v1, v2) > 0) break;
           res.pop_back();
         }
-        res.push_back(*it);
+        res.push_back(*it);@ $ \hfill #906 $ @
       }
-    }@ $ \hfill #901 $ @
+    }
     for (int i = 0; i < res.size() - 1; ++i)
       hull.emplace_back(res[i], res[i + 1]);
   }
-  Hull(vector< pair< int, int > > &vert) {  // atleast 2 distinct points
-    sort(vert.begin(), vert.end());         // O(n log(n))
+  Hull(vector<pair<int, int> > &vert) { // atleast 2 distinct points
+    sort(vert.begin(), vert.end());     // O(n log(n))
     extend_hull(vert.begin(), vert.end());
     int diff = hull.size();
-    extend_hull(vert.rbegin(), vert.rend());
+    extend_hull(vert.rbegin(), vert.rend());@ $ \hfill #011 $ @
     upper_begin = hull.begin() + diff;
   }@ $ \hfill %873 $ @
-  bool contains(pair< int, int > p) {  // O(log(n))
-    if (p < hull.front().first || p > upper_begin->first) return false;
+  bool contains(pair<int, int> p) { // O(log(n))
+    if (p < hull.front().first || p > upper_begin->first)
+      return false;
     {
-      auto it_low = lower_bound(hull.begin(), upper_begin,
-                                make_pair(make_pair(p.first, (int)-2e9), make_pair(0, 0)));
-      if (it_low != hull.begin())
-        --it_low;
-      auto v1 = make_pair(it_low->second.first - it_low->first.first,
-                          it_low->second.second - it_low->first.second);
-      auto v2 = make_pair(p.first - it_low->first.first, p.second - it_low->first.second);@ $ \hfill #094 $ @
-      if (cross(v1, v2) < 0)  // < 0 is inclusive, <=0 is exclusive
+      auto it_low = lower_bound(
+        hull.begin(), upper_begin,
+        make_pair(make_pair(p.first, (int)-2e9), make_pair(0, 0)));
+      if (it_low != hull.begin()) --it_low;
+      auto v1 =
+        make_pair(it_low->second.first - it_low->first.first,@ $ \hfill #477 $ @
+                  it_low->second.second - it_low->first.second);
+      auto v2 = make_pair(p.first - it_low->first.first,
+                          p.second - it_low->first.second);
+      if (cross(v1, v2) < 0) // < 0 is inclusive, <=0 is exclusive
         return false;
     }
     {
-      auto it_up = lower_bound(hull.rbegin(), hull.rbegin() + (hull.end() - upper_begin),
-                               make_pair(make_pair(p.first, (int)2e9), make_pair(0, 0)));
-      if (it_up - hull.rbegin() == hull.end() - upper_begin)
-        --it_up;
+      auto it_up = lower_bound(
+        hull.rbegin(), hull.rbegin() + (hull.end() - upper_begin),
+        make_pair(make_pair(p.first, (int)2e9), make_pair(0, 0)));@ $ \hfill #129 $ @
+      if (it_up - hull.rbegin() == hull.end() - upper_begin) --it_up;
       auto v1 = make_pair(it_up->first.first - it_up->second.first,
-                          it_up->first.second - it_up->second.second);@ $ \hfill #900 $ @
-      auto v2 = make_pair(p.first - it_up->second.first, p.second - it_up->second.second);
-      if (cross(v1, v2) > 0)  // > 0 is inclusive, >=0 is exclusive
+                          it_up->first.second - it_up->second.second);
+      auto v2 = make_pair(p.first - it_up->second.first,
+                          p.second - it_up->second.second);
+      if (cross(v1, v2) > 0) // > 0 is inclusive, >=0 is exclusive
         return false;
     }
     return true;
   }@ $ \hfill %092 $ @
-  template < typename T >  // The function can have only one local min and max and may be constant
-                           // only at min and max.
-  vector< pair< pair< int, int >, pair< int, int > > >::iterator max(
-      function< T(const pair< pair< int, int >, pair< int, int > > &) > f) {  // O(log(n))
+  template <
+    typename T> // The function can have only one local min and max
+                // and may be constant only at min and max.
+                vector<
+                  pair<pair<int, int>, pair<int, int> > >::iterator
+                max(function<
+                    T(const pair<pair<int, int>, pair<int, int> > &)>
+                      f) { // O(log(n))
     auto l = hull.begin();
     auto r = hull.end();
-    vector< pair< pair< int, int >, pair< int, int > > >::iterator best = hull.end();
+    vector<pair<pair<int, int>, pair<int, int> > >::iterator best =@ $ \hfill #479 $ @
+      hull.end();
     T best_val;
     while (r - l > 2) {
       auto mid = l + (r - l) / 2;
-      T l_val = f(*l);@ $ \hfill #242 $ @
+      T l_val = f(*l);
       T l_nxt_val = f(*(l + 1));
       T mid_val = f(*mid);
       T mid_nxt_val = f(*(mid + 1));
       if (best == hull.end() ||
-          l_val > best_val) {  // If max is at l we may remove it from the range.
+          l_val > best_val) { // If max is at l we may remove it from$ \hfill #200 $
+                              // the range.
         best = l;
         best_val = l_val;
       }
       if (l_nxt_val > l_val) {
-        if (mid_val < l_val) {@ $ \hfill #012 $ @
+        if (mid_val < l_val) {
           r = mid;
         } else {
           if (mid_nxt_val > mid_val) {
             l = mid + 1;
-          } else {
+          } else {@ $ \hfill #848 $ @
             r = mid + 1;
           }
         }
       } else {
-        if (mid_val < l_val) {@ $ \hfill #373 $ @
+        if (mid_val < l_val) {
           l = mid + 1;
         } else {
           if (mid_nxt_val > mid_val) {
             l = mid + 1;
-          } else {
+          } else {@ $ \hfill #369 $ @
             r = mid + 1;
           }
         }
       }
-    }@ $ \hfill #332 $ @
+    }
     T l_val = f(*l);
     if (best == hull.end() || l_val > best_val) {
       best = l;
       best_val = l_val;
-    }
+    }@ $ \hfill #920 $ @
     if (r - l > 1) {
       T l_nxt_val = f(*(l + 1));
       if (best == hull.end() || l_nxt_val > best_val) {
         best = l + 1;
-        best_val = l_nxt_val;@ $ \hfill #930 $ @
+        best_val = l_nxt_val;
       }
     }
     return best;
   }@ $ \hfill %331 $ @
-  vector< pair< pair< int, int >, pair< int, int > > >::iterator closest(
-      pair< int, int >
-          p) {  // p can't be internal(can be on border), hull must have atleast 3 points
-    const pair< pair< int, int >, pair< int, int > > &ref_p = hull.front();  // O(log(n))
-    return max(function< double(const pair< pair< int, int >, pair< int, int > > &) >(
-        [&p, &ref_p](const pair< pair< int, int >, pair< int, int > >
-                         &seg) {  // accuracy of used type should be coord^-2
-          if (p == seg.first) return 10 - M_PI;
-          auto v1 =
-              make_pair(seg.second.first - seg.first.first, seg.second.second - seg.first.second);@ $ \hfill #685 $ @
-          auto v2 = make_pair(p.first - seg.first.first, p.second - seg.first.second);
+  vector<pair<pair<int, int>, pair<int, int> > >::iterator closest(
+    pair<int, int> p) { // p can't be internal(can be on border), hull
+                        // must have atleast 3 points
+    const pair<pair<int, int>, pair<int, int> > &ref_p =
+      hull.front(); // O(log(n))
+    return max(
+      function<double(const pair<pair<int, int>, pair<int, int> > &)>(
+        [&p,
+         &ref_p](const pair<pair<int, int>, pair<int, int> >
+                   &seg) { // accuracy of used type should be coord^-2
+          if (p == seg.first) return 10 - M_PI;@ $ \hfill #900 $ @
+          auto v1 = make_pair(seg.second.first - seg.first.first,
+                              seg.second.second - seg.first.second);
+          auto v2 = make_pair(p.first - seg.first.first,
+                              p.second - seg.first.second);
           ll cross_prod = cross(v1, v2);
-          if (cross_prod > 0) {  // order the backside by angle
-            auto v1 = make_pair(ref_p.first.first - p.first, ref_p.first.second - p.second);
-            auto v2 = make_pair(seg.first.first - p.first, seg.first.second - p.second);
+          if (cross_prod > 0) { // order the backside by angle
+            auto v1 = make_pair(ref_p.first.first - p.first,
+                                ref_p.first.second - p.second);
+            auto v2 = make_pair(seg.first.first - p.first,
+                                seg.first.second - p.second);@ $ \hfill #534 $ @
             ll dot_prod = dot(v1, v2);
             ll cross_prod = cross(v2, v1);
             return atan2(cross_prod, dot_prod) / 2;
           }
-          ll dot_prod = dot(v1, v2);@ $ \hfill #395 $ @
+          ll dot_prod = dot(v1, v2);
           double res = atan2(dot_prod, cross_prod);
           if (dot_prod <= 0 && res > 0) res = -M_PI;
           if (res > 0) {
             res += 20;
-          } else {
+          } else {@ $ \hfill #913 $ @
             res = 10 - res;
           }
           return res;
         }));
   }@ $ \hfill %483 $ @
-  pair< int, int > forw_tan(pair< int, int > p) {  // can't be internal or on border
-    const pair< pair< int, int >, pair< int, int > > &ref_p = hull.front();  // O(log(n))
-    auto best_seg = max(function< double(const pair< pair< int, int >, pair< int, int > > &) >(
-        [&p, &ref_p](const pair< pair< int, int >, pair< int, int > >
-                         &seg) {  // accuracy of used type should be coord^-2
-          auto v1 = make_pair(ref_p.first.first - p.first, ref_p.first.second - p.second);
-          auto v2 = make_pair(seg.first.first - p.first, seg.first.second - p.second);
+  pair<int, int> forw_tan(
+    pair<int, int> p) { // can't be internal or on border
+    const pair<pair<int, int>, pair<int, int> > &ref_p =
+      hull.front(); // O(log(n))
+    auto best_seg = max(
+      function<double(const pair<pair<int, int>, pair<int, int> > &)>(
+        [&p,
+         &ref_p](const pair<pair<int, int>, pair<int, int> >
+                   &seg) { // accuracy of used type should be coord^-2
+          auto v1 = make_pair(ref_p.first.first - p.first,@ $ \hfill #089 $ @
+                              ref_p.first.second - p.second);
+          auto v2 = make_pair(seg.first.first - p.first,
+                              seg.first.second - p.second);
           ll dot_prod = dot(v1, v2);
-          ll cross_prod = cross(v2, v1);       // cross(v1, v2) for back_tan !!!
-          return atan2(cross_prod, dot_prod);  // order by signed angle$ \hfill #291 $
+          ll cross_prod =
+            cross(v2, v1); // cross(v1, v2) for back_tan !!!
+          return atan2(cross_prod, dot_prod); // order by signed angle
         }));
     return best_seg->first;
   }@ $ \hfill %850 $ @
-  vector< pair< pair< int, int >, pair< int, int > > >::iterator max_in_dir(
-      pair< int, int > v) {  // first is the ans. O(log(n))
-    return max(function< ll(const pair< pair< int, int >, pair< int, int > > &) >(
-        [&v](const pair< pair< int, int >, pair< int, int > > &seg) { return dot(v, seg.first); }));
+  vector<pair<pair<int, int>, pair<int, int> > >::iterator max_in_dir(
+    pair<int, int> v) { // first is the ans. O(log(n))
+    return max(
+      function<ll(const pair<pair<int, int>, pair<int, int> > &)>(
+        [&v](const pair<pair<int, int>, pair<int, int> > &seg) {
+          return dot(v, seg.first);
+        }));
   }
-  pair< vector< pair< pair< int, int >, pair< int, int > > >::iterator,
-        vector< pair< pair< int, int >, pair< int, int > > >::iterator >@ $ \hfill %013 $ @
-  intersections(pair< pair< int, int >, pair< int, int > > line) {  // O(log(n))
+  pair<vector<pair<pair<int, int>, pair<int, int> > >::iterator,
+       vector<pair<pair<int, int>, pair<int, int> > >::iterator>@ $ \hfill %013 $ @
+  intersections(
+    pair<pair<int, int>, pair<int, int> > line) { // O(log(n))
     int x = line.second.first - line.first.first;
     int y = line.second.second - line.first.second;
     auto dir = make_pair(-y, x);
     auto it_max = max_in_dir(dir);
     auto it_min = max_in_dir(make_pair(y, -x));
     ll opt_val = dot(dir, line.first);
-    if (dot(dir, it_max->first) < opt_val || dot(dir, it_min->first) > opt_val)
+    if (dot(dir, it_max->first) < opt_val ||
+        dot(dir, it_min->first) > opt_val)@ $ \hfill #662 $ @
       return make_pair(hull.end(), hull.end());
-    vector< pair< pair< int, int >, pair< int, int > > >::iterator it_r1, it_r2;@ $ \hfill #785 $ @
-    function< bool(const pair< pair< int, int >, pair< int, int > > &,
-                   const pair< pair< int, int >, pair< int, int > > &) >
-        inc_comp([&dir](const pair< pair< int, int >, pair< int, int > > &lft,
-                        const pair< pair< int, int >, pair< int, int > > &rgt) {
+    vector<pair<pair<int, int>, pair<int, int> > >::iterator it_r1,
+      it_r2;
+    function<bool(const pair<pair<int, int>, pair<int, int> > &,
+                  const pair<pair<int, int>, pair<int, int> > &)>
+      inc_comp(
+        [&dir](const pair<pair<int, int>, pair<int, int> > &lft,
+               const pair<pair<int, int>, pair<int, int> > &rgt) {
           return dot(dir, lft.first) < dot(dir, rgt.first);
-        });
-    function< bool(const pair< pair< int, int >, pair< int, int > > &,
-                   const pair< pair< int, int >, pair< int, int > > &) >
-        dec_comp([&dir](const pair< pair< int, int >, pair< int, int > > &lft,
-                        const pair< pair< int, int >, pair< int, int > > &rgt) {@ $ \hfill #979 $ @
+        });@ $ \hfill #781 $ @
+    function<bool(const pair<pair<int, int>, pair<int, int> > &,
+                  const pair<pair<int, int>, pair<int, int> > &)>
+      dec_comp(
+        [&dir](const pair<pair<int, int>, pair<int, int> > &lft,
+               const pair<pair<int, int>, pair<int, int> > &rgt) {
           return dot(dir, lft.first) > dot(dir, rgt.first);
         });
     if (it_min <= it_max) {
       it_r1 = upper_bound(it_min, it_max + 1, line, inc_comp) - 1;
-      if (dot(dir, hull.front().first) >= opt_val) {
-        it_r2 = upper_bound(hull.begin(), it_min + 1, line, dec_comp) - 1;
+      if (dot(dir, hull.front().first) >= opt_val) {@ $ \hfill #826 $ @
+        it_r2 =
+          upper_bound(hull.begin(), it_min + 1, line, dec_comp) - 1;
       } else {
         it_r2 = upper_bound(it_max, hull.end(), line, dec_comp) - 1;
       }
-    } else {@ $ \hfill #684 $ @
+    } else {
       it_r1 = upper_bound(it_max, it_min + 1, line, dec_comp) - 1;
       if (dot(dir, hull.front().first) <= opt_val) {
-        it_r2 = upper_bound(hull.begin(), it_max + 1, line, inc_comp) - 1;
+        it_r2 =
+          upper_bound(hull.begin(), it_max + 1, line, inc_comp) - 1;@ $ \hfill #388 $ @
       } else {
         it_r2 = upper_bound(it_min, hull.end(), line, inc_comp) - 1;
       }
     }
     return make_pair(it_r1, it_r2);
   }@ $ \hfill %000 $ @
-  pair< pair< int, int >, pair< int, int > > diameter() {  // O(n)
-    pair< pair< int, int >, pair< int, int > > res;
+  pair<pair<int, int>, pair<int, int> > diameter() { // O(n)
+    pair<pair<int, int>, pair<int, int> > res;
     ll dia_sq = 0;
     auto it1 = hull.begin();
     auto it2 = upper_begin;
-    auto v1 = make_pair(hull.back().second.first - hull.back().first.first,
-                        hull.back().second.second - hull.back().first.second);
+    auto v1 =
+      make_pair(hull.back().second.first - hull.back().first.first,
+                hull.back().second.second - hull.back().first.second);
     while (it2 != hull.begin()) {
-      auto v2 = make_pair((it2 - 1)->second.first - (it2 - 1)->first.first,
-                          (it2 - 1)->second.second - (it2 - 1)->first.second);@ $ \hfill #671 $ @
+      auto v2 =@ $ \hfill #919 $ @
+        make_pair((it2 - 1)->second.first - (it2 - 1)->first.first,
+                  (it2 - 1)->second.second - (it2 - 1)->first.second);
       ll decider = cross(v1, v2);
       if (decider > 0) break;
       --it2;
     }
-    while (it2 != hull.end()) {  // check all antipodal pairs
+    while (it2 != hull.end()) { // check all antipodal pairs
       if (dist_sq(it1->first, it2->first) > dia_sq) {
         res = make_pair(it1->first, it2->first);
-        dia_sq = dist_sq(res.first, res.second);
+        dia_sq = dist_sq(res.first, res.second);@ $ \hfill #125 $ @
       }
-      auto v1 =@ $ \hfill #674 $ @
-          make_pair(it1->second.first - it1->first.first, it1->second.second - it1->first.second);
-      auto v2 =
-          make_pair(it2->second.first - it2->first.first, it2->second.second - it2->first.second);
+      auto v1 = make_pair(it1->second.first - it1->first.first,
+                          it1->second.second - it1->first.second);
+      auto v2 = make_pair(it2->second.first - it2->first.first,
+                          it2->second.second - it2->first.second);
       ll decider = cross(v1, v2);
-      if (decider == 0) {  // report cross pairs at parallel lines.
+      if (decider == 0) { // report cross pairs at parallel lines.
         if (dist_sq(it1->second, it2->first) > dia_sq) {
           res = make_pair(it1->second, it2->first);
-          dia_sq = dist_sq(res.first, res.second);
+          dia_sq = dist_sq(res.first, res.second);@ $ \hfill #860 $ @
         }
-        if (dist_sq(it1->first, it2->second) > dia_sq) {@ $ \hfill #466 $ @
+        if (dist_sq(it1->first, it2->second) > dia_sq) {
           res = make_pair(it1->first, it2->second);
           dia_sq = dist_sq(res.first, res.second);
         }
@@ -571,9 +654,9 @@ struct Hull {
         ++it2;
       } else if (decider < 0) {
         ++it1;
-      } else {
+      } else {@ $ \hfill #530 $ @
         ++it2;
-      }@ $ \hfill #502 $ @
+      }
     }
     return res;
   }
@@ -1667,11 +1750,11 @@ class HLD {
     ord[vertex] = cur;
     chain_root[vertex] = chain_source;
     par[vertex] = parent;
-    if (adj[vertex].size() > 1) {
+    if (adj[vertex].size() > 1 || (vertex == 1 && adj[vertex].size() == 1)) {
       int big_child, big_size = -1;
       for (int child : adj[vertex]) {
         if ((child != parent) && (subtree_size[child] > big_size)) {
-          big_child = child;@ $ \hfill #646 $ @
+          big_child = child;@ $ \hfill #151 $ @
           big_size = subtree_size[child];
         }
       }
@@ -1681,7 +1764,7 @@ class HLD {
           build_hld(child, vertex, child);
       }
     }
-  }@ $ \hfill #738 $ @
+  }@ $ \hfill #562 $ @
 public:
   HLD (int _vertexc) {
     vertexc = _vertexc;
@@ -1691,7 +1774,7 @@ public:
     adj[u].push_back(v);
     adj[v].push_back(u);
   }
-  void build (T initial) {@ $ \hfill #841 $ @
+  void build (T initial) {@ $ \hfill #566 $ @
     subtree_size = vector<int> (vertexc + 5);
     ord = vector<int> (vertexc + 5);
     chain_root = vector<int> (vertexc + 5);
@@ -1701,7 +1784,7 @@ public:
     build_hld(1, -1, 1);
     structure = DS (vertexc + 5, initial);
     aux = DS (50, initial);
-  }@ $ \hfill #793 $ @
+  }@ $ \hfill #758 $ @
   void set (int vertex, int value) {
     structure.set(ord[vertex], value);
   }
@@ -1711,7 +1794,7 @@ public:
       if (ord[u] > ord[v]) {
         cur_id++;
         aux.set(cur_id, structure.query(ord[chain_root[u]], ord[u]));
-        u = par[chain_root[u]];@ $ \hfill #517 $ @
+        u = par[chain_root[u]];@ $ \hfill #538 $ @
       } else {
         cur_id++;
         aux.set(cur_id, structure.query(ord[chain_root[v]], ord[v]));
@@ -1721,7 +1804,7 @@ public:
     cur_id++;
     aux.set(cur_id, structure.query(min(ord[u], ord[v]), max(ord[u], ord[v])));
     return aux.query(1, cur_id);
-  }@ $ \hfill %257 $ @
+  }@ $ \hfill %905 $ @
   void print () {
     for (int i = 1; i <= vertexc; i++)
       cout << i << ' ' << ord[i] << ' ' << chain_root[i] << ' ' << par[i] << endl;
@@ -2219,9 +2302,47 @@ map< ll, int > prime_factor(ll n, map< ll, int > *res = NULL) {  // n <= 1<<61, 
   return map< ll, int >();@ $ \hfill #140 $ @
 } //Usage: fact = prime\_factor(n);$ \hfill %477 $
 \end{minted}
-\nopagebreak
-\end{multicols}
-\end{landscape}
-\nopagebreak
-\includegraphics[scale=0.9]{comb.pdf}
+\section{Symmetric Submodular Functions; Queyrannes's algorithm}
+\noindent {\bf SSF}: such function $f : V \rightarrow R$ that satisfies $f(A) = f(V/A)$
+and for all $x \in V, X \subseteq Y \subseteq V$ it holds that
+$f(X+x) - f(X) \leq f(Y+x) - f(Y)$.
+\noindent {\bf Hereditary family}: such set $I \subseteq 2^V$ so that $X \subset Y \wedge Y \in I \Rightarrow X \in I$.
+\noindent {\bf Loop}: such $v \in V$ so that ${v} \notin I$.
+\begin{minted}{python}
+def minimize():
+	s = merge_all_loops()
+	while size >= 3:
+		t, u = find_pp()
+		{u} is a possible minimizer
+		tu = merge(t, u)
+		if tu not in I:
+			s = merge(tu, s)
+	for x in V:
+		{x} is a possible minimizer
+def find_pp():
+	W = {s} # s as in minimizer()
+	todo = V/W
+	ord = []
+	while len(todo) > 0:
+		x = min(todo, key=lambda x: f(W+{x}) - f({x}))
+		W += {x}
+		todo -= {x}
+		ord.append(x)
+	return ord[-1], ord[-2]
+def enum_all_minimal_minimizers(X): # X is a inclusionwise minimal minimizer
+	s = merge(s, X)
+	yield X
+	for {v} in I:
+		if f({v}) == f(X):
+			yield X
+			s = merge(v, s)
+	while size(V) >= 3:
+		t, u = find_pp()
+		tu = merge(t, u)
+		if tu not in I:
+			s = merge(tu, s)
+		elif f({tu}) = f(X):
+			yield tu
+			s = merge(tu, s)
+\end{minted}
 \end{document}

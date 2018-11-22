@@ -4,6 +4,7 @@
 #include<algorithm>
 using namespace std;
 
+//!escape \section{Seg-Seg intersection, halfplane intersection area}
 //!begin_codebook
 //!start
 struct Segment {

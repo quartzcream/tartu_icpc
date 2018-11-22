@@ -14,6 +14,39 @@
 \usepackage{pdflscape}
 \usepackage{multicol}
 
+\usepackage{physics}
+\usepackage{harpoon}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\epsilon}{\varepsilon}
+\renewcommand{\phi}{\varphi}
+\renewcommand{\theta}{\vartheta}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\qed}{\hfill$\blacksquare$}
+\newcommand{\amp}{\, \& \,}
+\newcommand{\imp}{\Rightarrow}
+\renewcommand{\O}{\mathcal{O}}
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset{language=C++,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\color{blue}\ttfamily,
+  stringstyle=\color{purple}\ttfamily,
+  commentstyle=\color{red}\ttfamily,
+  breaklines = true}
+\renewcommand{\theenumi}{\alph{enumi}}
+\DeclareMathOperator{\orient}{orient}
+\DeclareMathOperator{\side}{side}
+\DeclareMathOperator{\dist}{dist}
+\DeclareMathOperator{\prp}{perp}
+%\newcommand*{\vv}[1]{\overrightharp{\ensuremath{#1}}}
+\newcommand{\vv}[1]{\overline{#1}}
+
 \numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
 \numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
 \numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
@@ -47,8 +80,14 @@
 \rhead{\thepage}
 \setlength{\headsep}{0mm}
 
-\binoppenalty=\maxdimen
-\relpenalty=\maxdimen
+\hyphenpenalty=2000
+\exhyphenpenalty=2000
+\tolerance=2000
+\emergencystretch=10pt
+
+\binoppenalty=10
+
+\relpenalty=10
 
 \begin{document}
 

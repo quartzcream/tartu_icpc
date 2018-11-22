@@ -1,10 +1,10 @@
 header.tex
 setup.h
-crc.sh
+crc_simple.sh
 ordered_set.cpp
+geometry_section.tex
 numerical_integration.cpp
 triangle.cpp
-Library/Geometry/vector2d.h
 Library/Geometry/segment2d.h
 convex_hull.cpp
 aho_corasick.cpp
@@ -23,5 +23,4 @@ radixsort.cpp
 fft.cpp
 pollard_rho.cpp
 queyranne.tex
-comb_cheatsheet.tex
 footer.tex
