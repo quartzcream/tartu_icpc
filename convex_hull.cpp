@@ -9,36 +9,44 @@ const double M_PI = acos(-1.0);
 
 //!begin_codebook
 //!start
-ll dot(const pair< int, int > &v1, const pair< int, int > &v2) {
-  return (ll)v1.first * v2.first + (ll)v1.second * v2.second;
+typedef pair<int, int> Vec;
+typedef pair<Vec, Vec> Seg;
+typedef vector<Seg>::iterator SegIt;
+#define F first
+#define S second
+#define MP(x, y) make_pair(x, y)
+
+ll dot(const Vec &v1, const Vec &v2) {
+  return (ll)v1.F * v2.F + (ll)v1.S * v2.S;
 }
 
-ll cross(const pair< int, int > &v1, const pair< int, int > &v2) {
-  return (ll)v1.first * v2.second - (ll)v2.first * v1.second;
+ll cross(const Vec &v1, const Vec &v2) {
+  return (ll)v1.F * v2.S - (ll)v2.F * v1.S;
 }
 
-ll dist_sq(const pair< int, int > &p1, const pair< int, int > &p2) {
-  return (ll)(p2.first - p1.first) * (p2.first - p1.first) +
-         (ll)(p2.second - p1.second) * (p2.second - p1.second);
+ll dist_sq(const Vec &p1, const Vec &p2) {
+  return (ll)(p2.F - p1.F) * (p2.F - p1.F) +
+         (ll)(p2.S - p1.S) * (p2.S - p1.S);
 }
 //!finish
 
 //!start
 struct Hull {
-  vector< pair< pair< int, int >, pair< int, int > > > hull;
-  vector< pair< pair< int, int >, pair< int, int > > >::iterator upper_begin;
-  template < typename Iterator >
-  void extend_hull(Iterator begin, Iterator end) {  // O(n)
-    vector< pair< int, int > > res;
+  vector<Seg > hull;
+  SegIt upper_begin;
+  template <typename It>
+  void extend_hull(It begin, It end) { // O(n)
+    vector<Vec > res;
     for (auto it = begin; it != end; ++it) {
       if (res.empty() || *it != res.back()) {
         while (res.size() >= 2) {
-          auto v1 = make_pair(res[res.size() - 1].first - res[res.size() - 2].first,
-                              res[res.size() - 1].second - res[res.size() - 2].second);
-          auto v2 = make_pair(it->first - res[res.size() - 2].first,
-                              it->second - res[res.size() - 2].second);
-          if (cross(v1, v2) > 0)
-            break;
+          Vec v1 = {
+            res[res.size() - 1].F - res[res.size() - 2].F,
+            res[res.size() - 1].S - res[res.size() - 2].S};
+          Vec v2 =
+          {it->F - res[res.size() - 2].F,
+                      it->S - res[res.size() - 2].S};
+          if (cross(v1, v2) > 0) break;
           res.pop_back();
         }
         res.push_back(*it);
@@ -47,50 +55,55 @@ struct Hull {
     for (int i = 0; i < res.size() - 1; ++i)
       hull.emplace_back(res[i], res[i + 1]);
   }
-  Hull(vector< pair< int, int > > &vert) {  // atleast 2 distinct points
-    sort(vert.begin(), vert.end());         // O(n log(n))
+  Hull(vector<Vec > &vert) { // atleast 2 distinct points
+    sort(vert.begin(), vert.end());     // O(n log(n))
     extend_hull(vert.begin(), vert.end());
     int diff = hull.size();
     extend_hull(vert.rbegin(), vert.rend());
     upper_begin = hull.begin() + diff;
   }
-//!finish
-//!start
-  bool contains(pair< int, int > p) {  // O(log(n))
-    if (p < hull.front().first || p > upper_begin->first) return false;
+  //!finish
+  //!start
+  bool contains(Vec p) { // O(log(n))
+    if (p < hull.front().F || p > upper_begin->F)
+      return false;
     {
-      auto it_low = lower_bound(hull.begin(), upper_begin,
-                                make_pair(make_pair(p.first, (int)-2e9), make_pair(0, 0)));
-      if (it_low != hull.begin())
-        --it_low;
-      auto v1 = make_pair(it_low->second.first - it_low->first.first,
-                          it_low->second.second - it_low->first.second);
-      auto v2 = make_pair(p.first - it_low->first.first, p.second - it_low->first.second);
-      if (cross(v1, v2) < 0)  // < 0 is inclusive, <=0 is exclusive
+      auto it_low = lower_bound(
+        hull.begin(), upper_begin,
+        MP(MP(p.F, (int)-2e9), MP(0, 0)));
+      if (it_low != hull.begin()) --it_low;
+      Vec v1 =
+      {it_low->S.F - it_low->F.F,
+                  it_low->S.S - it_low->F.S};
+      Vec v2 = {p.F - it_low->F.F,
+                          p.S - it_low->F.S};
+      if (cross(v1, v2) < 0) // < 0 is inclusive, <=0 is exclusive
         return false;
     }
     {
-      auto it_up = lower_bound(hull.rbegin(), hull.rbegin() + (hull.end() - upper_begin),
-                               make_pair(make_pair(p.first, (int)2e9), make_pair(0, 0)));
-      if (it_up - hull.rbegin() == hull.end() - upper_begin)
-        --it_up;
-      auto v1 = make_pair(it_up->first.first - it_up->second.first,
-                          it_up->first.second - it_up->second.second);
-      auto v2 = make_pair(p.first - it_up->second.first, p.second - it_up->second.second);
-      if (cross(v1, v2) > 0)  // > 0 is inclusive, >=0 is exclusive
+      auto it_up = lower_bound(
+        hull.rbegin(), hull.rbegin() + (hull.end() - upper_begin),
+        MP(MP(p.F, (int)2e9), MP(0, 0)));
+      if (it_up - hull.rbegin() == hull.end() - upper_begin) --it_up;
+      Vec v1 = {it_up->F.F - it_up->S.F,
+                          it_up->F.S - it_up->S.S};
+      Vec v2 = {p.F - it_up->S.F,
+                          p.S - it_up->S.S};
+      if (cross(v1, v2) > 0) // > 0 is inclusive, >=0 is exclusive
         return false;
     }
     return true;
   }
-//!finish
-//!start
-  template < typename T >  // The function can have only one local min and max and may be constant
-                           // only at min and max.
-  vector< pair< pair< int, int >, pair< int, int > > >::iterator max(
-      function< T(const pair< pair< int, int >, pair< int, int > > &) > f) {  // O(log(n))
+  //!finish
+  //!start
+  template <
+    typename T> // The function can have only one local min and max
+                // and may be constant only at min and max.
+                SegIt max(function<T(const Seg &)> f) { // O(log(n))
     auto l = hull.begin();
     auto r = hull.end();
-    vector< pair< pair< int, int >, pair< int, int > > >::iterator best = hull.end();
+    SegIt best =
+      hull.end();
     T best_val;
     while (r - l > 2) {
       auto mid = l + (r - l) / 2;
@@ -99,7 +112,8 @@ struct Hull {
       T mid_val = f(*mid);
       T mid_nxt_val = f(*(mid + 1));
       if (best == hull.end() ||
-          l_val > best_val) {  // If max is at l we may remove it from the range.
+          l_val > best_val) { // If max is at l we may remove it from
+                              // the range.
         best = l;
         best_val = l_val;
       }
@@ -139,23 +153,27 @@ struct Hull {
     }
     return best;
   }
-//!finish
-//!start
-  vector< pair< pair< int, int >, pair< int, int > > >::iterator closest(
-      pair< int, int >
-          p) {  // p can't be internal(can be on border), hull must have atleast 3 points
-    const pair< pair< int, int >, pair< int, int > > &ref_p = hull.front();  // O(log(n))
-    return max(function< double(const pair< pair< int, int >, pair< int, int > > &) >(
-        [&p, &ref_p](const pair< pair< int, int >, pair< int, int > >
-                         &seg) {  // accuracy of used type should be coord^-2
-          if (p == seg.first) return 10 - M_PI;
-          auto v1 =
-              make_pair(seg.second.first - seg.first.first, seg.second.second - seg.first.second);
-          auto v2 = make_pair(p.first - seg.first.first, p.second - seg.first.second);
+  //!finish
+  //!start
+  SegIt closest(
+    Vec p) { // p can't be internal(can be on border), hull
+                        // must have atleast 3 points
+    const Seg &ref_p =
+      hull.front(); // O(log(n))
+    return max(
+      function<double(const Seg &)>(
+        [&p, &ref_p](const Seg &seg) { // accuracy of used type should be coord^-2
+          if (p == seg.F) return 10 - M_PI;
+          Vec v1 = {seg.S.F - seg.F.F,
+                              seg.S.S - seg.F.S};
+          Vec v2 = {p.F - seg.F.F,
+                              p.S - seg.F.S};
           ll cross_prod = cross(v1, v2);
-          if (cross_prod > 0) {  // order the backside by angle
-            auto v1 = make_pair(ref_p.first.first - p.first, ref_p.first.second - p.second);
-            auto v2 = make_pair(seg.first.first - p.first, seg.first.second - p.second);
+          if (cross_prod > 0) { // order the backside by angle
+            Vec v1 = {ref_p.F.F - p.F,
+                                ref_p.F.S - p.S};
+            Vec v2 = {seg.F.F - p.F,
+                                seg.F.S - p.S};
             ll dot_prod = dot(v1, v2);
             ll cross_prod = cross(v2, v1);
             return atan2(cross_prod, dot_prod) / 2;
@@ -171,120 +189,108 @@ struct Hull {
           return res;
         }));
   }
-//!finish
-//!start
-  pair< int, int > forw_tan(pair< int, int > p) {  // can't be internal or on border
-    const pair< pair< int, int >, pair< int, int > > &ref_p = hull.front();  // O(log(n))
-    auto best_seg = max(function< double(const pair< pair< int, int >, pair< int, int > > &) >(
-        [&p, &ref_p](const pair< pair< int, int >, pair< int, int > >
-                         &seg) {  // accuracy of used type should be coord^-2
-          auto v1 = make_pair(ref_p.first.first - p.first, ref_p.first.second - p.second);
-          auto v2 = make_pair(seg.first.first - p.first, seg.first.second - p.second);
+  //!finish
+  //!start
+  template<int DIRECTION> //1 or -1
+  Vec tan_point(Vec p) { // can't be internal or on border
+    //-1 iff CCW rotation of ray from p to res takes it away from polygon?
+    const Seg &ref_p =
+      hull.front(); // O(log(n))
+    auto best_seg = max(
+      function<double(const Seg &)>(
+        [&p, &ref_p](const Seg &seg) { // accuracy of used type should be coord^-2
+          Vec v1 = {ref_p.F.F - p.F,
+                              ref_p.F.S - p.S};
+          Vec v2 = {seg.F.F - p.F,
+                              seg.F.S - p.S};
           ll dot_prod = dot(v1, v2);
-          ll cross_prod = cross(v2, v1);       // cross(v1, v2) for back_tan !!!
-          return atan2(cross_prod, dot_prod);  // order by signed angle
+          ll cross_prod =
+            DIRECTION*cross(v2, v1);
+          return atan2(cross_prod, dot_prod); // order by signed angle
         }));
-    return best_seg->first;
+    return best_seg->F;
   }
-//!finish
-  //!end_codebook
-  pair< int, int > back_tan(pair< int, int > p) {  // can't be internal or on border
-    const pair< pair< int, int >, pair< int, int > > &ref_p = hull.front();  // O(log(n))
-    auto best_seg = max(function< double(const pair< pair< int, int >, pair< int, int > > &) >(
-        [&p, &ref_p](const pair< pair< int, int >, pair< int, int > >
-                         &seg) {  // accuracy of used type should be coord^-2
-          auto v1 = make_pair(ref_p.first.first - p.first, ref_p.first.second - p.second);
-          auto v2 = make_pair(seg.first.first - p.first, seg.first.second - p.second);
-          ll dot_prod = dot(v1, v2);
-          ll cross_prod = cross(v1, v2);
-          return atan2(cross_prod, dot_prod);
+  //!finish
+  //!start
+  SegIt max_in_dir(
+    Vec v) { // first is the ans. O(log(n))
+    return max(function<ll(const Seg &)>([&v](const Seg &seg) {
+          return dot(v, seg.F);
         }));
-    return best_seg->first;
   }
-  //!begin_codebook
-//!start
-  vector< pair< pair< int, int >, pair< int, int > > >::iterator max_in_dir(
-      pair< int, int > v) {  // first is the ans. O(log(n))
-    return max(function< ll(const pair< pair< int, int >, pair< int, int > > &) >(
-        [&v](const pair< pair< int, int >, pair< int, int > > &seg) { return dot(v, seg.first); }));
-  }
-  pair< vector< pair< pair< int, int >, pair< int, int > > >::iterator,
-        vector< pair< pair< int, int >, pair< int, int > > >::iterator >
-//!finish
-//!start
-  intersections(pair< pair< int, int >, pair< int, int > > line) {  // O(log(n))
-    int x = line.second.first - line.first.first;
-    int y = line.second.second - line.first.second;
-    auto dir = make_pair(-y, x);
+  //!finish
+  //!start
+  pair<SegIt, SegIt> intersections(Seg line) { // O(log(n))
+    int x = line.S.F - line.F.F;
+    int y = line.S.S - line.F.S;
+    Vec dir = {-y, x};
     auto it_max = max_in_dir(dir);
-    auto it_min = max_in_dir(make_pair(y, -x));
-    ll opt_val = dot(dir, line.first);
-    if (dot(dir, it_max->first) < opt_val || dot(dir, it_min->first) > opt_val)
-      return make_pair(hull.end(), hull.end());
-    vector< pair< pair< int, int >, pair< int, int > > >::iterator it_r1, it_r2;
-    function< bool(const pair< pair< int, int >, pair< int, int > > &,
-                   const pair< pair< int, int >, pair< int, int > > &) >
-        inc_comp([&dir](const pair< pair< int, int >, pair< int, int > > &lft,
-                        const pair< pair< int, int >, pair< int, int > > &rgt) {
-          return dot(dir, lft.first) < dot(dir, rgt.first);
+    auto it_min = max_in_dir(MP(y, -x));
+    ll opt_val = dot(dir, line.F);
+    if (dot(dir, it_max->F) < opt_val ||
+        dot(dir, it_min->F) > opt_val)
+      return MP(hull.end(), hull.end());
+    SegIt it_r1,
+      it_r2;
+    function<bool(const Seg &, const Seg &)> inc_comp( [&dir](const Seg &lft, const Seg &rgt) {
+          return dot(dir, lft.F) < dot(dir, rgt.F);
         });
-    function< bool(const pair< pair< int, int >, pair< int, int > > &,
-                   const pair< pair< int, int >, pair< int, int > > &) >
-        dec_comp([&dir](const pair< pair< int, int >, pair< int, int > > &lft,
-                        const pair< pair< int, int >, pair< int, int > > &rgt) {
-          return dot(dir, lft.first) > dot(dir, rgt.first);
+    function<bool(const Seg &, const Seg &)> dec_comp([&dir](const Seg &lft, const Seg &rgt) {
+          return dot(dir, lft.F) > dot(dir, rgt.F);
         });
     if (it_min <= it_max) {
       it_r1 = upper_bound(it_min, it_max + 1, line, inc_comp) - 1;
-      if (dot(dir, hull.front().first) >= opt_val) {
-        it_r2 = upper_bound(hull.begin(), it_min + 1, line, dec_comp) - 1;
+      if (dot(dir, hull.front().F) >= opt_val) {
+        it_r2 =
+          upper_bound(hull.begin(), it_min + 1, line, dec_comp) - 1;
       } else {
         it_r2 = upper_bound(it_max, hull.end(), line, dec_comp) - 1;
       }
     } else {
       it_r1 = upper_bound(it_max, it_min + 1, line, dec_comp) - 1;
-      if (dot(dir, hull.front().first) <= opt_val) {
-        it_r2 = upper_bound(hull.begin(), it_max + 1, line, inc_comp) - 1;
+      if (dot(dir, hull.front().F) <= opt_val) {
+        it_r2 =
+          upper_bound(hull.begin(), it_max + 1, line, inc_comp) - 1;
       } else {
         it_r2 = upper_bound(it_min, hull.end(), line, inc_comp) - 1;
       }
     }
-    return make_pair(it_r1, it_r2);
+    return MP(it_r1, it_r2);
   }
-//!finish
-//!start
-  pair< pair< int, int >, pair< int, int > > diameter() {  // O(n)
-    pair< pair< int, int >, pair< int, int > > res;
+  //!finish
+  //!start
+  Seg diameter() { // O(n)
+    Seg res;
     ll dia_sq = 0;
     auto it1 = hull.begin();
     auto it2 = upper_begin;
-    auto v1 = make_pair(hull.back().second.first - hull.back().first.first,
-                        hull.back().second.second - hull.back().first.second);
+    Vec v1 = {hull.back().S.F - hull.back().F.F,
+                hull.back().S.S - hull.back().F.S};
     while (it2 != hull.begin()) {
-      auto v2 = make_pair((it2 - 1)->second.first - (it2 - 1)->first.first,
-                          (it2 - 1)->second.second - (it2 - 1)->first.second);
+      Vec v2 = {(it2 - 1)->S.F - (it2 - 1)->F.F,
+                  (it2 - 1)->S.S - (it2 - 1)->F.S};
       ll decider = cross(v1, v2);
       if (decider > 0) break;
       --it2;
     }
-    while (it2 != hull.end()) {  // check all antipodal pairs
-      if (dist_sq(it1->first, it2->first) > dia_sq) {
-        res = make_pair(it1->first, it2->first);
-        dia_sq = dist_sq(res.first, res.second);
+    while (it2 != hull.end()) { // check all antipodal pairs
+      if (dist_sq(it1->F, it2->F) > dia_sq) {
+        res = {it1->F, it2->F};
+        dia_sq = dist_sq(res.F, res.S);
       }
-      auto v1 =
-          make_pair(it1->second.first - it1->first.first, it1->second.second - it1->first.second);
-      auto v2 =
-          make_pair(it2->second.first - it2->first.first, it2->second.second - it2->first.second);
+      Vec v1 = {it1->S.F - it1->F.F,
+                          it1->S.S - it1->F.S};
+      Vec v2 = {it2->S.F - it2->F.F,
+                          it2->S.S - it2->F.S};
       ll decider = cross(v1, v2);
-      if (decider == 0) {  // report cross pairs at parallel lines.
-        if (dist_sq(it1->second, it2->first) > dia_sq) {
-          res = make_pair(it1->second, it2->first);
-          dia_sq = dist_sq(res.first, res.second);
+      if (decider == 0) { // report cross pairs at parallel lines.
+        if (dist_sq(it1->S, it2->F) > dia_sq) {
+          res = {it1->S, it2->F};
+          dia_sq = dist_sq(res.F, res.S);
         }
-        if (dist_sq(it1->first, it2->second) > dia_sq) {
-          res = make_pair(it1->first, it2->second);
-          dia_sq = dist_sq(res.first, res.second);
+        if (dist_sq(it1->F, it2->S) > dia_sq) {
+          res = {it1->F, it2->S};
+          dia_sq = dist_sq(res.F, res.S);
         }
         ++it1;
         ++it2;
@@ -300,26 +306,30 @@ struct Hull {
 //!finish
 //!end_codebook
 
-bool intersects(pair< pair< int, int >, pair< int, int > > line,
-                pair< pair< int, int >, pair< int, int > > seg) {  // inclusive
-  auto v1 = make_pair(line.second.first - line.first.first, line.second.second - line.first.second);
-  auto v2 = make_pair(seg.first.first - line.first.first, seg.first.second - line.first.second);
-  auto v3 = make_pair(seg.second.first - line.first.first, seg.second.second - line.first.second);
+bool intersects(
+  Seg line,
+  Seg seg) { // inclusive
+  auto v1 = make_pair(line.S.F - line.F.F,
+                      line.S.S - line.F.S);
+  auto v2 = make_pair(seg.F.F - line.F.F,
+                      seg.F.S - line.F.S);
+  auto v3 = make_pair(seg.S.F - line.F.F,
+                      seg.S.S - line.F.S);
   ll val1 = cross(v1, v2);
   ll val2 = cross(v1, v3);
   return !((val1 > 0 && val2 > 0) || (val1 < 0 && val2 < 0));
 }
 
-double dist(const pair< int, int > &p1, const pair< int, int > &p2) {
-  return sqrt((ll)(p2.first - p1.first) * (p2.first - p1.first) +
-              (ll)(p2.second - p1.second) * (p2.second - p1.second));
+double dist(const Vec &p1, const Vec &p2) {
+  return sqrt((ll)(p2.F - p1.F) * (p2.F - p1.F) +
+              (ll)(p2.S - p1.S) * (p2.S - p1.S));
 }
 
 void test_closest() {
   for (int r = 1; r < 1e9; r *= 2) {
     for (int i = 2; i < 100; i *= 2) {
       for (int t = 0; t < 100; ++t) {
-        vector< pair< int, int > > from, query;
+        vector<Vec > from, query;
         for (int j = 0; j < i; ++j) {
           from.emplace_back(rand() % r, rand() % r);
         }
@@ -331,18 +341,22 @@ void test_closest() {
           for (int j = 0; j < query.size(); ++j) {
             if (!hull.contains(query[j])) {
               auto tmp = *hull.closest(query[j]);
-              double best_dist = dist(tmp.first, query[j]);
-              best_dist = min(best_dist, dist(tmp.second, query[j]));
-              auto v1 = make_pair(tmp.second.first - tmp.first.first,
-                                  tmp.second.second - tmp.first.second);
-              auto v2 =
-                  make_pair(query[j].first - tmp.first.first, query[j].second - tmp.first.second);
+              double best_dist = dist(tmp.F, query[j]);
+              best_dist = min(best_dist, dist(tmp.S, query[j]));
+              auto v1 =
+                make_pair(tmp.S.F - tmp.F.F,
+                          tmp.S.S - tmp.F.S);
+              auto v2 = make_pair(query[j].F - tmp.F.F,
+                                  query[j].S - tmp.F.S);
               auto v3 =
-                  make_pair(query[j].first - tmp.second.first, query[j].second - tmp.second.second);
+                make_pair(query[j].F - tmp.S.F,
+                          query[j].S - tmp.S.S);
               if (dot(v1, v2) > 0 && dot(v1, v3) < 0)
-                best_dist = cross(v2, v1) / dist(tmp.second, tmp.first);
+                best_dist =
+                  cross(v2, v1) / dist(tmp.S, tmp.F);
               for (int k = 0; k < i; ++k) {
-                assert(dist(from[k], query[j]) > (1 - 1e-9) * best_dist);
+                assert(dist(from[k], query[j]) >
+                       (1 - 1e-9) * best_dist);
               }
             }
           }
@@ -352,8 +366,9 @@ void test_closest() {
   }
 }
 
-int solve(int n, vector< pair< int, int > > hull_points, vector< pair< int, int > > query_points) {
-  Hull hull(hull_points);  // ACM-ICPC 2016 Finals J
+int solve(int n, vector<Vec > hull_points,
+          vector<Vec > query_points) {
+  Hull hull(hull_points); // ACM-ICPC 2016 Finals J
   if (hull.hull.size() < 2) {
     int res = n;
     for (auto cur : query_points) {
@@ -364,15 +379,19 @@ int solve(int n, vector< pair< int, int > > hull_points, vector< pair< int, int 
     return res;
   }
   int always_inc = 0;
-  vector< pair< pair< int, int >, pair< int, int > > > inc_ang_range;  //[start, stop]
+  vector<Seg >
+    inc_ang_range; //[start, stop]
   if (hull.hull.size() == 2) {
-    auto p1 = hull.hull[0].first;
-    auto p2 = hull.hull[0].second;
+    auto p1 = hull.hull[0].F;
+    auto p2 = hull.hull[0].S;
     for (auto cur : query_points) {
-      auto v1 = make_pair(p2.first - p1.first, p2.second - p1.second);
-      auto v2 = make_pair(cur.first - p1.first, cur.second - p1.second);
-      auto v3 = make_pair(cur.first - p2.first, cur.second - p2.second);
-      if (dot(v1, v2) >= 0 && dot(v1, v3) <= 0 && cross(v1, v2) == 0) {
+      auto v1 = make_pair(p2.F - p1.F, p2.S - p1.S);
+      auto v2 =
+        make_pair(cur.F - p1.F, cur.S - p1.S);
+      auto v3 =
+        make_pair(cur.F - p2.F, cur.S - p2.S);
+      if (dot(v1, v2) >= 0 && dot(v1, v3) <= 0 &&
+          cross(v1, v2) == 0) {
         ++always_inc;
       }
     }
@@ -382,51 +401,57 @@ int solve(int n, vector< pair< int, int > > hull_points, vector< pair< int, int 
     if (hull.contains(cur)) {
       ++always_inc;
     } else {
-      auto forw = hull.forw_tan(cur);
-      auto back = hull.back_tan(cur);
-      inc_ang_range.emplace_back(make_pair(forw.first - cur.first, forw.second - cur.second),
-                                 make_pair(back.first - cur.first, back.second - cur.second));
-      if (inc_ang_range.back().first.first < 0) {
-        inc_ang_range.back().first.first *= -1;
-        inc_ang_range.back().first.second *= -1;
+      auto forw = hull.tan_point<1>(cur);
+      auto back = hull.tan_point<-1>(cur);
+      inc_ang_range.emplace_back(
+        make_pair(forw.F - cur.F, forw.S - cur.S),
+        make_pair(back.F - cur.F, back.S - cur.S));
+      if (inc_ang_range.back().F.F < 0) {
+        inc_ang_range.back().F.F *= -1;
+        inc_ang_range.back().F.S *= -1;
       }
-      if (inc_ang_range.back().second.first < 0) {
-        inc_ang_range.back().second.first *= -1;
-        inc_ang_range.back().second.second *= -1;
+      if (inc_ang_range.back().S.F < 0) {
+        inc_ang_range.back().S.F *= -1;
+        inc_ang_range.back().S.S *= -1;
       }
     }
   }
   int cur_not_inc = 0;
-  vector< pair< pair< int, int >, bool > > inc_events;
+  vector<pair<Vec, bool> > inc_events;
   for (auto cur : inc_ang_range) {
-    if ((cur.first.first == 0 && cur.second.first != 0) ||
-        (!(cur.first.first != 0 && cur.second.first == 0) &&
-         (ll)cur.second.first * cur.first.second < (ll)cur.first.first * cur.second.second)) {
+    if ((cur.F.F == 0 && cur.S.F != 0) ||
+        (!(cur.F.F != 0 && cur.S.F == 0) &&
+         (ll)cur.S.F * cur.F.S <
+           (ll)cur.F.F * cur.S.S)) {
       ++cur_not_inc;
     }
-    inc_events.emplace_back(cur.first, 0);
-    inc_events.emplace_back(cur.second, 1);
+    inc_events.emplace_back(cur.F, 0);
+    inc_events.emplace_back(cur.S, 1);
   }
   sort(inc_events.begin(), inc_events.end(),
-       [](const pair< pair< int, int >, bool > &lft, const pair< pair< int, int >, bool > &rgt) {
-         if (lft.first.first == 0 && rgt.first.first != 0) {
+       [](const pair<Vec, bool> &lft,
+          const pair<Vec, bool> &rgt) {
+         if (lft.F.F == 0 && rgt.F.F != 0) {
            return true;
          }
-         if (lft.first.first != 0 && rgt.first.first == 0) {
+         if (lft.F.F != 0 && rgt.F.F == 0) {
            return false;
          }
-         /*if(lft.first.first == 0 && rgt.first.first == 0 && (lft.first.second < 0) !=
-            (rgt.first.second < 0)){ return lft.first.second < rgt.first.second;
+         /*if(lft.F.F == 0 && rgt.F.F == 0 && (lft.F.S < 0) !=
+            (rgt.F.S < 0)){ return lft.F.S <
+            rgt.F.S;
                  }*/
-         if ((ll)rgt.first.first * lft.first.second == (ll)lft.first.first * rgt.first.second) {
-           return lft.second < rgt.second;
+         if ((ll)rgt.F.F * lft.F.S ==
+             (ll)lft.F.F * rgt.F.S) {
+           return lft.S < rgt.S;
          }
-         return (ll)rgt.first.first * lft.first.second < (ll)lft.first.first * rgt.first.second;
+         return (ll)rgt.F.F * lft.F.S <
+                (ll)lft.F.F * rgt.F.S;
        });
   int max_not_inc = 0;
   for (auto cur : inc_events) {
     max_not_inc = max(max_not_inc, cur_not_inc);
-    if (!cur.second) {
+    if (!cur.S) {
       --cur_not_inc;
     } else {
       ++cur_not_inc;
@@ -435,10 +460,10 @@ int solve(int n, vector< pair< int, int > > hull_points, vector< pair< int, int 
   return n - max_not_inc;
 }
 
-int solve_brute(int n, vector< pair< int, int > > hull_points,
-                vector< pair< int, int > > query_points) {
+int solve_brute(int n, vector<Vec > hull_points,
+                vector<Vec > query_points) {
   int max_not_inc = 0;
-  vector< pair< pair< int, int >, int > > all_points;
+  vector<pair<Vec, int> > all_points;
   for (auto cur : hull_points) {
     all_points.emplace_back(cur, -1);
     if (hull_points.size() > 1) {
@@ -451,20 +476,20 @@ int solve_brute(int n, vector< pair< int, int > > hull_points,
   for (int i = -100; i < 100; ++i) {
     for (int j = 0; j < 100; ++j) {
       sort(all_points.begin(), all_points.end(),
-           [&i, &j](const pair< pair< int, int >, int > &lft,
-                    const pair< pair< int, int >, int > &rgt) {
-             int lft_val = lft.first.first * i + lft.first.second * j;
-             int rgt_val = rgt.first.first * i + rgt.first.second * j;
+           [&i, &j](const pair<Vec, int> &lft,
+                    const pair<Vec, int> &rgt) {
+             int lft_val = lft.F.F * i + lft.F.S * j;
+             int rgt_val = rgt.F.F * i + rgt.F.S * j;
              if (lft_val == rgt_val) {
-               return lft.second < rgt.second;
+               return lft.S < rgt.S;
              }
              return lft_val < rgt_val;
            });
       int cur_not_inc = 0;
-      for (auto it = all_points.begin(); it->second == 0; ++it) {
+      for (auto it = all_points.begin(); it->S == 0; ++it) {
         ++cur_not_inc;
       }
-      for (auto it = all_points.rbegin(); it->second == 0; ++it) {
+      for (auto it = all_points.rbegin(); it->S == 0; ++it) {
         ++cur_not_inc;
       }
       max_not_inc = max(max_not_inc, cur_not_inc);
@@ -479,11 +504,11 @@ void test_tan() {
       for (int j = 0; j <= 10; ++j) {
         for (int t = 0; t <= 10; ++t) {
           int n = i + j;
-          vector< pair< int, int > > hull_points;
+          vector<Vec > hull_points;
           for (int k = 0; k < i; ++k) {
             hull_points.emplace_back(rand() % r, rand() % r);
           }
-          vector< pair< int, int > > query_points;
+          vector<Vec > query_points;
           for (int k = 0; k < j; ++k) {
             query_points.emplace_back(rand() % r, rand() % r);
           }
@@ -500,7 +525,7 @@ void test_in_dir() {
   for (int r = 1; r < 1e9; r *= 2) {
     for (int i = 2; i < 1000; i *= 2) {
       for (int t = 0; t < 100; ++t) {
-        vector< pair< int, int > > from, query;
+        vector<Vec > from, query;
         for (int j = 0; j < i; ++j) {
           from.emplace_back(rand() % r, rand() % r);
         }
@@ -510,7 +535,7 @@ void test_in_dir() {
         Hull hull(from);
         if (!hull.hull.empty()) {
           for (int j = 0; j < query.size(); ++j) {
-            auto best = hull.max_in_dir(query[j])->first;
+            auto best = hull.max_in_dir(query[j])->F;
             for (auto cur : from) {
               assert(dot(best, query[j]) >= dot(cur, query[j]));
             }
@@ -525,14 +550,14 @@ void test_dia() {
   for (int r = 1; r < 1e9; r *= 2) {
     for (int i = 2; i < 1000; i *= 2) {
       for (int t = 0; t < 100; ++t) {
-        vector< pair< int, int > > from;
+        vector<Vec > from;
         for (int j = 0; j < i; ++j) {
           from.emplace_back(rand() % r, rand() % r);
         }
         Hull hull(from);
         if (!hull.hull.empty()) {
           auto best = hull.diameter();
-          ll dia_sq = dist_sq(best.first, best.second);
+          ll dia_sq = dist_sq(best.F, best.S);
           for (auto p1 : from) {
             for (auto p2 : from) {
               assert(dia_sq >= dist_sq(p1, p2));
@@ -548,7 +573,7 @@ void test_intersects() {
   for (int r = 1; r < 1e9; r *= 2) {
     for (int i = 2; i < 1000; i *= 2) {
       for (int t = 0; t < 100; ++t) {
-        vector< pair< int, int > > from, query1, query2;
+        vector<Vec > from, query1, query2;
         for (int j = 0; j < i; ++j) {
           from.emplace_back(rand() % r, rand() % r);
         }
@@ -559,14 +584,18 @@ void test_intersects() {
         Hull hull(from);
         if (!hull.hull.empty()) {
           for (int j = 0; j < query1.size(); ++j) {
-            auto best = hull.intersections(make_pair(query1[j], query2[j]));
-            if (best.first == hull.hull.end()) {
+            auto best =
+              hull.intersections(make_pair(query1[j], query2[j]));
+            if (best.F == hull.hull.end()) {
               for (auto cur : hull.hull) {
-                assert(!intersects(make_pair(query1[j], query2[j]), cur));
+                assert(
+                  !intersects(make_pair(query1[j], query2[j]), cur));
               }
             } else {
-              assert(intersects(make_pair(query1[j], query2[j]), *best.first));
-              assert(intersects(make_pair(query1[j], query2[j]), *best.second));
+              assert(intersects(make_pair(query1[j], query2[j]),
+                                *best.F));
+              assert(intersects(make_pair(query1[j], query2[j]),
+                                *best.S));
             }
           }
         }
@@ -584,8 +613,8 @@ int main() {
   return 0;
   int n;
   cin >> n;
-  vector< pair< int, int > > hull_points;
-  vector< pair< int, int > > query_points;
+  vector<Vec > hull_points;
+  vector<Vec > query_points;
   for (int i = 0; i < n; ++i) {
     int a, b, c;
     scanf("%d %d %d", &a, &b, &c);

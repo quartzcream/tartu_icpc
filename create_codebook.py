@@ -32,6 +32,7 @@ for file in file_ord:
     use_minted = False
     need_minted = False
     
+    lang = "tex"
     if(file[-4:] == ".cpp" or file[-4:] == ".hpp" or file[-2:] == ".c" or file[-2:] == ".h" or file[-3:] == ".sh" ):
         lang = "c++"
         if(file[-3:] == ".sh" ):
@@ -51,9 +52,14 @@ for file in file_ord:
     end_hash_str = "//!finish"
     pause_hash_str = "//!pause"
     unpause_hash_str = "//!unpause"
+    if(lang == "c++"):
+        os.system("clang-format -style=file "+file+" >tmp_source")
+    else:
+        os.system("cp "+file+" tmp_source");
+
 
     if(use_minted):
-        fin = open(file, "r")
+        fin = open("tmp_source", "r")
         ftmp = open("tmp", "w")
         for line in fin.readlines():
             escape_idx = line.find(escape_str)
@@ -83,7 +89,7 @@ for file in file_ord:
                     ftmp.write(line)
         ftmp.close()
         os.system("./remccoms.py <tmp | sponge tmp") #requires moreutils package
-    fin = open(file, "r")
+    fin = open("tmp_source", "r")
     outputting = False
     if(use_minted):
         ftmp = open("tmp", "r")

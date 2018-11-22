@@ -34,7 +34,8 @@ def find_pp():
 		ord.append(x)
 	return ord[-1], ord[-2]
 
-def enum_all_minimal_minimizers(X): # X is a inclusionwise minimal minimizer
+def enum_all_minimal_minimizers(X): 
+  # X is a inclusionwise minimal minimizer
 	s = merge(s, X)
 	yield X
 	for {v} in I:

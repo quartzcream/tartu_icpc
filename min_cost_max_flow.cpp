@@ -11,7 +11,8 @@ typedef long long               ll;
 const int nmax=1055;
 const ll inf=1e14;
 int t, n, v; //0 is source, v-1 sink
-ll rem_flow[nmax][nmax]; //set [x][y] for directed capacity from x to y.
+ll rem_flow[nmax][nmax];
+//set [x][y] for directed capacity from x to y.
 ll cost[nmax][nmax]; //set [x][y] for directed cost from x to y. SET TO inf IF NOT USED
 ll min_dist[nmax];
 int prev_node[nmax];
@@ -86,7 +87,8 @@ void min_cost_max_flow(){
 		tot_flow+=node_flow[v-1];
 		tot_cost+=sink_pot*node_flow[v-1];
 		int cur=v-1;
-		while(cur!=0){ //Backtrack along found path that now has 0 cost.
+		while(cur!=0){
+      //Backtrack along found path that now has 0 cost.
 			rem_flow[prev_node[cur]][cur]-=node_flow[v-1];
 			rem_flow[cur][prev_node[cur]]+=node_flow[v-1];
 			cost[cur][prev_node[cur]]=0;
