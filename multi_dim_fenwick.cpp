@@ -13,10 +13,9 @@ const int nmax = 1e5 + 5;
 
 //!begin_codebook
 //!start
-// Fully overloaded any dimensional BIT, use any type for coordinates, elements, return_value.
+// Fully overloaded any dimensional BIT, use any type for coordinates, elements, return\_value.
 // Includes coordinate compression.
-template < typename elem_t, typename coord_t, coord_t n_inf, typename ret_t >
-class BIT {
+template < typename elem_t, typename coord_t, coord_t n_inf, typename ret_t > class BIT {
   vector< coord_t > positions;
   vector< elem_t > elems;
   bool initiated = false;

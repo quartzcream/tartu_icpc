@@ -54,7 +54,12 @@ struct Graph {
     }
 //!finish
 //!start
-	vector<vector<int> > scc(){ // tested on https://www.hackerearth.com/practice/algorithms/graphs/strongly-connected-components/practice-problems/algorithm/a-walk-to-remember-qualifier2/
+	vector<vector<int> > scc(){ 
+  //!pause
+  //!end_codebook
+    // tested on https://www.hackerearth.com/practice/algorithms/graphs/strongly-connected-components/practice-problems/algorithm/a-walk-to-remember-qualifier2/
+  //!unpause
+  //!begin_codebook
         vector<int> order = topsort();
 		reverse(order.begin(),order.end());
         vector<bool> explr(n, false);

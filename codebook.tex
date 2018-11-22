@@ -32,6 +32,7 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \lstset{language=C++,
+  aboveskip=0mm,belowskip=0mm,
   basicstyle=\footnotesize\ttfamily,
   keywordstyle=\color{blue}\ttfamily,
   stringstyle=\color{purple}\ttfamily,
@@ -47,7 +48,7 @@
 \numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
 \numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
 \numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
-\usepackage[hmarginratio=1:1,top=20mm, bottom=5mm, columnsep=0mm, left=10mm, right=10mm]{geometry} % Document margins
+\usepackage[hmarginratio=1:1,top=20mm, bottom=5mm, columnsep=0mm, left=17mm, right=10mm]{geometry} % Document margins
 \usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
 \usepackage{booktabs} % Horizontal rules in tables
 \usepackage{enumitem} % Customized lists
@@ -74,6 +75,11 @@
 \emergencystretch=10pt
 \binoppenalty=10
 \relpenalty=10
+\makeatletter
+\renewcommand\tableofcontents{%
+    \@starttoc{toc}%
+}
+\makeatother
 \begin{document}
 \begin{landscape}
 \setlength\columnsep{10mm}
@@ -86,13 +92,15 @@
 \tableofcontents
 \par\noindent\rule{\textwidth}{0.4pt}
 \section{Setup}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-  set smartindent cindent set ts = 4 sw =
-    4 expandtab syntax enable set clipboard = unnamedplus
-  "setxkbmap -option caps:escape
-  "valgrind --vgdb-error=0 ./a <inp &
-  "gdb a
-  "target remote | vgdb
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, texcomments=true, mathescape=true]{bash}
+set smartindent cindent
+set ts=4 sw=4 expandtab
+syntax enable
+set clipboard=unnamedplus
+# setxkbmap -option caps:escape
+# valgrind --vgdb-error=0 ./a <inp &
+# gdb a
+# target remote | vgdb
 \end{minted}
 \section{crc.sh}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, texcomments=true, mathescape=true]{bash}
@@ -441,19 +449,18 @@ struct Hull {
     }
     return true;
   }@ $ \hfill %673 $ @
-  template <typename T> // The function can have only one local min
-                        // and max and may be constant only at min and
-                        // max.
-                        SegIt max(
-                          function<T(const Seg &)> f) { // O(log(n))
+  // The function can have only one local min and max
+  // and may be constant only at min and max.
+  template <typename T>
+  SegIt max(function<T(const Seg &)> f) { // O(log(n))
     auto l = hull.begin();
     auto r = hull.end();
     SegIt best = hull.end();
     T best_val;
     while (r - l > 2) {
       auto mid = l + (r - l) / 2;
-      T l_val = f(*l);@ $ \hfill #580 $ @
-      T l_nxt_val = f(*(l + 1));
+      T l_val = f(*l);
+      T l_nxt_val = f(*(l + 1));@ $ \hfill #485 $ @
       T mid_val = f(*mid);
       T mid_nxt_val = f(*(mid + 1));
       if (best == hull.end() ||
@@ -463,8 +470,8 @@ struct Hull {
         best_val = l_val;
       }
       if (l_nxt_val > l_val) {
-        if (mid_val < l_val) {@ $ \hfill #146 $ @
-          r = mid;
+        if (mid_val < l_val) {
+          r = mid;@ $ \hfill #397 $ @
         } else {
           if (mid_nxt_val > mid_val) {
             l = mid + 1;
@@ -473,8 +480,8 @@ struct Hull {
           }
         }
       } else {
-        if (mid_val < l_val) {@ $ \hfill #343 $ @
-          l = mid + 1;
+        if (mid_val < l_val) {
+          l = mid + 1;@ $ \hfill #634 $ @
         } else {
           if (mid_nxt_val > mid_val) {
             l = mid + 1;
@@ -483,8 +490,8 @@ struct Hull {
           }
         }
       }
-    }@ $ \hfill #951 $ @
-    T l_val = f(*l);
+    }
+    T l_val = f(*l);@ $ \hfill #470 $ @
     if (best == hull.end() || l_val > best_val) {
       best = l;
       best_val = l_val;
@@ -493,8 +500,8 @@ struct Hull {
       T l_nxt_val = f(*(l + 1));
       if (best == hull.end() || l_nxt_val > best_val) {
         best = l + 1;
-        best_val = l_nxt_val;@ $ \hfill #886 $ @
-      }
+        best_val = l_nxt_val;
+      }@ $ \hfill #814 $ @
     }
     return best;
   }@ $ \hfill %053 $ @
@@ -965,26 +972,20 @@ struct MaxFlow {
 int main() {
   int n, m;
   cin >> n >> m;
-  vector<pair<int, pair<int, int> > > graph(m);
+  auto mf = MaxFlow(
+    1, n); // arguments source and sink, memory usage O(largest node
+           // index + input size), sink doesn't need to be last index
+  int edge_index;
   for (int i = 0; i < m; ++i) {
-    cin >> graph[i].second.first >> graph[i].second.second >>
-      graph[i].first;
+    int a, b, c;
+    cin >> a >> b >> c;
+    // mf.add\_edge(a,b,c); // for directed edges
+    edge_index = mf.add_edge(
+      a, b, c, c); // store edge index if care about flow value
   }
-  ll res = 0;
-  for (auto cur : graph) {
-    auto mf = MaxFlow(cur.second.first,
-      cur.second.second); // arguments source and sink, memory usage
-                          // O(largest node index + input size), sink
-                          // doesn't need to be last index
-    for (int i = 0; i < m; ++i) {
-      if (graph[i].first > cur.first) {
-        mf.add_edge(graph[i].second.first, graph[i].second.second, 1,
-          1); // store edge index if care about flow value
-      }
-    }
-    res += mf.calc_max_flow();
-  }
-  cout << res << endl;
+  cout << mf.calc_max_flow() << '\n';
+  // cout << mf.flow\_on\_edge(edge\_index) << endl; // return flow on
+  // this edge
 }
 \end{minted}
 \section{Min Cost Max Flow with succesive dijkstra $\mathcal{O}(\text{flow} \cdot n^2)$}
@@ -1468,9 +1469,7 @@ struct Graph {
     for (auto next : conn[pos]) dfs(next, result, explr);
     result.push_back(pos);
   }@ $ \hfill %603 $ @
-  vector<vector<int> >
-  scc() { // tested on
-          // https://www.hackerearth.com/practice/algorithms/graphs/strongly-connected-components/practice-problems/algorithm/a-walk-to-remember-qualifier2/
+  vector<vector<int> > scc() {
     vector<int> order = topsort();
     reverse(order.begin(), order.end());
     vector<bool> explr(n, false);
@@ -1478,8 +1477,8 @@ struct Graph {
     for (auto it = order.rbegin(); it != order.rend(); ++it) {
       vector<int> component;
       _topsort_dfs(*it, component, explr, conn);
-      sort(component.begin(), component.end());@ $ \hfill #688 $ @
-      results.push_back(component);
+      sort(component.begin(), component.end());
+      results.push_back(component);@ $ \hfill #741 $ @
     }
     sort(results.begin(), results.end());
     return results;
@@ -1802,7 +1801,7 @@ int main() {
 \section{Templated multi dimensional BIT $\mathcal{O}(\log(n)^\text{dim})$ per query}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 // Fully overloaded any dimensional BIT, use any type for coordinates,
-// elements, return_value. Includes coordinate compression.
+// elements, return\_value. Includes coordinate compression.
 template <typename elem_t, typename coord_t, coord_t n_inf,
   typename ret_t>
 class BIT {

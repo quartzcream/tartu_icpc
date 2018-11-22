@@ -1,5 +1,5 @@
 header.tex
-setup.h
+setup.sh
 crc_simple.sh
 ordered_set.cpp
 geometry_section.tex

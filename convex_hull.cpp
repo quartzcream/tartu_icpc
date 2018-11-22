@@ -96,10 +96,9 @@ struct Hull {
   }
   //!finish
   //!start
-  template <
-    typename T> // The function can have only one local min and max
+    // The function can have only one local min and max
                 // and may be constant only at min and max.
-                SegIt max(function<T(const Seg &)> f) { // O(log(n))
+  template < typename T> SegIt max(function<T(const Seg &)> f) { // O(log(n))
     auto l = hull.begin();
     auto r = hull.end();
     SegIt best =
