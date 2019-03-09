@@ -23,4 +23,5 @@ radixsort.cpp
 fft.cpp
 pollard_rho.cpp
 queyranne.tex
+berlekam_massey.cpp
 footer.tex
