@@ -2,8 +2,19 @@
 
 //!begin_codebook
 //!start
-#include<bits/stdc++.h>
-typedef long long   ll;
+#define DEBUG(...) cerr << \_\_VA\_ARGS\_\_ << endl;
+
+#ifndef CDEBUG
+#undef DEBUG
+#define DEBUG(...) ((void)0);
+#define NDEBUG
+#endif
+
+#define ran(i,a,b) for(auto i = (a); i <(b); i++)
+
+#include <bits/stdc++.h>
+typedef long long ll;
+typedef long double ld;
 using namespace std;
 
 #include<ext/pb\_ds/assoc\_container.hpp>

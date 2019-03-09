@@ -1,8 +1,22 @@
+#define DEBUG(...) cerr << __VA_ARGS__ << endl;
+
+#ifndef CDEBUG
+#undef DEBUG
+#define DEBUG(...) ((void)0);
+#define NDEBUG
+#endif
+
+#define ran(i, a, b) for (auto i = (a); i < (b); i++)
+
 #include <bits/stdc++.h>
-using namespace std;
 typedef long long ll;
 typedef unsigned long long ull;
 typedef long double ld;
+using namespace std;
+const int mod = 1e9 + 7;
+#ifndef M_PI
+const double M_PI = acos(-1.0);
+#endif
 
 //!escape \section{Fast mod mult, Rabbin Miller prime check, Pollard rho factorization $\mathcal{O}(\sqrt{p})$}
 

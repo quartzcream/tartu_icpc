@@ -105,7 +105,7 @@ set clipboard=unnamedplus
 \section{crc.sh}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, texcomments=true, mathescape=true]{bash}
 #!/bin/envbash
-for j in `seq 10 10 200`; do
+for j in `seq 5 5 200`; do
   sed '/^\s*$/d' $1 | head -$j | tr -d '[[:space:]]' | cksum | cut -f1 -d ' ' | tail -c 4 #whistespaces don't matter.
 done #there shouldn't be any COMMENTS.
 #copy lines being checked to separate file.
@@ -113,26 +113,34 @@ done #there shouldn't be any COMMENTS.
 \end{minted}
 \section{gcc ordered set}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+#define DEBUG(...) cerr << \_\_VA\_ARGS\_\_ << endl;
+#ifndef CDEBUG
+#undef DEBUG
+#define DEBUG(...) ((void)0);
+#define NDEBUG@ $ \hfill #438 $ @
+#endif
+#define ran(i, a, b) for (auto i = (a); i < (b); i++)
 #include <bits/stdc++.h>
 typedef long long ll;
+typedef long double ld;@ $ \hfill #546 $ @
 using namespace std;
 #include <ext/pb\_ds/assoc\_container.hpp>
 #include <ext/pb\_ds/tree\_policy.hpp>
 using namespace __gnu_pbds;
-template <typename T>
+template <typename T>@ $ \hfill #822 $ @
 using ordered_set = tree<T, null_type, less<T>, rb_tree_tag,
   tree_order_statistics_node_update>;
-int main() {@ $ \hfill #558 $ @
+int main() {
   ordered_set<int> cur;
-  cur.insert(1);
+  cur.insert(1);@ $ \hfill #325 $ @
   cur.insert(3);
   cout << cur.order_of_key(2)
        << endl; // the number of elements in the set less than 2
   cout << *cur.find_by_order(0)
-       << endl; // the 0-th smallest number in the set(0-based)
+       << endl; // the 0-th smallest number in the set(0-based)$ \hfill #478 $
   cout << *cur.find_by_order(1)
        << endl; // the 1-th smallest number in the set(0-based)
-}@ $ \hfill %574 $ @
+}@ $ \hfill %954 $ @
 \end{minted}
 \end{multicols}
 \boldmath
@@ -195,29 +203,13 @@ Area of a spherical polygon:
 \unboldmath
 \setlength\columnsep{10mm}
 \begin{multicols*}{2}
-\section{Numerical integration with Simpson's rule}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-// computing power = how many times function integrate gets called
-template <typename T>
-double simps(T f, double a, double b) {
-  return (f(a) + 4 * f((a + b) / 2) + f(b)) * (b - a) / 6;
-}
-template <typename T>
-double integrate(T f, double a, double b, double computing_power) {
-  double m = (a + b) / 2;
-  double l = simps(f, a, m), r = simps(f, m, b), tot = simps(f, a, b);
-  if (computing_power < 1) return tot;
-  return integrate(f, a, m, computing_power / 2) +@ $ \hfill #567 $ @
-         integrate(f, m, b, computing_power / 2);
-}@ $ \hfill %360 $ @
-\end{minted}
 \section{Triangle centers}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 const double min_delta = 1e-13;
 const double coord_max = 1e6;
 typedef complex<double> point;
 point A, B, C; // vertixes of the triangle
-bool collinear() {
+bool collinear() {@ $ \hfill #823 $ @
   double min_diff = min(abs(A - B), min(abs(A - C), abs(B - C)));
   if (min_diff < coord_max * min_delta) return true;
   point sp = (B - A) / (C - A);
@@ -229,27 +221,24 @@ bool collinear() {
 point circum_center() {
   if (collinear()) return point(NAN, NAN);
   // squared lengths of sides
-  double a2, b2, c2;
-  a2 = norm(B - C);
-  b2 = norm(A - C);
-  c2 = norm(A - B);
+  double a2 = norm(B - C);
+  double b2 = norm(A - C);
+  double c2 = norm(A - B);@ $ \hfill #715 $ @
   // barycentric coordinates of the circumcenter
-  double c_A, c_B, c_C;
-  c_A = a2 * (b2 + c2 - a2); // sin(2 * alpha) may be used as well
-  c_B = b2 * (a2 + c2 - b2);
-  c_C = c2 * (a2 + b2 - c2);@ $ \hfill #403 $ @
+  double c_A = a2 * (b2 + c2 - a2); // sin(2 * alpha) works also
+  double c_B = b2 * (a2 + c2 - b2);
+  double c_C = c2 * (a2 + b2 - c2);
   double sum = c_A + c_B + c_C;
-  c_A /= sum;
+  c_A /= sum;@ $ \hfill #407 $ @
   c_B /= sum;
   c_C /= sum;
-  // cartesian coordinates of the circumcenter
-  return c_A * A + c_B * B + c_C * C;
-}@ $ \hfill %742 $ @
+  return c_A * A + c_B * B + c_C * C; // cartesian
+}@ $ \hfill %856 $ @
 point centroid() { // center of mass
   return (A + B + C) / 3.0;
 }
 point ortho_center() { // euler line
-  point O = circum_center();
+  point O = circum_center();@ $ \hfill #895 $ @
   return O + 3.0 * (centroid() - O);
 };
 point nine_point_circle_center() { // euler line
@@ -258,20 +247,16 @@ point nine_point_circle_center() { // euler line
 };@ $ \hfill %031 $ @
 point in_center() {
   if (collinear()) return point(NAN, NAN);
-  double a, b, c; // side lengths
-  a = abs(B - C);
-  b = abs(A - C);
-  c = abs(A - B);
+  double a = abs(B - C); // side lenghts
+  double b = abs(A - C);
+  double c = abs(A - B);@ $ \hfill #954 $ @
   // trilinear coordinates are (1,1,1)
-  // barycentric coordinates
-  double c_A = a, c_B = b, c_C = c;
-  double sum = c_A + c_B + c_C;
-  c_A /= sum;
-  c_B /= sum;@ $ \hfill #812 $ @
-  c_C /= sum;
-  // cartesian coordinates of the incenter
-  return c_A * A + c_B * B + c_C * C;
-}@ $ \hfill %980 $ @
+  double sum = a + b + c;
+  a /= sum;
+  b /= sum;
+  c /= sum;                     // barycentric
+  return a * A + b * B + c * C; // cartesian$ \hfill #596 $
+}@ $ \hfill %892 $ @
 \end{minted}
 \section{Seg-Seg intersection, halfplane intersection area}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
@@ -279,7 +264,7 @@ struct Seg {
   Vec a, b;
   Vec d() { return b - a; }
 };
-Vec intersection(Seg l, Seg r) {
+Vec intersection(Seg l, Seg r) {@ $ \hfill #327 $ @
   Vec dl = l.d(), dr = r.d();
   if (cross(dl, dr) == 0) return {nanl(""), nanl("")};
   double h = cross(dr, l.a - r.a) / len(dr);
@@ -290,7 +275,7 @@ Vec intersection(Seg l, Seg r) {
 double calc_area(vector<Seg> lines) {
   double lb = -HUGE_VAL, ub = HUGE_VAL;
   vector<Seg> linesBySide[2];
-  for (auto line : lines) {
+  for (auto line : lines) {@ $ \hfill #454 $ @
     if (line.b.y == line.a.y) {
       if (line.a.x < line.b.x) {
         lb = max(lb, line.a.y);
@@ -300,7 +285,7 @@ double calc_area(vector<Seg> lines) {
     } else if (line.a.y < line.b.y) {
       linesBySide[1].push_back(line);
     } else {
-      linesBySide[0].push_back({line.b, line.a});
+      linesBySide[0].push_back({line.b, line.a});@ $ \hfill #613 $ @
     }
   }
   sort(
@@ -310,7 +295,7 @@ double calc_area(vector<Seg> lines) {
       return cross(l.d(), r.d()) < 0;
     });
   sort(
-    linesBySide[1].begin(), linesBySide[1].end(), [](Seg l, Seg r) {
+    linesBySide[1].begin(), linesBySide[1].end(), [](Seg l, Seg r) {@ $ \hfill #115 $ @
       if (cross(l.d(), r.d()) == 0)
         return normal(l.d()) * l.a < normal(r.d()) * r.a;
       return cross(l.d(), r.d()) > 0;
@@ -322,7 +307,7 @@ double calc_area(vector<Seg> lines) {
     vector<double> &apply = applyStart[side];
     vector<Seg> curLines;
     for (auto line : linesBySide[side]) {
-      while (curLines.size() > 0) {
+      while (curLines.size() > 0) {@ $ \hfill #412 $ @
         Seg other = curLines.back();
         if (cross(line.d(), other.d()) != 0) {
           double start = intersection(line, other).y;
@@ -332,7 +317,7 @@ double calc_area(vector<Seg> lines) {
         apply.pop_back();
       }
       if (curLines.size() == 0) {
-        apply.push_back(-HUGE_VAL);
+        apply.push_back(-HUGE_VAL);@ $ \hfill #321 $ @
       } else {
         apply.push_back(intersection(line, curLines.back()).y);
       }
@@ -342,7 +327,7 @@ double calc_area(vector<Seg> lines) {
   }
   applyStart[0].push_back(HUGE_VALL);
   applyStart[1].push_back(HUGE_VALL);
-  double result = 0;
+  double result = 0;@ $ \hfill #908 $ @
   {
     double lb = -HUGE_VALL, ub;
     for (int i = 0, j = 0; i < (int)linesBySide[0].size() &&
@@ -352,7 +337,7 @@ double calc_area(vector<Seg> lines) {
       double alb = lb, aub = ub;
       Seg l0 = linesBySide[0][i], l1 = linesBySide[1][j];
       if (cross(l1.d(), l0.d()) > 0) {
-        alb = max(alb, intersection(l0, l1).y);
+        alb = max(alb, intersection(l0, l1).y);@ $ \hfill #743 $ @
       } else if (cross(l1.d(), l0.d()) < 0) {
         aub = min(aub, intersection(l0, l1).y);
       }
@@ -362,7 +347,7 @@ double calc_area(vector<Seg> lines) {
       {
         double x1 = l0.a.x + (alb - l0.a.y) / l0.d().y * l0.d().x;
         double x2 = l0.a.x + (aub - l0.a.y) / l0.d().y * l0.d().x;
-        result -= (aub - alb) * (x1 + x2) / 2;
+        result -= (aub - alb) * (x1 + x2) / 2;@ $ \hfill #075 $ @
       }
       {
         double x1 = l1.a.x + (alb - l1.a.y) / l1.d().y * l1.d().x;
@@ -372,7 +357,7 @@ double calc_area(vector<Seg> lines) {
       if (applyStart[0][i + 1] < applyStart[1][j + 1]) {
         i++;
       } else {
-        j++;
+        j++;@ $ \hfill #446 $ @
       }
     }
   }
@@ -385,254 +370,242 @@ typedef pair<int, int> Vec;
 typedef pair<Vec, Vec> Seg;
 typedef vector<Seg>::iterator SegIt;
 #define F first
-#define S second
+#define S second@ $ \hfill #608 $ @
 #define MP(x, y) make_pair(x, y)
-ll dot(const Vec &v1, const Vec &v2) {
-  return (ll)v1.F * v2.F + (ll)v1.S * v2.S;
-}
-ll cross(const Vec &v1, const Vec &v2) {@ $ \hfill #914 $ @
+ll dot(Vec &v1, Vec &v2) { return (ll)v1.F * v2.F + (ll)v1.S * v2.S; }
+ll cross(Vec &v1, Vec &v2) {
   return (ll)v1.F * v2.S - (ll)v2.F * v1.S;
-}
-ll dist_sq(const Vec &p1, const Vec &p2) {
+}@ $ \hfill #541 $ @
+ll dist_sq(Vec &p1, Vec &p2) {
   return (ll)(p2.F - p1.F) * (p2.F - p1.F) +
          (ll)(p2.S - p1.S) * (p2.S - p1.S);
-}@ $ \hfill %623 $ @
+}@ $ \hfill %008 $ @
 struct Hull {
   vector<Seg> hull;
-  SegIt upper_begin;
+  SegIt up_beg;
   template <typename It>
-  void extend_hull(It begin, It end) { // O(n)
-    vector<Vec> res;
-    for (auto it = begin; it != end; ++it) {
-      if (res.empty() || *it != res.back()) {
-        while (res.size() >= 2) {
-          Vec v1 = {res[res.size() - 1].F - res[res.size() - 2].F,@ $ \hfill #854 $ @
-            res[res.size() - 1].S - res[res.size() - 2].S};
-          Vec v2 = {it->F - res[res.size() - 2].F,
-            it->S - res[res.size() - 2].S};
+  void extend(It beg, It end) { // O(n)$ \hfill #096 $
+    vector<Vec> r;
+    for (auto it = beg; it != end; ++it) {
+      if (r.empty() || *it != r.back()) {
+        while (r.size() >= 2) {
+          int n = r.size();@ $ \hfill #442 $ @
+          Vec v1 = {r[n - 1].F - r[n - 2].F, r[n - 1].S - r[n - 2].S};
+          Vec v2 = {it->F - r[n - 2].F, it->S - r[n - 2].S};
           if (cross(v1, v2) > 0) break;
-          res.pop_back();
-        }
-        res.push_back(*it);
+          r.pop_back();
+        }@ $ \hfill #605 $ @
+        r.push_back(*it);
       }
     }
-    for (int i = 0; i < res.size() - 1; ++i)@ $ \hfill #114 $ @
-      hull.emplace_back(res[i], res[i + 1]);
-  }
+    ran(i, 0, (int)r.size() - 1) hull.emplace_back(r[i], r[i + 1]);
+  }@ $ \hfill #572 $ @
   Hull(vector<Vec> &vert) {         // atleast 2 distinct points
     sort(vert.begin(), vert.end()); // O(n log(n))
-    extend_hull(vert.begin(), vert.end());
+    extend(vert.begin(), vert.end());
     int diff = hull.size();
-    extend_hull(vert.rbegin(), vert.rend());
-    upper_begin = hull.begin() + diff;
-  }@ $ \hfill %039 $ @
+    extend(vert.rbegin(), vert.rend());@ $ \hfill #964 $ @
+    up_beg = hull.begin() + diff;
+  }@ $ \hfill %722 $ @
   bool contains(Vec p) { // O(log(n))
-    if (p < hull.front().F || p > upper_begin->F) return false;
+    if (p < hull.front().F || p > up_beg->F) return false;
     {
       auto it_low = lower_bound(
-        hull.begin(), upper_begin, MP(MP(p.F, (int)-2e9), MP(0, 0)));
+        hull.begin(), up_beg, MP(MP(p.F, (int)-2e9), MP(0, 0)));@ $ \hfill #542 $ @
       if (it_low != hull.begin()) --it_low;
-      Vec v1 = {it_low->S.F - it_low->F.F, it_low->S.S - it_low->F.S};
-      Vec v2 = {p.F - it_low->F.F, p.S - it_low->F.S};
-      if (cross(v1, v2) < 0) // < 0 is inclusive, <=0 is exclusive
-        return false;@ $ \hfill #287 $ @
+      Vec a = {it_low->S.F - it_low->F.F, it_low->S.S - it_low->F.S};
+      Vec b = {p.F - it_low->F.F, p.S - it_low->F.S};
+      if (cross(a, b) < 0) // < 0 is inclusive, <=0 is exclusive
+        return false;@ $ \hfill #681 $ @
     }
     {
       auto it_up = lower_bound(hull.rbegin(),
-        hull.rbegin() + (hull.end() - upper_begin),
-        MP(MP(p.F, (int)2e9), MP(0, 0)));
-      if (it_up - hull.rbegin() == hull.end() - upper_begin) --it_up;
-      Vec v1 = {it_up->F.F - it_up->S.F, it_up->F.S - it_up->S.S};
-      Vec v2 = {p.F - it_up->S.F, p.S - it_up->S.S};
-      if (cross(v1, v2) > 0) // > 0 is inclusive, >=0 is exclusive
-        return false;@ $ \hfill #906 $ @
+        hull.rbegin() + (hull.end() - up_beg),
+        MP(MP(p.F, (int)2e9), MP(0, 0)));@ $ \hfill #423 $ @
+      if (it_up - hull.rbegin() == hull.end() - up_beg) --it_up;
+      Vec a = {it_up->F.F - it_up->S.F, it_up->F.S - it_up->S.S};
+      Vec b = {p.F - it_up->S.F, p.S - it_up->S.S};
+      if (cross(a, b) > 0) // > 0 is inclusive, >=0 is exclusive
+        return false;@ $ \hfill #227 $ @
     }
     return true;
-  }@ $ \hfill %673 $ @
+  }@ $ \hfill %826 $ @
   // The function can have only one local min and max
   // and may be constant only at min and max.
   template <typename T>
-  SegIt max(function<T(const Seg &)> f) { // O(log(n))
+  SegIt max(function<T(Seg &)> f) { // O(log(n))
     auto l = hull.begin();
     auto r = hull.end();
-    SegIt best = hull.end();
-    T best_val;
+    SegIt b = hull.end();@ $ \hfill #566 $ @
+    T b_v;
     while (r - l > 2) {
-      auto mid = l + (r - l) / 2;
-      T l_val = f(*l);
-      T l_nxt_val = f(*(l + 1));@ $ \hfill #485 $ @
-      T mid_val = f(*mid);
-      T mid_nxt_val = f(*(mid + 1));
-      if (best == hull.end() ||
-          l_val > best_val) { // If max is at l we may remove it from
-                              // the range.
-        best = l;
-        best_val = l_val;
+      auto m = l + (r - l) / 2;
+      T l_v = f(*l);
+      T l_n_v = f(*(l + 1));@ $ \hfill #586 $ @
+      T m_v = f(*m);
+      T m_n_v = f(*(m + 1));
+      if (b == hull.end() || l_v > b_v) {
+        b = l; // If max is at l we may remove it from the range.
+        b_v = l_v;@ $ \hfill #332 $ @
       }
-      if (l_nxt_val > l_val) {
-        if (mid_val < l_val) {
-          r = mid;@ $ \hfill #397 $ @
-        } else {
-          if (mid_nxt_val > mid_val) {
-            l = mid + 1;
+      if (l_n_v > l_v) {
+        if (m_v < l_v) {
+          r = m;
+        } else {@ $ \hfill #279 $ @
+          if (m_n_v > m_v) {
+            l = m + 1;
           } else {
-            r = mid + 1;
-          }
+            r = m + 1;
+          }@ $ \hfill #656 $ @
         }
       } else {
-        if (mid_val < l_val) {
-          l = mid + 1;@ $ \hfill #634 $ @
-        } else {
-          if (mid_nxt_val > mid_val) {
-            l = mid + 1;
+        if (m_v < l_v) {
+          l = m + 1;
+        } else {@ $ \hfill #311 $ @
+          if (m_n_v > m_v) {
+            l = m + 1;
           } else {
-            r = mid + 1;
-          }
+            r = m + 1;
+          }@ $ \hfill #469 $ @
         }
       }
     }
-    T l_val = f(*l);@ $ \hfill #470 $ @
-    if (best == hull.end() || l_val > best_val) {
-      best = l;
-      best_val = l_val;
+    T l_v = f(*l);
+    if (b == hull.end() || l_v > b_v) {@ $ \hfill #864 $ @
+      b = l;
+      b_v = l_v;
     }
     if (r - l > 1) {
-      T l_nxt_val = f(*(l + 1));
-      if (best == hull.end() || l_nxt_val > best_val) {
-        best = l + 1;
-        best_val = l_nxt_val;
-      }@ $ \hfill #814 $ @
-    }
-    return best;
-  }@ $ \hfill %053 $ @
+      T l_n_v = f(*(l + 1));@ $ \hfill #972 $ @
+      if (b == hull.end() || l_n_v > b_v) {
+        b = l + 1;
+        b_v = l_n_v;
+      }
+    }@ $ \hfill #086 $ @
+    return b;
+  }@ $ \hfill %504 $ @
   SegIt closest(Vec p) { // p can't be internal(can be on border),
                          // hull must have atleast 3 points
-    const Seg &ref_p = hull.front(); // O(log(n))
-    return max(function<double(const Seg &)>(
+    Seg &ref_p = hull.front(); // O(log(n))
+    return max(function<double(Seg &)>(
       [&p, &ref_p](
-        const Seg &seg) { // accuracy of used type should be coord^-2
+        Seg &seg) { // accuracy of used type should be coord^-2$ \hfill #071 $
         if (p == seg.F) return 10 - M_PI;
         Vec v1 = {seg.S.F - seg.F.F, seg.S.S - seg.F.S};
         Vec v2 = {p.F - seg.F.F, p.S - seg.F.S};
-        ll cross_prod = cross(v1, v2);
-        if (cross_prod > 0) { // order the backside by angle$ \hfill #083 $
+        ll c_p = cross(v1, v2);
+        if (c_p > 0) { // order the backside by angle$ \hfill #868 $
           Vec v1 = {ref_p.F.F - p.F, ref_p.F.S - p.S};
           Vec v2 = {seg.F.F - p.F, seg.F.S - p.S};
-          ll dot_prod = dot(v1, v2);
-          ll cross_prod = cross(v2, v1);
-          return atan2(cross_prod, dot_prod) / 2;
+          ll d_p = dot(v1, v2);
+          ll c_p = cross(v2, v1);
+          return atan2(c_p, d_p) / 2;@ $ \hfill #384 $ @
         }
-        ll dot_prod = dot(v1, v2);
-        double res = atan2(dot_prod, cross_prod);
-        if (dot_prod <= 0 && res > 0) res = -M_PI;
-        if (res > 0) {@ $ \hfill #195 $ @
+        ll d_p = dot(v1, v2);
+        double res = atan2(d_p, c_p);
+        if (d_p <= 0 && res > 0) res = -M_PI;
+        if (res > 0) {@ $ \hfill #050 $ @
           res += 20;
         } else {
           res = 10 - res;
         }
-        return res;
+        return res;@ $ \hfill #631 $ @
       }));
-  }@ $ \hfill %368 $ @
+  }@ $ \hfill %283 $ @
   template <int DIRECTION> // 1 or -1
   Vec tan_point(Vec p) {   // can't be internal or on border
     //-1 iff CCW rotation of ray from p to res takes it away from
-    //polygon?
-    const Seg &ref_p = hull.front(); // O(log(n))
-    auto best_seg = max(function<double(const Seg &)>(
-      [&p, &ref_p](
-        const Seg &seg) { // accuracy of used type should be coord^-2
+    // polygon?
+    Seg &ref_p = hull.front(); // O(log(n))
+    auto best_seg = max(function<double(Seg &)>(
+      [&p, &ref_p](@ $ \hfill #209 $ @
+        Seg &seg) { // accuracy of used type should be coord^-2
         Vec v1 = {ref_p.F.F - p.F, ref_p.F.S - p.S};
         Vec v2 = {seg.F.F - p.F, seg.F.S - p.S};
-        ll dot_prod = dot(v1, v2);
-        ll cross_prod = DIRECTION * cross(v2, v1);@ $ \hfill #867 $ @
-        return atan2(cross_prod, dot_prod); // order by signed angle
+        ll d_p = dot(v1, v2);
+        ll c_p = DIRECTION * cross(v2, v1);@ $ \hfill #762 $ @
+        return atan2(c_p, d_p); // order by signed angle
       }));
     return best_seg->F;
-  }@ $ \hfill %101 $ @
+  }@ $ \hfill %037 $ @
   SegIt max_in_dir(Vec v) { // first is the ans. O(log(n))
-    return max(function<ll(const Seg &)>(
-      [&v](const Seg &seg) { return dot(v, seg.F); }));
-  }@ $ \hfill %861 $ @
-  pair<SegIt, SegIt> intersections(Seg line) { // O(log(n))
-    int x = line.S.F - line.F.F;
-    int y = line.S.S - line.F.S;
+    return max(
+      function<ll(Seg &)>([&v](Seg &seg) { return dot(v, seg.F); }));
+  }@ $ \hfill %596 $ @
+  pair<SegIt, SegIt> intersections(Seg l) { // O(log(n))
+    int x = l.S.F - l.F.F;
+    int y = l.S.S - l.F.S;
     Vec dir = {-y, x};
-    auto it_max = max_in_dir(dir);
+    auto it_max = max_in_dir(dir);@ $ \hfill #740 $ @
     auto it_min = max_in_dir(MP(y, -x));
-    ll opt_val = dot(dir, line.F);
+    ll opt_val = dot(dir, l.F);
     if (dot(dir, it_max->F) < opt_val ||
         dot(dir, it_min->F) > opt_val)
-      return MP(hull.end(), hull.end());@ $ \hfill #292 $ @
+      return MP(hull.end(), hull.end());@ $ \hfill #276 $ @
     SegIt it_r1, it_r2;
-    function<bool(const Seg &, const Seg &)> inc_comp(
-      [&dir](const Seg &lft, const Seg &rgt) {
-        return dot(dir, lft.F) < dot(dir, rgt.F);
-      });
-    function<bool(const Seg &, const Seg &)> dec_comp(
-      [&dir](const Seg &lft, const Seg &rgt) {
-        return dot(dir, lft.F) > dot(dir, rgt.F);
-      });
-    if (it_min <= it_max) {@ $ \hfill #402 $ @
-      it_r1 = upper_bound(it_min, it_max + 1, line, inc_comp) - 1;
-      if (dot(dir, hull.front().F) >= opt_val) {
-        it_r2 =
-          upper_bound(hull.begin(), it_min + 1, line, dec_comp) - 1;
+    function<bool(Seg &, Seg &)> inc_c([&dir](Seg &lft, Seg &rgt) {
+      return dot(dir, lft.F) < dot(dir, rgt.F);
+    });
+    function<bool(Seg &, Seg &)> dec_c([&dir](Seg &lft, Seg &rgt) {@ $ \hfill #431 $ @
+      return dot(dir, lft.F) > dot(dir, rgt.F);
+    });
+    if (it_min <= it_max) {
+      it_r1 = upper_bound(it_min, it_max + 1, l, inc_c) - 1;
+      if (dot(dir, hull.front().F) >= opt_val) {@ $ \hfill #689 $ @
+        it_r2 = upper_bound(hull.begin(), it_min + 1, l, dec_c) - 1;
       } else {
-        it_r2 = upper_bound(it_max, hull.end(), line, dec_comp) - 1;
+        it_r2 = upper_bound(it_max, hull.end(), l, dec_c) - 1;
       }
-    } else {
-      it_r1 = upper_bound(it_max, it_min + 1, line, dec_comp) - 1;
-      if (dot(dir, hull.front().F) <= opt_val) {@ $ \hfill #421 $ @
-        it_r2 =
-          upper_bound(hull.begin(), it_max + 1, line, inc_comp) - 1;
+    } else {@ $ \hfill #552 $ @
+      it_r1 = upper_bound(it_max, it_min + 1, l, dec_c) - 1;
+      if (dot(dir, hull.front().F) <= opt_val) {
+        it_r2 = upper_bound(hull.begin(), it_max + 1, l, inc_c) - 1;
       } else {
-        it_r2 = upper_bound(it_min, hull.end(), line, inc_comp) - 1;
+        it_r2 = upper_bound(it_min, hull.end(), l, inc_c) - 1;@ $ \hfill #220 $ @
       }
     }
     return MP(it_r1, it_r2);
-  }@ $ \hfill %567 $ @
+  }@ $ \hfill %498 $ @
   Seg diameter() { // O(n)
     Seg res;
     ll dia_sq = 0;
     auto it1 = hull.begin();
-    auto it2 = upper_begin;
+    auto it2 = up_beg;@ $ \hfill #632 $ @
     Vec v1 = {hull.back().S.F - hull.back().F.F,
       hull.back().S.S - hull.back().F.S};
     while (it2 != hull.begin()) {
       Vec v2 = {(it2 - 1)->S.F - (it2 - 1)->F.F,
-        (it2 - 1)->S.S - (it2 - 1)->F.S};@ $ \hfill #386 $ @
-      ll decider = cross(v1, v2);
-      if (decider > 0) break;
+        (it2 - 1)->S.S - (it2 - 1)->F.S};@ $ \hfill #150 $ @
+      if (cross(v1, v2) > 0) break;
       --it2;
     }
     while (it2 != hull.end()) { // check all antipodal pairs
-      if (dist_sq(it1->F, it2->F) > dia_sq) {
+      if (dist_sq(it1->F, it2->F) > dia_sq) {@ $ \hfill #246 $ @
         res = {it1->F, it2->F};
         dia_sq = dist_sq(res.F, res.S);
       }
-      Vec v1 = {it1->S.F - it1->F.F, it1->S.S - it1->F.S};@ $ \hfill #607 $ @
-      Vec v2 = {it2->S.F - it2->F.F, it2->S.S - it2->F.S};
-      ll decider = cross(v1, v2);
-      if (decider == 0) { // report cross pairs at parallel lines.
+      Vec v1 = {it1->S.F - it1->F.F, it1->S.S - it1->F.S};
+      Vec v2 = {it2->S.F - it2->F.F, it2->S.S - it2->F.S};@ $ \hfill #529 $ @
+      if (cross(v1, v2) == 0) {
         if (dist_sq(it1->S, it2->F) > dia_sq) {
           res = {it1->S, it2->F};
           dia_sq = dist_sq(res.F, res.S);
-        }
+        }@ $ \hfill #406 $ @
         if (dist_sq(it1->F, it2->S) > dia_sq) {
           res = {it1->F, it2->S};
-          dia_sq = dist_sq(res.F, res.S);@ $ \hfill #980 $ @
-        }
-        ++it1;
+          dia_sq = dist_sq(res.F, res.S);
+        } // report cross pairs at parallel lines.
+        ++it1;@ $ \hfill #362 $ @
         ++it2;
-      } else if (decider < 0) {
+      } else if (cross(v1, v2) < 0) {
         ++it1;
       } else {
-        ++it2;
+        ++it2;@ $ \hfill #936 $ @
       }
     }
-    return res;@ $ \hfill #686 $ @
+    return res;
   }
-};@ $ \hfill %781 $ @
+};@ $ \hfill %383 $ @
 \end{minted}
 \section{Aho Corasick $\mathcal{O}(|\text{alpha}|\sum{\text{len}})$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
@@ -640,46 +613,46 @@ const int alpha_size = 26;
 struct node {
   node *nxt[alpha_size]; // May use other structures to move in trie
   node *suffix;
-  node() { memset(nxt, 0, alpha_size * sizeof(node *)); }
+  node() { memset(nxt, 0, alpha_size * sizeof(node *)); }@ $ \hfill #364 $ @
   int cnt = 0;
 };
 node *aho_corasick(vector<vector<char> > &dict) {
   node *root = new node;
   root->suffix = 0;@ $ \hfill #911 $ @
-  vector<pair<vector<char> *, node *> > cur_state;
-  for (vector<char> &s : dict) cur_state.emplace_back(&s, root);
-  for (int i = 0; !cur_state.empty(); ++i) {
-    vector<pair<vector<char> *, node *> > nxt_state;
-    for (auto &cur : cur_state) {
+  vector<pair<vector<char> *, node *> > state;
+  for (vector<char> &s : dict) state.emplace_back(&s, root);
+  for (int i = 0; !state.empty(); ++i) {
+    vector<pair<vector<char> *, node *> > nstate;
+    for (auto &cur : state) {@ $ \hfill #561 $ @
       node *nxt = cur.second->nxt[(*cur.first)[i]];
       if (nxt) {
         cur.second = nxt;
       } else {
-        nxt = new node;@ $ \hfill #003 $ @
+        nxt = new node;@ $ \hfill #921 $ @
         cur.second->nxt[(*cur.first)[i]] = nxt;
         node *suf = cur.second->suffix;
         cur.second = nxt;
         nxt->suffix = root; // set correct suffix link
-        while (suf) {
+        while (suf) {@ $ \hfill #085 $ @
           if (suf->nxt[(*cur.first)[i]]) {
             nxt->suffix = suf->nxt[(*cur.first)[i]];
             break;
           }
-          suf = suf->suffix;@ $ \hfill #378 $ @
+          suf = suf->suffix;@ $ \hfill #872 $ @
         }
       }
-      if (cur.first->size() > i + 1) nxt_state.push_back(cur);
+      if (cur.first->size() > i + 1) nstate.push_back(cur);
     }
-    cur_state = nxt_state;
+    state = nstate;@ $ \hfill #505 $ @
   }
   return root;
-}@ $ \hfill %064 $ @
+}@ $ \hfill %823 $ @
 // auxilary functions for searhing and counting
 node *walk(node *cur,
   char c) { // longest prefix in dict that is suffix of walked string.
   while (true) {
     if (cur->nxt[c]) return cur->nxt[c];
-    if (!cur->suffix) return cur;
+    if (!cur->suffix) return cur;@ $ \hfill #113 $ @
     cur = cur->suffix;
   }
 }@ $ \hfill %127 $ @
@@ -687,22 +660,22 @@ void cnt_matches(node *root, vector<char> &match_in) {
   node *cur = root;
   for (char c : match_in) {
     cur = walk(cur, c);
-    ++cur->cnt;
+    ++cur->cnt;@ $ \hfill #568 $ @
   }
 }@ $ \hfill %286 $ @
 void add_cnt(node *root) { // After counting matches propagete ONCE to
                            // suffixes for final counts
   vector<node *> to_visit = {root};
-  for (int i = 0; i < to_visit.size(); ++i) {
+  ran(i, 0, to_visit.size()) {
     node *cur = to_visit[i];
-    for (int j = 0; j < alpha_size; ++j) {
+    ran(j, 0, alpha_size) {@ $ \hfill #797 $ @
       if (cur->nxt[j]) to_visit.push_back(cur->nxt[j]);
     }
   }
   for (int i = to_visit.size() - 1; i > 0; --i)
-    to_visit[i]->suffix->cnt += to_visit[i]->cnt;@ $ \hfill #354 $ @
-}@ $ \hfill %313 $ @
-int main() { // http://codeforces.com/group/s3etJR5zZK/contest/212916/problem/4
+    to_visit[i]->suffix->cnt += to_visit[i]->cnt;@ $ \hfill #877 $ @
+}@ $ \hfill %754 $ @
+int main() {
   int n, len;
   scanf("%d %d", &len, &n);
   vector<char> a(len + 1);
@@ -710,7 +683,7 @@ int main() { // http://codeforces.com/group/s3etJR5zZK/contest/212916/problem/4
   a.pop_back();
   for (char &c : a) c -= 'a';
   vector<vector<char> > dict(n);
-  for (int i = 0; i < n; ++i) {
+  ran(i, 0, n) {
     scanf("%d", &len);
     dict[i].resize(len + 1);
     scanf("%s", dict[i].data());
@@ -720,7 +693,7 @@ int main() { // http://codeforces.com/group/s3etJR5zZK/contest/212916/problem/4
   node *root = aho_corasick(dict);
   cnt_matches(root, a);
   add_cnt(root);
-  for (int i = 0; i < n; ++i) {
+  ran(i, 0, n) {
     node *cur = root;
     for (char c : dict[i]) cur = walk(cur, c);
     printf("%d\n", cur->cnt);
@@ -729,53 +702,52 @@ int main() { // http://codeforces.com/group/s3etJR5zZK/contest/212916/problem/4
 \end{minted}
 \section{Suffix automaton and tree $\mathcal{O}((n+q)\log(|\text{alpha}|))$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
-class AutoNode {
+class Node {
  private:
-  map<char, AutoNode *>
+  map<char, Node *>
     nxt_char; // Map is faster than hashtable and unsorted arrays
- public:
+ public:@ $ \hfill #994 $ @
   int len; // Length of longest suffix in equivalence class.
-  AutoNode *suf;
+  Node *suf;
   bool has_nxt(char c) const { return nxt_char.count(c); }
-  AutoNode *nxt(char c) {
-    if (!has_nxt(c)) return NULL;@ $ \hfill #308 $ @
+  Node *nxt(char c) {
+    if (!has_nxt(c)) return NULL;@ $ \hfill #788 $ @
     return nxt_char[c];
   }
-  void set_nxt(char c, AutoNode *node) { nxt_char[c] = node; }
-  AutoNode *split(int new_len, char c) {
-    AutoNode *new_n = new AutoNode;
+  void set_nxt(char c, Node *node) { nxt_char[c] = node; }
+  Node *split(int new_len, char c) {
+    Node *new_n = new Node;@ $ \hfill #449 $ @
     new_n->nxt_char = nxt_char;
     new_n->len = new_len;
     new_n->suf = suf;
     suf = new_n;
-    return new_n;@ $ \hfill #890 $ @
-  }@ $ \hfill %677 $ @
+    return new_n;@ $ \hfill #130 $ @
+  }@ $ \hfill %044 $ @
   // Extra functions for matching and counting
-  AutoNode *lower_depth(
-    int depth) { // move to longest suffix of current with a maximum
-                 // length of depth.
+  Node *lower_depth(int depth) { // move to longest suffix of current
+                                 // with a maximum length of depth.
     if (suf->len >= depth) return suf->lower_depth(depth);
     return this;
   }
-  AutoNode *walk(char c, int depth,
+  Node *walk(char c, int depth,@ $ \hfill #736 $ @
     int &match_len) { // move to longest suffix of walked path that is
                       // a substring
     match_len = min(match_len,
       len); // includes depth limit(needed for finding matches)
-    if (has_nxt(c)) { // as suffixes are in classes match\_len must be$ \hfill #091 $
+    if (has_nxt(c)) { // as suffixes are in classes match\_len must be
                       // tracked externally
-      ++match_len;
+      ++match_len;@ $ \hfill #153 $ @
       return nxt(c)->lower_depth(depth);
     }
     if (suf) return suf->walk(c, depth, match_len);
     return this;
-  }@ $ \hfill %955 $ @
+  }@ $ \hfill %969 $ @
   int paths_to_end = 0;
   void set_as_end() { // All suffixes of current node are marked as
                       // ending nodes.
     paths_to_end += 1;
     if (suf) suf->set_as_end();
-  }
+  }@ $ \hfill #041 $ @
   bool vis = false;
   void calc_paths_to_end() { // Call ONCE from ROOT. For each node
                              // calculates number of ways to reach an
@@ -790,67 +762,66 @@ class AutoNode {
     }
   }@ $ \hfill %996 $ @
   // Transform into suffix tree of reverse string
-  map<char, AutoNode *> tree_links;
+  map<char, Node *> tree_links;
   int end_dist = 1 << 30;
   int calc_end_dist() {
     if (end_dist == 1 << 30) {
-      if (nxt_char.empty()) end_dist = 0;
+      if (nxt_char.empty()) end_dist = 0;@ $ \hfill #524 $ @
       for (auto cur : nxt_char)
         end_dist = min(end_dist, 1 + cur.second->calc_end_dist());
     }
     return end_dist;
-  }@ $ \hfill #188 $ @
+  }@ $ \hfill #021 $ @
   bool vis_t = false;
   void build_suffix_tree(string &s) { // Call ONCE from ROOT.
     if (!vis_t) {
       vis_t = true;
-      if (suf)
+      if (suf)@ $ \hfill #270 $ @
         suf->tree_links[s[s.size() - end_dist - suf->len - 1]] = this;
       for (auto cur : nxt_char) cur.second->build_suffix_tree(s);
     }
   }
-};@ $ \hfill #748 $ @
-struct SufAutomaton {
-  AutoNode *last;
-  AutoNode *root;
+};@ $ \hfill #268 $ @
+struct SufAuto {
+  Node *last;
+  Node *root;
   void extend(char new_c) {
-    AutoNode *new_end = new AutoNode;
+    Node *new_end = new Node;@ $ \hfill #340 $ @
     new_end->len = last->len + 1;
-    AutoNode *suf_w_nxt = last;
+    Node *suf_w_nxt = last;
     while (suf_w_nxt && !suf_w_nxt->has_nxt(new_c)) {
       suf_w_nxt->set_nxt(new_c, new_end);
-      suf_w_nxt = suf_w_nxt->suf;@ $ \hfill #705 $ @
+      suf_w_nxt = suf_w_nxt->suf;@ $ \hfill #217 $ @
     }
     if (!suf_w_nxt) {
       new_end->suf = root;
     } else {
-      AutoNode *max_sbstr = suf_w_nxt->nxt(new_c);
+      Node *max_sbstr = suf_w_nxt->nxt(new_c);@ $ \hfill #618 $ @
       if (suf_w_nxt->len + 1 == max_sbstr->len) {
         new_end->suf = max_sbstr;
       } else {
-        AutoNode *eq_sbstr =
-          max_sbstr->split(suf_w_nxt->len + 1, new_c);@ $ \hfill #169 $ @
-        new_end->suf = eq_sbstr;
-        AutoNode *w_edge_to_eq_sbstr = suf_w_nxt;
+        Node *eq_sbstr = max_sbstr->split(suf_w_nxt->len + 1, new_c);
+        new_end->suf = eq_sbstr;@ $ \hfill #295 $ @
+        Node *w_edge_to_eq_sbstr = suf_w_nxt;
         while (w_edge_to_eq_sbstr != 0 &&
                w_edge_to_eq_sbstr->nxt(new_c) == max_sbstr) {
           w_edge_to_eq_sbstr->set_nxt(new_c, eq_sbstr);
-          w_edge_to_eq_sbstr = w_edge_to_eq_sbstr->suf;
+          w_edge_to_eq_sbstr = w_edge_to_eq_sbstr->suf;@ $ \hfill #678 $ @
         }
       }
     }
-    last = new_end;@ $ \hfill #356 $ @
-  }@ $ \hfill %628 $ @
-  SufAutomaton(string &s) {
-    root = new AutoNode;
+    last = new_end;
+  }@ $ \hfill %135 $ @
+  SufAuto(string &s) {
+    root = new Node;
     root->len = 0;
     root->suf = NULL;
-    last = root;
+    last = root;@ $ \hfill #604 $ @
     for (char c : s) extend(c);
     root->calc_end_dist(); // To build suffix tree use reversed string
     root->build_suffix_tree(s);
   }
-};@ $ \hfill %034 $ @
+};@ $ \hfill %251 $ @
 \end{minted}
 \section{Dinic}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
@@ -858,7 +829,7 @@ struct MaxFlow {
   typedef long long ll;
   const ll INF = 1e18;
   struct Edge {
-    int u, v;
+    int u, v;@ $ \hfill #295 $ @
     ll c, rc;
     shared_ptr<ll> flow;
     Edge(int _u, int _v, ll _c, ll _rc = 0)
@@ -868,7 +839,7 @@ struct MaxFlow {
     shared_ptr<ll> flow;
     ll cap, rcap;
     bool dir;
-    FlowTracker(ll _cap, ll _rcap, shared_ptr<ll> _flow, int _dir)
+    FlowTracker(ll _cap, ll _rcap, shared_ptr<ll> _flow, int _dir)@ $ \hfill #418 $ @
       : cap(_cap), rcap(_rcap), flow(_flow), dir(_dir) {}
     ll rem() const {
       if (dir == 0) {
@@ -878,7 +849,7 @@ struct MaxFlow {
       }
     }
     void add_flow(ll f) {
-      if (dir == 0)
+      if (dir == 0)@ $ \hfill #920 $ @
         *flow += f;
       else
         *flow -= f;
@@ -888,7 +859,7 @@ struct MaxFlow {
     operator ll() const { return rem(); }
     void operator-=(ll x) { add_flow(x); }
     void operator+=(ll x) { add_flow(-x); }
-  };
+  };@ $ \hfill #789 $ @
   int source, sink;
   vector<vector<int> > adj;
   vector<vector<FlowTracker> > cap;
@@ -898,7 +869,7 @@ struct MaxFlow {
   }
   int add_edge(int u, int v, ll c, ll rc = 0) {
     edges.push_back(Edge(u, v, c, rc));
-    return edges.size() - 1;
+    return edges.size() - 1;@ $ \hfill #659 $ @
   }
   vector<int> now, lvl;
   void prep() {
@@ -908,7 +879,7 @@ struct MaxFlow {
     cap.resize(max_id + 1);
     now.resize(max_id + 1);
     lvl.resize(max_id + 1);
-    for (auto &edge : edges) {
+    for (auto &edge : edges) {@ $ \hfill #604 $ @
       auto flow = make_shared<ll>(0);
       adj[edge.u].push_back(edge.v);
       cap[edge.u].push_back(FlowTracker(edge.c, edge.rc, flow, 0));
@@ -918,7 +889,7 @@ struct MaxFlow {
       }
       assert(cap[edge.u].back() == edge.c);
       edge.flow = flow;
-    }
+    }@ $ \hfill #131 $ @
   }
   bool dinic_bfs() {
     fill(now.begin(), now.end(), 0);
@@ -928,7 +899,7 @@ struct MaxFlow {
     for (int i = 0; i < bfs.size(); ++i) {
       int u = bfs[i];
       for (int j = 0; j < adj[u].size(); ++j) {
-        int v = adj[u][j];
+        int v = adj[u][j];@ $ \hfill #227 $ @
         if (cap[u][j] > 0 && lvl[v] == 0) {
           lvl[v] = lvl[u] + 1;
           bfs.push_back(v);
@@ -938,7 +909,7 @@ struct MaxFlow {
     return lvl[sink] > 0;
   }
   ll dinic_dfs(int u, ll flow) {
-    if (u == sink) return flow;
+    if (u == sink) return flow;@ $ \hfill #725 $ @
     while (now[u] < adj[u].size()) {
       int v = adj[u][now[u]];
       if (lvl[v] == lvl[u] + 1 && cap[u][now[u]] != 0) {
@@ -948,7 +919,7 @@ struct MaxFlow {
           return res;
         }
       }
-      ++now[u];
+      ++now[u];@ $ \hfill #460 $ @
     }
     return 0;
   }
@@ -958,7 +929,7 @@ struct MaxFlow {
     while (dinic_bfs()) {
       ll cur = 0;
       do {
-        cur = dinic_dfs(source, INF);
+        cur = dinic_dfs(source, INF);@ $ \hfill #052 $ @
         ans += cur;
       } while (cur > 0);
     }
@@ -995,7 +966,7 @@ const ll inf = 1e14;
 int t, n, v; // 0 is source, v-1 sink
 ll rem_flow[nmax][nmax];
 // set [x][y] for directed capacity from x to y.
-ll cost[nmax][nmax]; // set [x][y] for directed cost from x to y. SET
+ll cost[nmax][nmax]; // set [x][y] for directed cost from x to y. SET$ \hfill #497 $
                      // TO inf IF NOT USED
 ll min_dist[nmax];
 int prev_node[nmax];
@@ -1005,14 +976,14 @@ ll tot_cost, tot_flow; // output
 void min_cost_max_flow() {
   tot_cost = 0; // Does not work with negative cycles.
   tot_flow = 0;
-  ll sink_pot = 0;
+  ll sink_pot = 0;@ $ \hfill #614 $ @
   min_dist[0] = 0;@ $ \hfill %927 $ @
   for (int i = 1; i <= v; ++i) { // incase of no negative edges
                                  // Bellman-Ford can be removed.
     min_dist[i] = inf;
   }
   for (int i = 0; i < v - 1; ++i) {
-    for (int j = 0; j < v; ++j) {
+    for (int j = 0; j < v; ++j) {@ $ \hfill #654 $ @
       for (int k = 0; k < v; ++k) {
         if (rem_flow[j][k] > 0 &&
             min_dist[j] + cost[j][k] < min_dist[k])
@@ -1022,7 +993,7 @@ void min_cost_max_flow() {
   }
   for (int i = 0; i < v; ++i) { // Apply potentials to edge costs.
     for (int j = 0; j < v; ++j) {
-      if (cost[i][j] != inf) {
+      if (cost[i][j] != inf) {@ $ \hfill #037 $ @
         cost[i][j] += min_dist[i];
         cost[i][j] -= min_dist[j];
       }
@@ -1034,7 +1005,7 @@ void min_cost_max_flow() {
                                    // value for Dijkstra.
       min_dist[i] = inf;
       visited[i] = false;
-    }
+    }@ $ \hfill #827 $ @
     min_dist[0] = 0;
     node_flow[0] = inf;
     int min_node;
@@ -1044,7 +1015,7 @@ void min_cost_max_flow() {
         if ((!visited[i]) && min_dist[i] < min_dist[min_node])
           min_node = i;
       }
-      if (min_node == v) break visited[min_node] = true;
+      if (min_node == v) break visited[min_node] = true;@ $ \hfill #281 $ @
       for (int i = 0; i < v; ++i) {
         if ((!visited[i]) &&
             min_dist[min_node] + cost[min_node][i] < min_dist[i]) {
@@ -1054,7 +1025,7 @@ void min_cost_max_flow() {
             min(node_flow[min_node], rem_flow[min_node][i]);
         }
       }
-    }
+    }@ $ \hfill #046 $ @
     if (min_dist[v - 1] == inf)
       break for (int i = 0; i < v;
                  ++i) { // Apply potentials to edge costs.
@@ -1064,7 +1035,7 @@ void min_cost_max_flow() {
             cost[i][j] += min_dist[i];
             cost[i][j] -= min_dist[j];
           }
-        }
+        }@ $ \hfill #983 $ @
       }
     sink_pot += min_dist[v - 1];
     tot_flow += node_flow[v - 1];
@@ -1075,7 +1046,7 @@ void min_cost_max_flow() {
       rem_flow[prev_node[cur]][cur] -= node_flow[v - 1];
       rem_flow[cur][prev_node[cur]] += node_flow[v - 1];
       cost[cur][prev_node[cur]] = 0;
-      if (rem_flow[prev_node[cur]][cur] == 0)
+      if (rem_flow[prev_node[cur]][cur] == 0)@ $ \hfill #446 $ @
         cost[prev_node[cur]][cur] = inf;
       cur = prev_node[cur];
     }
@@ -1126,7 +1097,7 @@ struct Network {
   struct Node;
   struct Edge {
     Node *u, *v;
-    int f, c, cost;
+    int f, c, cost;@ $ \hfill #965 $ @
     Node* from(Node* pos) {
       if (pos == u) return v;
       return u;
@@ -1136,7 +1107,7 @@ struct Network {
       return f;
     }
     int addFlow(Node* pos, int toAdd) {
-      if (pos == u) {
+      if (pos == u) {@ $ \hfill #369 $ @
         f += toAdd;
         return toAdd * cost;
       } else {
@@ -1146,7 +1117,7 @@ struct Network {
     }
   };
   struct Node {
-    vector<Edge*> conn;
+    vector<Edge*> conn;@ $ \hfill #577 $ @
     int index;
   };
   deque<Node> nodes;
@@ -1156,7 +1127,7 @@ struct Network {
     nodes.back().index = nodes.size() - 1;
     return &nodes.back();
   }
-  Edge* addEdge(Node* u, Node* v, int f, int c, int cost) {
+  Edge* addEdge(Node* u, Node* v, int f, int c, int cost) {@ $ \hfill #518 $ @
     edges.push_back({u, v, f, c, cost});
     u->conn.push_back(&edges.back());
     v->conn.push_back(&edges.back());
@@ -1167,7 +1138,7 @@ struct Network {
     int n = nodes.size();
     int result = 0;
     struct State {
-      int p;
+      int p;@ $ \hfill #091 $ @
       Edge* used;
     };
     while (1) {
@@ -1177,7 +1148,7 @@ struct Network {
         for (int i = 0; i < n; i++) {
           if (lev == 0 || state[lev][i].p < state[lev - 1][i].p) {
             for (Edge* edge : nodes[i].conn) {
-              if (edge->getCap(&nodes[i]) > 0) {
+              if (edge->getCap(&nodes[i]) > 0) {@ $ \hfill #760 $ @
                 int np =
                   state[lev][i].p +
                   (edge->u == &nodes[i] ? edge->cost : -edge->cost);
@@ -1187,7 +1158,7 @@ struct Network {
                   state[lev + 1][ni].used = edge;
                 }
               }
-            }
+            }@ $ \hfill #460 $ @
           }
         }
       }
@@ -1198,7 +1169,7 @@ struct Network {
           valid = true;
           vector<Edge*> path;
           int cap = 1000000000;
-          Node* cur = &nodes[i];
+          Node* cur = &nodes[i];@ $ \hfill #352 $ @
           int clev = n;
           vector<bool> explr(n, false);
           while (!explr[cur->index]) {
@@ -1208,7 +1179,7 @@ struct Network {
             path.push_back(cstate.used);
           }
           reverse(path.begin(), path.end());
-          {
+          {@ $ \hfill #592 $ @
             int i = 0;
             Node* cur2 = cur;
             do {
@@ -1218,7 +1189,7 @@ struct Network {
             path.resize(i);
           }
           for (auto edge : path) {
-            cap = min(cap, edge->getCap(cur));
+            cap = min(cap, edge->getCap(cur));@ $ \hfill #297 $ @
             cur = edge->from(cur);
           }
           for (auto edge : path) {
@@ -1228,7 +1199,7 @@ struct Network {
         }
       if (!valid) break;
     }
-    return result;
+    return result;@ $ \hfill #550 $ @
   }
 };@ $ \hfill %900 $ @
 \end{minted}
@@ -1238,7 +1209,7 @@ struct EdgeDesc {
   int from, to, w;
 };
 struct DMST {
-  struct Node;
+  struct Node;@ $ \hfill #091 $ @
   struct Edge {
     Node *from;
     Node *tar;
@@ -1248,7 +1219,7 @@ struct DMST {
   struct Circle {
     bool vis = false;
     vector<Edge *> contents;
-    void clean(int idx);
+    void clean(int idx);@ $ \hfill #946 $ @
   };
   const static greater<pair<ll, Edge *> >
     comp; // Can use inline static since C++17
@@ -1258,7 +1229,7 @@ struct DMST {
   struct Node {
     Node *par = NULL;
     vector<pair<int, int> > out_cands; // Circ, edge idx
-    vector<pair<ll, Edge *> > con;
+    vector<pair<ll, Edge *> > con;@ $ \hfill #608 $ @
     bool in_use = false;
     ll w = 0; // extra to add to edges in con
     Node *anc() {
@@ -1268,7 +1239,7 @@ struct DMST {
     }
     void clean() {
       if (!no_dmst) {
-        in_use = false;
+        in_use = false;@ $ \hfill #465 $ @
         for (auto &cur : out_cands)
           to_process[cur.first].clean(cur.second);
       }
@@ -1279,7 +1250,7 @@ struct DMST {
       Node *super = this; // Will become root or the first Node
                           // encountered in a loop.
       while (super == this) {
-        while (
+        while (@ $ \hfill #363 $ @
           !con.empty() && con.front().second->tar->anc() == anc()) {
           pop_heap(con.begin(), con.end(), comp);
           con.pop_back();
@@ -1289,7 +1260,7 @@ struct DMST {
           return root;
         }
         pop_heap(con.begin(), con.end(), comp);
-        auto nxt = con.back();
+        auto nxt = con.back();@ $ \hfill #541 $ @
         con.pop_back();
         w = -nxt.first;
         if (nxt.second->tar
@@ -1299,7 +1270,7 @@ struct DMST {
         } else {
           super = nxt.second->tar->con_to_root();
         }
-        if (super != root) {
+        if (super != root) {@ $ \hfill #595 $ @
           to_process.back().contents.push_back(nxt.second);
           out_cands.emplace_back(to_process.size() - 1,
             to_process.back().contents.size() - 1);
@@ -1309,7 +1280,7 @@ struct DMST {
         }
       }
       if (super != root) { // we are some loops non first Node.
-        if (con.size() > super->con.size()) {
+        if (con.size() > super->con.size()) {@ $ \hfill #860 $ @
           swap(con,
             super->con); // Largest con in loop should not be copied.
           swap(w, super->w);
@@ -1319,7 +1290,7 @@ struct DMST {
             cur.first - super->w + w, cur.second);
           push_heap(super->con.begin(), super->con.end(), comp);
         }
-      }
+      }@ $ \hfill #295 $ @
       par = super; // root or anc() of first Node encountered in a
                    // loop
       return super;
@@ -1330,7 +1301,7 @@ struct DMST {
   vector<Edge> edges;
   DMST(int n, vector<EdgeDesc> &desc,
     int r) { // Self loops and multiple edges are okay.
-    graph.resize(n);
+    graph.resize(n);@ $ \hfill #989 $ @
     cur_root = &graph[r];
     for (auto &cur : desc) // Edges are reversed internally
       edges.push_back(Edge{&graph[cur.to], &graph[cur.from], cur.w});
@@ -1340,7 +1311,7 @@ struct DMST {
       make_heap(graph[i].con.begin(), graph[i].con.end(), comp);
   }
   bool find() {
-    root = cur_root;
+    root = cur_root;@ $ \hfill #771 $ @
     no_dmst = false;
     for (auto &cur : graph) {
       cur.con_to_root();
@@ -1353,14 +1324,14 @@ struct DMST {
     ll res = 0;
     for (auto &cur : edges) {
       if (cur.inc) res += cur.w;
-    }
+    }@ $ \hfill #369 $ @
     return res;
   }@ $ \hfill %477 $ @
 };
 void DMST::Circle::clean(int idx) {
   if (!vis) {
     vis = true;
-    for (int i = 0; i < contents.size(); ++i) {
+    for (int i = 0; i < contents.size(); ++i) {@ $ \hfill #814 $ @
       if (i != idx) {
         contents[i]->inc = true;
         contents[i]->from->clean();
@@ -1370,7 +1341,7 @@ void DMST::Circle::clean(int idx) {
 }
 const greater<pair<ll, DMST::Edge *> > DMST::comp;
 vector<DMST::Circle> DMST::to_process;
-bool DMST::no_dmst;
+bool DMST::no_dmst;@ $ \hfill #417 $ @
 DMST::Node *DMST::root;@ $ \hfill %771 $ @
 \end{minted}
 \section{Bridges $\mathcal{O}(n)$}
@@ -1379,7 +1350,7 @@ struct vert;
 struct edge {
   bool exists = true;
   vert *dest;
-  edge *rev;
+  edge *rev;@ $ \hfill #922 $ @
   edge(vert *_dest) : dest(_dest) { rev = NULL; }
   vert &operator*() { return *dest; }
   vert *operator->() { return dest; }
@@ -1389,7 +1360,7 @@ struct vert {
   deque<edge> con;
   int val = 0;
   int seen;
-  int dfs(int upd, edge *ban) { // handles multiple edges
+  int dfs(int upd, edge *ban) { // handles multiple edges$ \hfill #331 $
     if (!val) {
       val = upd;
       seen = val;
@@ -1439,7 +1410,7 @@ struct Graph {
   int n;
   vector<vector<int> > conn;
   Graph(int nsize) {
-    n = nsize;
+    n = nsize;@ $ \hfill #987 $ @
     conn.resize(n);
   }
   void add_edge(int u, int v) { conn[u].push_back(v); }
@@ -1449,7 +1420,7 @@ struct Graph {
     explr[pos] = true;
     for (auto next : revconn[pos])
       _topsort_dfs(next, result, explr, revconn);
-    result.push_back(pos);
+    result.push_back(pos);@ $ \hfill #810 $ @
   }
   vector<int> topsort() {
     vector<vector<int> > revconn(n);
@@ -1459,7 +1430,7 @@ struct Graph {
     vector<int> result;
     vector<bool> explr(n, false);
     for (int i = 0; i < n; i++)
-      _topsort_dfs(i, result, explr, revconn);
+      _topsort_dfs(i, result, explr, revconn);@ $ \hfill #178 $ @
     reverse(result.begin(), result.end());
     return result;
   }
@@ -1473,7 +1444,7 @@ struct Graph {
     vector<int> order = topsort();
     reverse(order.begin(), order.end());
     vector<bool> explr(n, false);
-    vector<vector<int> > results;
+    vector<vector<int> > results;@ $ \hfill #020 $ @
     for (auto it = order.rbegin(); it != order.rend(); ++it) {
       vector<int> component;
       _topsort_dfs(*it, component, explr, conn);
@@ -1527,7 +1498,7 @@ struct Seg {
   ll sum = 0;
   void recalc(const Seg &lhs_seg, int lhs_len, const Seg &rhs_seg,
     int rhs_len) {
-    sum = lhs_seg.sum + rhs_seg.sum;
+    sum = lhs_seg.sum + rhs_seg.sum;@ $ \hfill #684 $ @
   }
 } __attribute__((packed));
 struct Lazy {
@@ -1537,7 +1508,7 @@ struct Lazy {
     add = 0;
     assign_val = LLONG_MIN;
   }
-  Lazy() { init(); }
+  Lazy() { init(); }@ $ \hfill #819 $ @
   void split(Lazy &lhs_lazy, Lazy &rhs_lazy, int len) {
     lhs_lazy = *this;
     rhs_lazy = *this;
@@ -1547,7 +1518,7 @@ struct Lazy {
     if (oth.assign_val != LLONG_MIN) {
       add = 0;
       assign_val = oth.assign_val;
-    }
+    }@ $ \hfill #949 $ @
     add += oth.add;
   }
   void apply_to_seg(Seg &cur, int len) const {
@@ -1561,7 +1532,7 @@ struct Node { // Following code should not need to be modified
   int ver;
   bool is_lazy = false;
   Seg seg;
-  Lazy lazy;
+  Lazy lazy;@ $ \hfill #321 $ @
   Node *lc = NULL, *rc = NULL;
   void init() {
     if (!lc) {
@@ -1571,7 +1542,7 @@ struct Node { // Following code should not need to be modified
   }
   Node *upd(int L, int R, int l, int r, Lazy &val, int tar_ver) {
     if (ver != tar_ver) {
-      Node *rep = new Node(*this);
+      Node *rep = new Node(*this);@ $ \hfill #874 $ @
       rep->ver = tar_ver;
       return rep->upd(L, R, l, r, val, tar_ver);
     }
@@ -1581,7 +1552,7 @@ struct Node { // Following code should not need to be modified
       is_lazy = true;
     } else {
       init();
-      int M = (L + R) / 2;
+      int M = (L + R) / 2;@ $ \hfill #209 $ @
       if (is_lazy) {
         Lazy l_val, r_val;
         lazy.split(l_val, r_val, R - L);
@@ -1591,7 +1562,7 @@ struct Node { // Following code should not need to be modified
       }
       Lazy l_val, r_val;
       val.split(l_val, r_val, R - L);
-      if (l < M) lc = lc->upd(L, M, l, r, l_val, ver);
+      if (l < M) lc = lc->upd(L, M, l, r, l_val, ver);@ $ \hfill #045 $ @
       if (M < r) rc = rc->upd(M, R, l, r, r_val, ver);
       seg.recalc(lc->seg, M - L, rc->seg, R - M);
     }
@@ -1601,7 +1572,7 @@ struct Node { // Following code should not need to be modified
     bool last_ver) {
     if (L >= l && R <= r) {
       tmp->recalc(*lft_res, L - l, seg, R - L);
-      swap(lft_res, tmp);
+      swap(lft_res, tmp);@ $ \hfill #394 $ @
     } else {
       init();
       int M = (L + R) / 2;
@@ -1611,7 +1582,7 @@ struct Node { // Following code should not need to be modified
         lc = lc->upd(L, M, L, M, l_val, ver + last_ver);
         lc->ver = ver;
         rc = rc->upd(M, R, M, R, r_val, ver + last_ver);
-        rc->ver = ver;
+        rc->ver = ver;@ $ \hfill #593 $ @
         is_lazy = false;
       }
       if (l < M) lc->get(L, M, l, r, lft_res, tmp, last_ver);
@@ -1621,7 +1592,7 @@ struct Node { // Following code should not need to be modified
 } __attribute__((packed));
 struct SegTree {        // indexes start from 0, ranges are [beg, end)
   vector<Node *> roots; // versions start from 0
-  int len;
+  int len;@ $ \hfill #873 $ @
   SegTree(int _len) : len(_len) { roots.push_back(new Node{0}); }
   int upd(int l, int r, Lazy &val, bool new_ver = false) {
     Node *cur_root =
@@ -1631,7 +1602,7 @@ struct SegTree {        // indexes start from 0, ranges are [beg, end)
   }
   Seg get(int l, int r, int ver = -1) {
     if (ver == -1) ver = roots.size() - 1;
-    Seg seg1, seg2;
+    Seg seg1, seg2;@ $ \hfill #751 $ @
     Seg *pres = &seg1, *ptmp = &seg2;
     roots[ver]->get(0, len, l, r, pres, ptmp, roots.size() - 1);
     return *pres;
@@ -1672,7 +1643,7 @@ class dummy {
  public:
   dummy() {}
   dummy(int, int) {}
-  void set(int, int) {}
+  void set(int, int) {}@ $ \hfill #531 $ @
   int query(int left, int right) {
     cout << this << ' ' << left << ' ' << right << endl;
   }
@@ -1692,7 +1663,7 @@ template <typename T, class DS>
 class HLD {
   int vertexc;
   vector<int> *adj;
-  vector<int> subtree_size;
+  vector<int> subtree_size;@ $ \hfill #178 $ @
   DS structure;
   DS aux;
   void build_sizes(int vertex, int parent) {
@@ -1702,7 +1673,7 @@ class HLD {
         build_sizes(child, vertex);
         subtree_size[vertex] += subtree_size[child];
       }
-    }
+    }@ $ \hfill #759 $ @
   }
   int cur;
   vector<int> ord;
@@ -1712,7 +1683,7 @@ class HLD {
     cur++;
     ord[vertex] = cur;
     chain_root[vertex] = chain_source;
-    par[vertex] = parent;
+    par[vertex] = parent;@ $ \hfill #432 $ @
     if (adj[vertex].size() > 1 ||
         (vertex == 1 && adj[vertex].size() == 1)) {
       int big_child, big_size = -1;
@@ -1722,7 +1693,7 @@ class HLD {
           big_size = subtree_size[child];
         }
       }
-      build_hld(big_child, vertex, chain_source);
+      build_hld(big_child, vertex, chain_source);@ $ \hfill #254 $ @
       for (int child : adj[vertex]) {
         if ((child != parent) && (child != big_child))
           build_hld(child, vertex, child);
@@ -1732,7 +1703,7 @@ class HLD {
  public:
   HLD(int _vertexc) {
     vertexc = _vertexc;
-    adj = new vector<int>[vertexc + 5];
+    adj = new vector<int>[vertexc + 5];@ $ \hfill #800 $ @
   }
   void add_edge(int u, int v) {
     adj[u].push_back(v);
@@ -1742,7 +1713,7 @@ class HLD {
     subtree_size = vector<int>(vertexc + 5);
     ord = vector<int>(vertexc + 5);
     chain_root = vector<int>(vertexc + 5);
-    par = vector<int>(vertexc + 5);
+    par = vector<int>(vertexc + 5);@ $ \hfill #976 $ @
     cur = 0;
     build_sizes(1, -1);
     build_hld(1, -1, 1);
@@ -1752,7 +1723,7 @@ class HLD {
   void set(int vertex, int value) {
     structure.set(ord[vertex], value);
   }
-  T query_path(
+  T query_path(@ $ \hfill #325 $ @
     int u, int v) { /* returns the "sum" of the path u->v */
     int cur_id = 0;
     while (chain_root[u] != chain_root[v]) {
@@ -1762,7 +1733,7 @@ class HLD {
         u = par[chain_root[u]];
       } else {
         cur_id++;
-        aux.set(cur_id, structure.query(ord[chain_root[v]], ord[v]));
+        aux.set(cur_id, structure.query(ord[chain_root[v]], ord[v]));@ $ \hfill #485 $ @
         v = par[chain_root[v]];
       }
     }
@@ -1806,7 +1777,7 @@ template <typename elem_t, typename coord_t, coord_t n_inf,
   typename ret_t>
 class BIT {
   vector<coord_t> positions;
-  vector<elem_t> elems;
+  vector<elem_t> elems;@ $ \hfill #324 $ @
   bool initiated = false;
  public:
   BIT() { positions.push_back(n_inf); }
@@ -1816,7 +1787,7 @@ class BIT {
     } else {
       initiated = true;
       sort(positions.begin(), positions.end());
-      positions.resize(unique(positions.begin(), positions.end()) -
+      positions.resize(unique(positions.begin(), positions.end()) -@ $ \hfill #822 $ @
                        positions.begin());
       elems.resize(positions.size());
     }
@@ -1826,7 +1797,7 @@ class BIT {
     if (initiated) {
       int pos =
         lower_bound(positions.begin(), positions.end(), cord) -
-        positions.begin();
+        positions.begin();@ $ \hfill #346 $ @
       for (; pos < positions.size(); pos += pos & -pos)
         elems[pos].update(args...);
     } else {
@@ -1836,7 +1807,7 @@ class BIT {
   template <typename... loc_form>
   ret_t query(coord_t cord,
     loc_form... args) { // sum in open interval (-inf, cord)
-    ret_t res = 0;
+    ret_t res = 0;@ $ \hfill #326 $ @
     int pos = (lower_bound(positions.begin(), positions.end(), cord) -
                 positions.begin()) -
               1;
@@ -1846,7 +1817,7 @@ class BIT {
   }
 };
 template <typename internal_type>
-struct wrapped {
+struct wrapped {@ $ \hfill #616 $ @
   internal_type a = 0;
   void update(internal_type b) { a += b; }
   internal_type query() { return a; }
@@ -1879,7 +1850,7 @@ mt19937 randgen;
 struct Treap {
   struct Node {
     int key;
-    int value;
+    int value;@ $ \hfill #615 $ @
     unsigned int priority;
     long long total;
     Node* lch;
@@ -1889,7 +1860,7 @@ struct Treap {
       value = new_value;
       priority = randgen();
       total = new_value;
-      lch = 0;
+      lch = 0;@ $ \hfill #232 $ @
       rch = 0;
     }
     void update() {
@@ -1899,7 +1870,7 @@ struct Treap {
     }
   };
   deque<Node> nodes;
-  Node* root = 0;
+  Node* root = 0;@ $ \hfill #633 $ @
   pair<Node*, Node*> split(int key, Node* cur) {
     if (cur == 0) return {0, 0};
     pair<Node*, Node*> result;
@@ -1909,7 +1880,7 @@ struct Treap {
       result = {ret.first, cur};
     } else {
       auto ret = split(key, cur->rch);
-      cur->rch = ret.first;
+      cur->rch = ret.first;@ $ \hfill #988 $ @
       result = {cur, ret.second};
     }
     cur->update();
@@ -1919,7 +1890,7 @@ struct Treap {
     if (left == 0) return right;
     if (right == 0) return left;
     Node* top;
-    if (left->priority < right->priority) {
+    if (left->priority < right->priority) {@ $ \hfill #282 $ @
       left->rch = merge(left->rch, right);
       top = left;
     } else {
@@ -1929,7 +1900,7 @@ struct Treap {
     top->update();
     return top;
   }
-  void insert(int key, int value) {
+  void insert(int key, int value) {@ $ \hfill #918 $ @
     nodes.push_back(Node(key, value));
     Node* cur = &nodes.back();
     pair<Node*, Node*> ret = split(key, root);
@@ -1939,7 +1910,7 @@ struct Treap {
   }
   void erase(int key) {
     Node *left, *mid, *right;
-    tie(left, mid) = split(key, root);
+    tie(left, mid) = split(key, root);@ $ \hfill #416 $ @
     tie(mid, right) = split(key + 1, mid);
     root = merge(left, right);
   }
@@ -1949,7 +1920,7 @@ struct Treap {
       return sum_upto(key, cur->lch);
     } else {
       long long result = cur->value + sum_upto(key, cur->rch);
-      if (cur->lch) result += cur->lch->total;
+      if (cur->lch) result += cur->lch->total;@ $ \hfill #122 $ @
       return result;
     }
   }
@@ -1991,7 +1962,7 @@ typedef unsigned char uchar;
 template <typename T>
 void msd_radixsort(
   T *start, T *sec_start, int arr_size, int d = sizeof(T) - 1) {
-  const int msd_radix_lim = 100;
+  const int msd_radix_lim = 100;@ $ \hfill #866 $ @
   const T mask = 255;
   int bucket_sizes[256]{};
   for (T *it = start; it != start + arr_size; ++it) {
@@ -2002,7 +1973,7 @@ void msd_radixsort(
   locs_mem[0] = sec_start;
   T **locs = locs_mem + 1;
   locs[0] = sec_start;
-  for (int j = 0; j < 255; ++j) {
+  for (int j = 0; j < 255; ++j) {@ $ \hfill #818 $ @
     locs[j + 1] = locs[j] + bucket_sizes[j];
   }
   for (T *it = start; it != start + arr_size; ++it) {
@@ -2012,7 +1983,7 @@ void msd_radixsort(
   locs = locs_mem;
   if (d) {
     T *locs_old[256];
-    locs_old[0] = start;
+    locs_old[0] = start;@ $ \hfill #153 $ @
     for (int j = 0; j < 255; ++j) {
       locs_old[j + 1] = locs_old[j] + bucket_sizes[j];
     }
@@ -2022,7 +1993,7 @@ void msd_radixsort(
         if (d & 1) {
           copy(locs[j], locs[j + 1], locs_old[j]);
         }
-      } else {
+      } else {@ $ \hfill #946 $ @
         msd_radixsort(locs[j], locs_old[j], bucket_sizes[j], d - 1);
       }
     }
@@ -2043,7 +2014,7 @@ struct Complex {
   double a = 0, b = 0;
   Complex &operator/=(const int &oth) {
     a /= oth;
-    b /= oth;
+    b /= oth;@ $ \hfill #139 $ @
     return *this;
   }
 };
@@ -2053,7 +2024,7 @@ Complex operator+(const Complex &lft, const Complex &rgt) {
 Complex operator-(const Complex &lft, const Complex &rgt) {
   return Complex{lft.a - rgt.a, lft.b - rgt.b};
 }
-Complex operator*(const Complex &lft, const Complex &rgt) {
+Complex operator*(const Complex &lft, const Complex &rgt) {@ $ \hfill #560 $ @
   return Complex{
     lft.a * rgt.a - lft.b * rgt.b, lft.a * rgt.b + lft.b * rgt.a};
 }
@@ -2063,7 +2034,7 @@ void fft_rec(Complex *arr, Complex *root_pow, int len) {@ $ \hfill #385 $ @
     fft_rec(arr, root_pow, len >> 1);
     fft_rec(arr + len, root_pow, len >> 1);
   }
-  root_pow += len;
+  root_pow += len;@ $ \hfill #216 $ @
   for (int i = 0; i < len; ++i) {
     Complex tmp = arr[i] + root_pow[i] * arr[i + len];
     arr[i + len] = arr[i] - root_pow[i] * arr[i + len];
@@ -2073,7 +2044,7 @@ void fft_rec(Complex *arr, Complex *root_pow, int len) {@ $ \hfill #385 $ @
 void fft(vector<Complex> &arr, int ord, bool invert) {
   assert(arr.size() == 1 << ord);
   static vector<Complex> root_pow(1);
-  static int inc_pow = 1;
+  static int inc_pow = 1;@ $ \hfill #669 $ @
   static bool is_inv = false;
   if (inc_pow <= ord) {
     int idx = root_pow.size();
@@ -2083,7 +2054,7 @@ void fft(vector<Complex> &arr, int ord, bool invert) {
            idx_p += 1 << (ord - inc_pow), ++idx) {
         root_pow[idx] = Complex{cos(-idx_p * M_PI / (1 << (ord - 1))),
           sin(-idx_p * M_PI / (1 << (ord - 1)))};
-        if (is_inv) root_pow[idx].b = -root_pow[idx].b;
+        if (is_inv) root_pow[idx].b = -root_pow[idx].b;@ $ \hfill #105 $ @
       }
     }
   }
@@ -2093,7 +2064,7 @@ void fft(vector<Complex> &arr, int ord, bool invert) {
   }
   for (int i = 1, j = 0; i < (1 << ord); ++i) {
     int m = 1 << (ord - 1);
-    bool cont = true;
+    bool cont = true;@ $ \hfill #122 $ @
     while (cont) {
       cont = j & m;
       j ^= m;
@@ -2103,13 +2074,13 @@ void fft(vector<Complex> &arr, int ord, bool invert) {
   }
   fft_rec(arr.data(), root_pow.data(), 1 << (ord - 1));
   if (invert)
-    for (int i = 0; i < (1 << ord); ++i) arr[i] /= (1 << ord);
+    for (int i = 0; i < (1 << ord); ++i) arr[i] /= (1 << ord);@ $ \hfill #343 $ @
 }@ $ \hfill %380 $ @
 void mult_poly_mod(
   vector<int> &a, vector<int> &b, vector<int> &c) { // c += a*b
   static vector<Complex>
     arr[4]; // correct upto 0.5-2M elements(mod ~= 1e9)
-  if (c.size() < 400) {
+  if (c.size() < 400) {@ $ \hfill #811 $ @
     for (int i = 0; i < a.size(); ++i)
       for (int j = 0; j < b.size() && i + j < c.size(); ++j)
         c[i + j] = ((ll)a[i] * b[j] + c[i + j]) % mod;
@@ -2119,7 +2090,7 @@ void mult_poly_mod(
       for (int i = 0; i < 4; ++i) arr[i].resize(1 << fft_ord);
     for (int i = 0; i < 4; ++i)
       fill(arr[i].begin(), arr[i].end(), Complex{});
-    for (int &cur : a)
+    for (int &cur : a)@ $ \hfill #591 $ @
       if (cur < 0) cur += mod;
     for (int &cur : b)
       if (cur < 0) cur += mod;
@@ -2129,7 +2100,7 @@ void mult_poly_mod(
       arr[0][i].a = a[i] & mask;
       arr[1][i].a = a[i] >> shift;
     }
-    for (int i = 0; i < min(b.size(), c.size()); ++i) {
+    for (int i = 0; i < min(b.size(), c.size()); ++i) {@ $ \hfill #528 $ @
       arr[0][i].b = b[i] & mask;
       arr[1][i].b = b[i] >> shift;
     }
@@ -2139,7 +2110,7 @@ void mult_poly_mod(
         int tar = 2 + (i + j) / 2;
         Complex mult = {0, -0.25};
         if (i ^ j) mult = {0.25, 0};
-        for (int k = 0; k < (1 << fft_ord); ++k) {
+        for (int k = 0; k < (1 << fft_ord); ++k) {@ $ \hfill #983 $ @
           int rev_k = ((1 << fft_ord) - k) % (1 << fft_ord);
           Complex ca = arr[i][k] + conj(arr[i][rev_k]);
           Complex cb = arr[j][k] - conj(arr[j][rev_k]);
@@ -2149,7 +2120,7 @@ void mult_poly_mod(
     }
     for (int i = 2; i < 4; ++i) {
       fft(arr[i], fft_ord, true);
-      for (int k = 0; k < (int)c.size(); ++k) {
+      for (int k = 0; k < (int)c.size(); ++k) {@ $ \hfill #403 $ @
         c[k] = (c[k] + (((ll)(arr[i][k].a + 0.5) % mod)
                          << (shift * 2 * (i - 2)))) %
                mod;
@@ -2167,7 +2138,7 @@ struct ModArithm {
   ull n;
   ld rec;
   ModArithm(ull _n) : n(_n) { // n in [2, 1<<63)
-    rec = 1.0L / n;
+    rec = 1.0L / n;@ $ \hfill #237 $ @
   }
   ull multf(ull a, ull b) { // a, b in [0, min(2*n, 1<<63))
     ull mult = (ld)a * b * rec + 0.5L;
@@ -2181,7 +2152,7 @@ ull pow_mod(ull a, ull n, ModArithm &arithm) {
   ull res = 1;
   for (ull i = 1; i <= n; i <<= 1) {
     if (n & i) res = arithm.multf(res, a);
-    a = arithm.multf(a, a);
+    a = arithm.multf(a, a);@ $ \hfill #758 $ @
   }
   return res;
 }@ $ \hfill %144 $ @
@@ -2189,7 +2160,7 @@ vector<char> small_primes = {
   2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
 bool is_prime(ull n) { // n <= 1<<63, 1M rand/s
   ModArithm arithm(n);
-  if (n == 2 || n == 3) return true;
+  if (n == 2 || n == 3) return true;@ $ \hfill #104 $ @
   if (!(n & 1) || n == 1) return false;
   ull s = __builtin_ctz(n - 1);
   ull d = (n - 1) >> s;
@@ -2199,7 +2170,7 @@ bool is_prime(ull n) { // n <= 1<<63, 1M rand/s
     if (a == 1 || a == n - 1) continue;
     for (ull r = 1; r < s; ++r) {
       a = arithm.multf(a, a);
-      if (a == 1) return false;
+      if (a == 1) return false;@ $ \hfill #876 $ @
       if (a == n - 1) break;
     }
     if (a != n - 1) return false;
@@ -2210,7 +2181,7 @@ ll pollard_rho(ll n) {
   ModArithm arithm(n);
   int cum_cnt = 64 - __builtin_clz(n);
   cum_cnt *= cum_cnt / 5 + 1;
-  while (true) {
+  while (true) {@ $ \hfill #118 $ @
     ll lv = rand() % n;
     ll v = arithm.sqp1(lv);
     int idx = 1;
@@ -2220,7 +2191,7 @@ ll pollard_rho(ll n) {
       ll v_cur = v;
       int j_stop = min(cum_cnt, tar - idx);
       for (int j = 0; j < j_stop; ++j) {
-        cur = arithm.multf(cur, abs(v_cur - lv));
+        cur = arithm.multf(cur, abs(v_cur - lv));@ $ \hfill #468 $ @
         v_cur = arithm.sqp1(v_cur);
         ++idx;
       }
@@ -2230,7 +2201,7 @@ ll pollard_rho(ll n) {
           if (g == 1) {
             v = arithm.sqp1(v);
           } else if (g == n) {
-            break;
+            break;@ $ \hfill #906 $ @
           } else {
             return g;
           }
@@ -2240,7 +2211,7 @@ ll pollard_rho(ll n) {
         ll g = __gcd(cur, n);
         if (g != 1) return g;
       }
-      v = v_cur;
+      v = v_cur;@ $ \hfill #298 $ @
       idx += j_stop;
       if (idx == tar) {
         lv = v;
@@ -2255,7 +2226,7 @@ map<ll, int> prime_factor(ll n,
   map<ll, int> *res = NULL) { // n <= 1<<61, ~1000/s (<500/s on CF)
   if (!res) {
     map<ll, int> res_act;
-    for (int p : small_primes) {
+    for (int p : small_primes) {@ $ \hfill #770 $ @
       while (!(n % p)) {
         ++res_act[p];
         n /= p;
@@ -2265,7 +2236,7 @@ map<ll, int> prime_factor(ll n,
     return res_act;
   }
   if (is_prime(n)) {
-    ++(*res)[n];
+    ++(*res)[n];@ $ \hfill #963 $ @
   } else {
     ll factor = pollard_rho(n);
     prime_factor(factor, res);

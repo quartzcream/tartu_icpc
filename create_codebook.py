@@ -155,7 +155,7 @@ for file in file_ord:
                 strip_line = it.__next__()
                 if(not strip_line.isspace()):
                     crc_line_num += 1
-                    if(not (crc_line_num-crc_line_start) % 10):
+                    if(not (crc_line_num-crc_line_start) % 5):
                         need_write_hash = True
     if(last_needs_end):
         fout.write("\n")
