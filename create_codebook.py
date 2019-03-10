@@ -142,7 +142,7 @@ for file in file_ord:
                     comment = True
                 if(need_minted):
                     if(lang == "c++"):
-                        fout.write("\\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{"+lang+"}\n")
+                        fout.write("\\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{"+'tartu_icpc'+"}\n")
                     else:
                         fout.write("\\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, texcomments=true, mathescape=true]{"+lang+"}\n")
                     need_minted = False
