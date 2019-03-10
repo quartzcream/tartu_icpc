@@ -112,7 +112,7 @@ done #there shouldn't be any COMMENTS.
 # \$ ./crc.sh tmp.cpp
 \end{minted}
 \section{gcc ordered set}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 #define DEBUG(...) cerr << \_\_VA\_ARGS\_\_ << endl;
 #ifndef CDEBUG
 #undef DEBUG
@@ -204,7 +204,7 @@ Area of a spherical polygon:
 \setlength\columnsep{10mm}
 \begin{multicols*}{2}
 \section{Triangle centers}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 const double min_delta = 1e-13;
 const double coord_max = 1e6;
 typedef complex<double> point;
@@ -259,7 +259,7 @@ point in_center() {
 }@ $ \hfill %892 $ @
 \end{minted}
 \section{Seg-Seg intersection, halfplane intersection area}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 struct Seg {
   Vec a, b;
   Vec d() { return b - a; }
@@ -365,7 +365,7 @@ double calc_area(vector<Seg> lines) {
 }@ $ \hfill %103 $ @
 \end{minted}
 \section{Convex polygon algorithms}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 typedef pair<int, int> Vec;
 typedef pair<Vec, Vec> Seg;
 typedef vector<Seg>::iterator SegIt;
@@ -607,74 +607,206 @@ struct Hull {
   }
 };@ $ \hfill %383 $ @
 \end{minted}
+\section{Delaunay triangulation $\mathcal{O}(n\log n)}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+const int max_co = (1 << 28) - 5;
+struct Vec {
+  int x, y;
+  bool operator==(const Vec &oth) { return x == oth.x && y == oth.y; }
+  bool operator!=(const Vec &oth) { return !operator==(oth); }@ $ \hfill #679 $ @
+  Vec operator-(const Vec &oth) { return {x - oth.x, y - oth.y}; }
+};
+ll cross(Vec a, Vec b) { return (ll)a.x * b.y - (ll)a.y * b.x; }
+ll dot(Vec a, Vec b) { return (ll)a.x * b.x + (ll)a.y * b.y; }
+struct Edge {@ $ \hfill #732 $ @
+  Vec tar;
+  Edge *nxt;
+  Edge *inv = NULL;
+  Edge *rep = NULL;
+  bool vis = false;@ $ \hfill #668 $ @
+};
+struct Seg {
+  Vec a, b;
+  bool operator==(const Seg &oth) { return a == oth.a && b == oth.b; }
+  bool operator!=(const Seg &oth) { return !operator==(oth); }@ $ \hfill #245 $ @
+};
+ll orient(Vec a, Vec b, Vec c) {
+  return (ll)a.x * (b.y - c.y) + (ll)b.x * (c.y - a.y) +
+         (ll)c.x * (a.y - b.y);
+}@ $ \hfill %334 $ @
+bool in_c_circle(Vec *arr, Vec d) {
+  if (cross(arr[1] - arr[0], arr[2] - arr[0]) == 0)
+    return true; // degenerate
+  ll m[3][3];
+  ran(i, 0, 3) {@ $ \hfill #264 $ @
+    m[i][0] = arr[i].x - d.x;
+    m[i][1] = arr[i].y - d.y;
+    m[i][2] = m[i][0] * m[i][0];
+    m[i][2] += m[i][1] * m[i][1];
+  }@ $ \hfill #305 $ @
+  __int128 res = 0;
+  res += (__int128)(m[0][0] * m[1][1] - m[0][1] * m[1][0]) * m[2][2];
+  res += (__int128)(m[1][0] * m[2][1] - m[1][1] * m[2][0]) * m[0][2];
+  res -= (__int128)(m[0][0] * m[2][1] - m[0][1] * m[2][0]) * m[1][2];
+  return res > 0;@ $ \hfill #845 $ @
+}@ $ \hfill %793 $ @
+Edge *add_triangle(Edge *a, Edge *b, Edge *c) {
+  Edge *old[] = {a, b, c};
+  Edge *tmp = new Edge[3];
+  ran(i, 0, 3) {
+    old[i]->rep = tmp + i;@ $ \hfill #219 $ @
+    tmp[i] = {old[i]->tar, tmp + (i + 1) % 3, old[i]->inv};
+    if (tmp[i].inv) tmp[i].inv->inv = tmp + i;
+  }
+  return tmp;
+}@ $ \hfill #178 $ @
+Edge *add_point(Vec p, Edge *cur) { // returns outgoing edge
+  Edge *triangle[] = {cur, cur->nxt, cur->nxt->nxt};
+  ran(i, 0, 3) {
+    if (orient(triangle[i]->tar, triangle[(i + 1) % 3]->tar, p) < 0)
+      return NULL;@ $ \hfill #233 $ @
+  }
+  ran(i, 0, 3) {
+    if (triangle[i]->rep) {
+      Edge *res = add_point(p, triangle[i]->rep);
+      if (res)@ $ \hfill #636 $ @
+        return res; // unless we are on last layer we must exit here
+    }
+  }
+  Edge p_as_e{p};
+  Edge tmp{cur->tar};@ $ \hfill #432 $ @
+  tmp.inv = add_triangle(&p_as_e, &tmp, cur = cur->nxt);
+  Edge *res = tmp.inv->nxt;
+  tmp.tar = cur->tar;
+  tmp.inv = add_triangle(&p_as_e, &tmp, cur = cur->nxt);
+  tmp.tar = cur->tar;@ $ \hfill #359 $ @
+  res->inv = add_triangle(&p_as_e, &tmp, cur = cur->nxt);
+  res->inv->inv = res;
+  return res;
+}
+Edge *delaunay(vector<Vec> &points) {@ $ \hfill #029 $ @
+  random_shuffle(points.begin(), points.end());
+  Vec arr[] = {{4 * max_co, 4 * max_co}, {-4 * max_co, max_co},
+    {max_co, -4 * max_co}};
+  Edge *res = new Edge[3];
+  ran(i, 0, 3) res[i] = {arr[i], res + (i + 1) % 3};@ $ \hfill #480 $ @
+  for (Vec &cur : points) {
+    Edge *loc = add_point(cur, res);
+    Edge *out = loc;
+    arr[0] = cur;
+    while (true) {@ $ \hfill #601 $ @
+      arr[1] = out->tar;
+      arr[2] = out->nxt->tar;
+      Edge *e = out->nxt->inv;
+      if (e && in_c_circle(arr, e->nxt->tar)) {
+        Edge tmp{cur};@ $ \hfill #056 $ @
+        tmp.inv = add_triangle(&tmp, out, e->nxt);
+        tmp.tar = e->nxt->tar;
+        tmp.inv->inv = add_triangle(&tmp, e->nxt->nxt, out->nxt->nxt);
+        out = tmp.inv->nxt;
+        continue;@ $ \hfill #173 $ @
+      }
+      out = out->nxt->nxt->inv;
+      if (out->tar == loc->tar) break;
+    }
+  }@ $ \hfill #032 $ @
+  return res;
+}@ $ \hfill %769 $ @
+void extract_triangles(Edge *cur, vector<vector<Seg> > &res) {
+  if (!cur->vis) {
+    bool inc = true;
+    Edge *it = cur;
+    do {@ $ \hfill #769 $ @
+      it->vis = true;
+      if (it->rep) {
+        extract_triangles(it->rep, res);
+        inc = false;
+      }@ $ \hfill #104 $ @
+      it = it->nxt;
+    } while (it != cur);
+    if (inc) {
+      Edge *triangle[3] = {cur, cur->nxt, cur->nxt->nxt};
+      res.resize(res.size() + 1);@ $ \hfill #207 $ @
+      vector<Seg> &tar = res.back();
+      ran(i, 0, 3) {
+        if ((abs(triangle[i]->tar.x) < max_co &&
+              abs(triangle[(i + 1) % 3]->tar.x) < max_co))
+          tar.push_back(@ $ \hfill #011 $ @
+            {triangle[i]->tar, triangle[(i + 1) % 3]->tar});
+      }
+      if (tar.empty()) res.pop_back();
+    }
+  }@ $ \hfill #602 $ @
+}@ $ \hfill %626 $ @
+\end{minted}
 \section{Aho Corasick $\mathcal{O}(|\text{alpha}|\sum{\text{len}})$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 const int alpha_size = 26;
-struct node {
-  node *nxt[alpha_size]; // May use other structures to move in trie
-  node *suffix;
-  node() { memset(nxt, 0, alpha_size * sizeof(node *)); }@ $ \hfill #364 $ @
+struct Node {
+  Node *nxt[alpha_size]; // May use other structures to move in trie
+  Node *suffix;
+  Node() { memset(nxt, 0, alpha_size * sizeof(Node *)); }@ $ \hfill #248 $ @
   int cnt = 0;
 };
-node *aho_corasick(vector<vector<char> > &dict) {
-  node *root = new node;
-  root->suffix = 0;@ $ \hfill #911 $ @
-  vector<pair<vector<char> *, node *> > state;
+Node *aho_corasick(vector<vector<char> > &dict) {
+  Node *root = new Node;
+  root->suffix = 0;@ $ \hfill #292 $ @
+  vector<pair<vector<char> *, Node *> > state;
   for (vector<char> &s : dict) state.emplace_back(&s, root);
   for (int i = 0; !state.empty(); ++i) {
-    vector<pair<vector<char> *, node *> > nstate;
-    for (auto &cur : state) {@ $ \hfill #561 $ @
-      node *nxt = cur.second->nxt[(*cur.first)[i]];
+    vector<pair<vector<char> *, Node *> > nstate;
+    for (auto &cur : state) {@ $ \hfill #306 $ @
+      Node *nxt = cur.second->nxt[(*cur.first)[i]];
       if (nxt) {
         cur.second = nxt;
       } else {
-        nxt = new node;@ $ \hfill #921 $ @
+        nxt = new Node;@ $ \hfill #266 $ @
         cur.second->nxt[(*cur.first)[i]] = nxt;
-        node *suf = cur.second->suffix;
+        Node *suf = cur.second->suffix;
         cur.second = nxt;
         nxt->suffix = root; // set correct suffix link
-        while (suf) {@ $ \hfill #085 $ @
+        while (suf) {@ $ \hfill #249 $ @
           if (suf->nxt[(*cur.first)[i]]) {
             nxt->suffix = suf->nxt[(*cur.first)[i]];
             break;
           }
-          suf = suf->suffix;@ $ \hfill #872 $ @
+          suf = suf->suffix;@ $ \hfill #562 $ @
         }
       }
       if (cur.first->size() > i + 1) nstate.push_back(cur);
     }
-    state = nstate;@ $ \hfill #505 $ @
+    state = nstate;@ $ \hfill #417 $ @
   }
   return root;
-}@ $ \hfill %823 $ @
+}@ $ \hfill %882 $ @
 // auxilary functions for searhing and counting
-node *walk(node *cur,
+Node *walk(Node *cur,
   char c) { // longest prefix in dict that is suffix of walked string.
   while (true) {
     if (cur->nxt[c]) return cur->nxt[c];
-    if (!cur->suffix) return cur;@ $ \hfill #113 $ @
+    if (!cur->suffix) return cur;@ $ \hfill #414 $ @
     cur = cur->suffix;
   }
-}@ $ \hfill %127 $ @
-void cnt_matches(node *root, vector<char> &match_in) {
-  node *cur = root;
+}@ $ \hfill %529 $ @
+void cnt_matches(Node *root, vector<char> &match_in) {
+  Node *cur = root;
   for (char c : match_in) {
     cur = walk(cur, c);
-    ++cur->cnt;@ $ \hfill #568 $ @
+    ++cur->cnt;@ $ \hfill #015 $ @
   }
-}@ $ \hfill %286 $ @
-void add_cnt(node *root) { // After counting matches propagete ONCE to
+}@ $ \hfill %156 $ @
+void add_cnt(Node *root) { // After counting matches propagete ONCE to
                            // suffixes for final counts
-  vector<node *> to_visit = {root};
+  vector<Node *> to_visit = {root};
   ran(i, 0, to_visit.size()) {
-    node *cur = to_visit[i];
-    ran(j, 0, alpha_size) {@ $ \hfill #797 $ @
+    Node *cur = to_visit[i];
+    ran(j, 0, alpha_size) {@ $ \hfill #662 $ @
       if (cur->nxt[j]) to_visit.push_back(cur->nxt[j]);
     }
   }
   for (int i = to_visit.size() - 1; i > 0; --i)
-    to_visit[i]->suffix->cnt += to_visit[i]->cnt;@ $ \hfill #877 $ @
-}@ $ \hfill %754 $ @
+    to_visit[i]->suffix->cnt += to_visit[i]->cnt;@ $ \hfill #950 $ @
+}@ $ \hfill %488 $ @
 int main() {
   int n, len;
   scanf("%d %d", &len, &n);
@@ -690,18 +822,18 @@ int main() {
     dict[i].pop_back();
     for (char &c : dict[i]) c -= 'a';
   }
-  node *root = aho_corasick(dict);
+  Node *root = aho_corasick(dict);
   cnt_matches(root, a);
   add_cnt(root);
   ran(i, 0, n) {
-    node *cur = root;
+    Node *cur = root;
     for (char c : dict[i]) cur = walk(cur, c);
     printf("%d\n", cur->cnt);
   }
 }
 \end{minted}
 \section{Suffix automaton and tree $\mathcal{O}((n+q)\log(|\text{alpha}|))$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 class Node {
  private:
   map<char, Node *>
@@ -824,7 +956,7 @@ struct SufAuto {
 };@ $ \hfill %251 $ @
 \end{minted}
 \section{Dinic}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 struct MaxFlow {
   typedef long long ll;
   const ll INF = 1e18;
@@ -960,7 +1092,7 @@ int main() {
 }
 \end{minted}
 \section{Min Cost Max Flow with succesive dijkstra $\mathcal{O}(\text{flow} \cdot n^2)$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 const int nmax = 1055;
 const ll inf = 1e14;
 int t, n, v; // 0 is source, v-1 sink
@@ -1092,7 +1224,7 @@ int main() { // http://www.spoj.com/problems/GREED/
 }
 \end{minted}
 \section{Min Cost Max Flow with Cycle Cancelling $\mathcal{O}(\text{flow} \cdot nm)$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 struct Network {
   struct Node;
   struct Edge {
@@ -1204,7 +1336,7 @@ struct Network {
 };@ $ \hfill %900 $ @
 \end{minted}
 \section{DMST $\mathcal{O}(E \log V)$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 struct EdgeDesc {
   int from, to, w;
 };
@@ -1345,7 +1477,7 @@ bool DMST::no_dmst;@ $ \hfill #417 $ @
 DMST::Node *DMST::root;@ $ \hfill %771 $ @
 \end{minted}
 \section{Bridges $\mathcal{O}(n)$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 struct vert;
 struct edge {
   bool exists = true;
@@ -1405,7 +1537,7 @@ int main() { // Mechanics Practice BRIDGES
 }
 \end{minted}
 \section{2-Sat $\mathcal{O}(n)$ and SCC $\mathcal{O}(n)$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 struct Graph {
   int n;
   vector<vector<int> > conn;
@@ -1493,7 +1625,7 @@ int main() {
 }
 \end{minted}
 \section{Generic persistent compressed lazy segment tree}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 struct Seg {
   ll sum = 0;
   void recalc(const Seg &lhs_seg, int lhs_len, const Seg &rhs_seg,
@@ -1638,7 +1770,7 @@ int main() {
 }
 \end{minted}
 \section{Templated HLD $\mathcal{O}(M(n) \log n)$ per query}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 class dummy {
  public:
   dummy() {}
@@ -1770,7 +1902,7 @@ int main() {
 }
 \end{minted}
 \section{Templated multi dimensional BIT $\mathcal{O}(\log(n)^\text{dim})$ per query}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 // Fully overloaded any dimensional BIT, use any type for coordinates,
 // elements, return\_value. Includes coordinate compression.
 template <typename elem_t, typename coord_t, coord_t n_inf,
@@ -1845,7 +1977,7 @@ int main() {
 }
 \end{minted}
 \section{Treap $\mathcal{O}(\log n)$ per query}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 mt19937 randgen;
 struct Treap {
   struct Node {
@@ -1957,7 +2089,7 @@ int main() {
 }
 \end{minted}
 \section{Radixsort 50M 64 bit integers as single array in 1 sec}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 typedef unsigned char uchar;
 template <typename T>
 void msd_radixsort(
@@ -2009,7 +2141,7 @@ int main() {
 \end{minted}
 \section{FFT 5M length/sec}
 integer $c = a*b$ is accurate if $c_i < 2^{49}$
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 struct Complex {
   double a = 0, b = 0;
   Complex &operator/=(const int &oth) {
@@ -2133,7 +2265,7 @@ void mult_poly_mod(
 }@ $ \hfill %231 $ @
 \end{minted}
 \section{Fast mod mult, Rabbin Miller prime check, Pollard rho factorization $\mathcal{O}(\sqrt{p})$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 struct ModArithm {
   ull n;
   ld rec;
@@ -2251,7 +2383,7 @@ and for all $x \in V, X \subseteq Y \subseteq V$ it holds that
 $f(X+x) - f(X) \leq f(Y+x) - f(Y)$.
 \noindent {\bf Hereditary family}: such set $I \subseteq 2^V$ so that $X \subset Y \wedge Y \in I \Rightarrow X \in I$.
 \noindent {\bf Loop}: such $v \in V$ so that ${v} \notin I$.
-\begin{minted}[tabsize=4,baselinestretch=1,linenos,numbersep = 1mm]{python}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mmbreaklines, frame=lines, texcomments=true, mathescape=true]{python}
 def minimize():
 	s = merge_all_loops()
 	while size >= 3:
@@ -2288,5 +2420,43 @@ def enum_all_minimal_minimizers(X):
 		elif f({tu}) = f(X):
 			yield tu
 			s = merge(tu, s)
+\end{minted}
+\section{Berlekamp-Massey $O(\mathcal{L}N)$}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+template <typename K>
+static vector<K> berlekamp_massey(vector<K> ss) {
+  vector<K> ts(ss.size());
+  vector<K> cs(ss.size());
+  cs[0] = K::unity;@ $ \hfill #349 $ @
+  fill(cs.begin() + 1, cs.end(), K::zero);
+  vector<K> bs = cs;
+  int l = 0, m = 1;
+  K b = K::unity;
+  for (int k = 0; k < (int)ss.size(); k++) {@ $ \hfill #390 $ @
+    K d = ss[k];
+    assert(l <= k);
+    for (int i = 1; i <= l; i++) d += cs[i] * ss[k - i];
+    if (d == K::zero) {
+      m++;@ $ \hfill #445 $ @
+    } else if (2 * l <= k) {
+      K w = d / b;
+      ts = cs;
+      for (int i = 0; i < (int)cs.size() - m; i++)
+        cs[i + m] -= w * bs[i];@ $ \hfill #661 $ @
+      l = k + 1 - l;
+      swap(bs, ts);
+      b = d;
+      m = 1;
+    } else {@ $ \hfill #815 $ @
+      K w = d / b;
+      for (int i = 0; i < (int)cs.size() - m; i++)
+        cs[i + m] -= w * bs[i];
+      m++;
+    }@ $ \hfill #888 $ @
+  }
+  cs.resize(l + 1);
+  while (cs.back() == K::zero) cs.pop_back();
+  return cs;
+}@ $ \hfill %267 $ @
 \end{minted}
 \end{document}
