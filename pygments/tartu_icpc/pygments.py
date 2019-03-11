@@ -12,9 +12,10 @@ from collections import namedtuple
 
 Region = namedtuple('Region', ['start', 'end', 'token'])
 REGIONS = [
-	Region('/*!', '!*/', Token.Region0),
-	Region('/*@', '@*/', Token.Region1),
-	Region('/*#', '#*/', Token.Region2),
+
+	Region('/*lp*/', '/*rp*/', Token.RegionPink),
+	Region('/*lg*/', '/*rg*/', Token.RegionGreen),
+	Region('/*ly*/', '/*ry*/', Token.RegionYellow),
 ]
 
 __all__ = ['TartuICPCLexer']
@@ -127,7 +128,7 @@ class TartuICPCStyle(Style):
 
 		Error:                     "border:#FF0000",
 
-		Token.Region0:             "bg:#FFC0FF",
-		Token.Region1:             "bg:#C0FFC0",
-		Token.Region2:             "bg:#FFFFC0",
+		Token.RegionPink:          "bg:#FFD8FF",
+		Token.RegionGreen:         "bg:#D8FFD8",
+		Token.RegionYellow:        "bg:#FFFFD8",
 	}

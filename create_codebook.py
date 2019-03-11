@@ -138,7 +138,7 @@ for file in file_ord:
                 if(multiline_comment and idx2 != -1):
                     multiline_comment = False
                 comment = multiline_comment
-                if(idx3 != -1 and not multiline_comment and (idx2 == -1 or idx3>id2)):
+                if(idx3 != -1 and not multiline_comment and (idx2 == -1 or idx3>idx2)):
                     comment = True
                 if(need_minted):
                     if(lang == "c++"):

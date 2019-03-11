@@ -9,8 +9,7 @@ convex_hull.cpp
 delaunay.cpp
 aho_corasick.cpp
 suffix_automaton.cpp
-dinic.cpp
-min_cost_max_flow.cpp
+dinic_min_cost.cpp
 Library/Flow/cyclec.h
 DMST.cpp
 bridges.cpp

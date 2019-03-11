@@ -59,7 +59,7 @@
 \AtBeginEnvironment{minted}{\fontsize{10}{10}\selectfont}
 \BeforeBeginEnvironment{minted}{\vspace*{-2.5mm}}
 \AfterEndEnvironment{minted}{\vspace*{-4.5mm}}
-\usemintedstyle{emacs}
+\usemintedstyle{tartu_icpc}
 \titleformat*{\section}{\bfseries}
 \titlespacing*{\section}{10mm}{0ex}{0ex}
 \title{\textbf{University of Tartu ICPC Team Notebook (2018-2019)}}
@@ -958,269 +958,195 @@ struct SufAuto {
 \section{Dinic}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 struct MaxFlow {
-  typedef long long ll;
-  const ll INF = 1e18;
-  struct Edge {
-    int u, v;@ $ \hfill #295 $ @
-    ll c, rc;
-    shared_ptr<ll> flow;
-    Edge(int _u, int _v, ll _c, ll _rc = 0)
-      : u(_u), v(_v), c(_c), rc(_rc) {}
-  };@ $ \hfill #787 $ @
-  struct FlowTracker {
-    shared_ptr<ll> flow;
-    ll cap, rcap;
-    bool dir;
-    FlowTracker(ll _cap, ll _rcap, shared_ptr<ll> _flow, int _dir)@ $ \hfill #418 $ @
-      : cap(_cap), rcap(_rcap), flow(_flow), dir(_dir) {}
-    ll rem() const {
-      if (dir == 0) {
-        return cap - *flow;
-      } else {@ $ \hfill #844 $ @
-        return rcap + *flow;
-      }
-    }
-    void add_flow(ll f) {
-      if (dir == 0)@ $ \hfill #920 $ @
-        *flow += f;
-      else
-        *flow -= f;
-      assert(*flow <= cap);
-      assert(-*flow <= rcap);@ $ \hfill #287 $ @
-    }
-    operator ll() const { return rem(); }
-    void operator-=(ll x) { add_flow(x); }
-    void operator+=(ll x) { add_flow(-x); }
-  };@ $ \hfill #789 $ @
+  const static ll INF = 1e18;
   int source, sink;
-  vector<vector<int> > adj;
-  vector<vector<FlowTracker> > cap;
-  vector<Edge> edges;
-  MaxFlow(int _source, int _sink) : source(_source), sink(_sink) {@ $ \hfill #080 $ @
-    assert(source != sink);
+  ll sink_pot = 0;
+  vector<int> start, now, lvl, adj, rcap, cap_loc, bfs;
+  vector<bool> visited;
+  vector<ll> cap, orig_cap /*lg*/, cost;
+  priority_queue<pair<ll, int>, vector<pair<ll, int> >,
+    greater<pair<ll, int> > >
+    dist_que; /*rg*/
+  void add_flow(int idx, ll flow, bool cont = true) {
+    cap[idx] -= flow;
+    if (cont) add_flow(rcap[idx], -flow, false);
   }
-  int add_edge(int u, int v, ll c, ll rc = 0) {
-    edges.push_back(Edge(u, v, c, rc));
-    return edges.size() - 1;@ $ \hfill #659 $ @
-  }
-  vector<int> now, lvl;
-  void prep() {
-    int max_id = max(source, sink);
-    for (auto edge : edges) max_id = max(max_id, max(edge.u, edge.v));@ $ \hfill #638 $ @
-    adj.resize(max_id + 1);
-    cap.resize(max_id + 1);
-    now.resize(max_id + 1);
-    lvl.resize(max_id + 1);
-    for (auto &edge : edges) {@ $ \hfill #604 $ @
-      auto flow = make_shared<ll>(0);
-      adj[edge.u].push_back(edge.v);
-      cap[edge.u].push_back(FlowTracker(edge.c, edge.rc, flow, 0));
-      if (edge.u != edge.v) {
-        adj[edge.v].push_back(edge.u);@ $ \hfill #789 $ @
-        cap[edge.v].push_back(FlowTracker(edge.c, edge.rc, flow, 1));
-      }
-      assert(cap[edge.u].back() == edge.c);
-      edge.flow = flow;
-    }@ $ \hfill #131 $ @
+  MaxFlow(
+    const vector<tuple<int, int, ll, ll /*ly*/, ll /*ry*/> > &edges) {
+    for (auto &cur : edges) { // from, to, cap, rcap/*ly*/, cost/*ry*/
+      start.resize(
+        max(max(get<0>(cur), get<1>(cur)) + 2, (int)start.size()));
+      ++start[get<0>(cur) + 1];
+      ++start[get<1>(cur) + 1];
+    }
+    for (int i = 1; i < start.size(); ++i) start[i] += start[i - 1];
+    now = start;
+    adj.resize(start.back());
+    cap.resize(start.back());
+    rcap.resize(start.back());
+    /*ly*/ cost.resize(start.back()); /*ry*/
+    for (auto &cur : edges) {
+      int u, v;
+      ll c, rc /*ly*/, c_cost /*ry*/;
+      tie(u, v, c, rc /*ly*/, c_cost /*ry*/) = cur;
+      assert(u != v);
+      adj[now[u]] = v;
+      adj[now[v]] = u;
+      rcap[now[u]] = now[v];
+      rcap[now[v]] = now[u];
+      cap_loc.push_back(now[u]);
+      /*ly*/ cost[now[u]] = c_cost;
+      cost[now[v]] = -c_cost; /*ry*/
+      cap[now[u]++] = c;
+      cap[now[v]++] = rc;
+      orig_cap.push_back(c);
+    }
   }
   bool dinic_bfs() {
-    fill(now.begin(), now.end(), 0);
-    fill(lvl.begin(), lvl.end(), 0);
-    lvl[source] = 1;@ $ \hfill #448 $ @
-    vector<int> bfs(1, source);
+    lvl.clear();
+    lvl.resize(start.size());
+    bfs.clear();
+    bfs.resize(1, source);
+    now = start;
+    lvl[source] = 1;
     for (int i = 0; i < bfs.size(); ++i) {
       int u = bfs[i];
-      for (int j = 0; j < adj[u].size(); ++j) {
-        int v = adj[u][j];@ $ \hfill #227 $ @
-        if (cap[u][j] > 0 && lvl[v] == 0) {
+      while (now[u] < start[u + 1]) {
+        int v = adj[now[u]];
+        if (/*ly*/ cost[now[u]] == 0 && /*ry*/ cap[now[u]] > 0 &&
+            lvl[v] == 0) {
           lvl[v] = lvl[u] + 1;
           bfs.push_back(v);
         }
-      }@ $ \hfill #722 $ @
+        ++now[u];
+      }
     }
-    return lvl[sink] > 0;
+    return lvl[sink];
   }
   ll dinic_dfs(int u, ll flow) {
-    if (u == sink) return flow;@ $ \hfill #725 $ @
-    while (now[u] < adj[u].size()) {
-      int v = adj[u][now[u]];
-      if (lvl[v] == lvl[u] + 1 && cap[u][now[u]] != 0) {
-        ll res = dinic_dfs(v, min(flow, (ll)cap[u][now[u]]));
-        if (res > 0) {@ $ \hfill #459 $ @
-          cap[u][now[u]] -= res;
+    if (u == sink) return flow;
+    while (now[u] < start[u + 1]) {
+      int v = adj[now[u]];
+      if (lvl[v] == lvl[u] + 1 /*ly*/ && cost[now[u]] == 0 /*ry*/ &&
+          cap[now[u]] != 0) {
+        ll res = dinic_dfs(v, min(flow, cap[now[u]]));
+        if (res) {
+          add_flow(now[u], res);
           return res;
         }
       }
-      ++now[u];@ $ \hfill #460 $ @
+      ++now[u];
     }
     return 0;
   }
-  ll calc_max_flow() {
-    prep();@ $ \hfill #054 $ @
-    ll ans = 0;
-    while (dinic_bfs()) {
-      ll cur = 0;
-      do {
-        cur = dinic_dfs(source, INF);@ $ \hfill #052 $ @
-        ans += cur;
-      } while (cur > 0);
-    }
-    return ans;
-  }@ $ \hfill #346 $ @
-  ll flow_on_edge(int edge_index) {
-    assert(edge_index < edges.size());
-    return *edges[edge_index].flow;
-  }
-};@ $ \hfill %583 $ @
-int main() {
-  int n, m;
-  cin >> n >> m;
-  auto mf = MaxFlow(
-    1, n); // arguments source and sink, memory usage O(largest node
-           // index + input size), sink doesn't need to be last index
-  int edge_index;
-  for (int i = 0; i < m; ++i) {
-    int a, b, c;
-    cin >> a >> b >> c;
-    // mf.add\_edge(a,b,c); // for directed edges
-    edge_index = mf.add_edge(
-      a, b, c, c); // store edge index if care about flow value
-  }
-  cout << mf.calc_max_flow() << '\n';
-  // cout << mf.flow\_on\_edge(edge\_index) << endl; // return flow on
-  // this edge
-}
-\end{minted}
-\section{Min Cost Max Flow with succesive dijkstra $\mathcal{O}(\text{flow} \cdot n^2)$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
-const int nmax = 1055;
-const ll inf = 1e14;
-int t, n, v; // 0 is source, v-1 sink
-ll rem_flow[nmax][nmax];
-// set [x][y] for directed capacity from x to y.
-ll cost[nmax][nmax]; // set [x][y] for directed cost from x to y. SET$ \hfill #497 $
-                     // TO inf IF NOT USED
-ll min_dist[nmax];
-int prev_node[nmax];
-ll node_flow[nmax];
-bool visited[nmax];@ $ \hfill %576 $ @
-ll tot_cost, tot_flow; // output
-void min_cost_max_flow() {
-  tot_cost = 0; // Does not work with negative cycles.
-  tot_flow = 0;
-  ll sink_pot = 0;@ $ \hfill #614 $ @
-  min_dist[0] = 0;@ $ \hfill %927 $ @
-  for (int i = 1; i <= v; ++i) { // incase of no negative edges
-                                 // Bellman-Ford can be removed.
-    min_dist[i] = inf;
-  }
-  for (int i = 0; i < v - 1; ++i) {
-    for (int j = 0; j < v; ++j) {@ $ \hfill #654 $ @
-      for (int k = 0; k < v; ++k) {
-        if (rem_flow[j][k] > 0 &&
-            min_dist[j] + cost[j][k] < min_dist[k])
-          min_dist[k] = min_dist[j] + cost[j][k];
-      }@ $ \hfill #040 $ @
-    }
-  }
-  for (int i = 0; i < v; ++i) { // Apply potentials to edge costs.
-    for (int j = 0; j < v; ++j) {
-      if (cost[i][j] != inf) {@ $ \hfill #037 $ @
-        cost[i][j] += min_dist[i];
-        cost[i][j] -= min_dist[j];
-      }
-    }
-  }@ $ \hfill #630 $ @
-  sink_pot += min_dist[v - 1]; // Bellman-Ford end.$ \hfill %849 $
-  while (true) {
-    for (int i = 0; i <= v; ++i) { // node after sink is used as start
-                                   // value for Dijkstra.
-      min_dist[i] = inf;
-      visited[i] = false;
-    }@ $ \hfill #827 $ @
-    min_dist[0] = 0;
-    node_flow[0] = inf;
-    int min_node;
-    while (true) { // Use Dijkstra to calculate potentials
-      int min_node = v;@ $ \hfill #782 $ @
-      for (int i = 0; i < v; ++i) {
-        if ((!visited[i]) && min_dist[i] < min_dist[min_node])
-          min_node = i;
-      }
-      if (min_node == v) break visited[min_node] = true;@ $ \hfill #281 $ @
-      for (int i = 0; i < v; ++i) {
-        if ((!visited[i]) &&
-            min_dist[min_node] + cost[min_node][i] < min_dist[i]) {
-          min_dist[i] = min_dist[min_node] + cost[min_node][i];
-          prev_node[i] = min_node;@ $ \hfill #881 $ @
-          node_flow[i] =
-            min(node_flow[min_node], rem_flow[min_node][i]);
+  /*ly*/ bool recalc_dist(bool check_imp = false) {
+    now = start;
+    visited.clear();
+    visited.resize(start.size());
+    dist_que.emplace(0, source);
+    bool imp = false;
+    while (!dist_que.empty()) {
+      int u;
+      ll dist;
+      tie(dist, u) = dist_que.top();
+      dist_que.pop();
+      if (!visited[u]) {
+        visited[u] = true;
+        if (check_imp && dist != 0) imp = true;
+        if (u == sink) sink_pot += dist;
+        while (now[u] < start[u + 1]) {
+          int v = adj[now[u]];
+          if (!visited[v] && cap[now[u]])
+            dist_que.emplace(dist + cost[now[u]], v);
+          cost[now[u]] += dist;
+          cost[rcap[now[u]++]] -= dist;
         }
       }
-    }@ $ \hfill #046 $ @
-    if (min_dist[v - 1] == inf)
-      break for (int i = 0; i < v;
-                 ++i) { // Apply potentials to edge costs.
-        for (int j = 0; j < v;
-             ++j) { // Found path from source to sink becomes 0 cost.$ \hfill #664 $
-          if (cost[i][j] != inf) {
-            cost[i][j] += min_dist[i];
-            cost[i][j] -= min_dist[j];
-          }
-        }@ $ \hfill #983 $ @
-      }
-    sink_pot += min_dist[v - 1];
-    tot_flow += node_flow[v - 1];
-    tot_cost += sink_pot * node_flow[v - 1];
-    int cur = v - 1;@ $ \hfill #946 $ @
-    while (cur != 0) {
-      // Backtrack along found path that now has 0 cost.
-      rem_flow[prev_node[cur]][cur] -= node_flow[v - 1];
-      rem_flow[cur][prev_node[cur]] += node_flow[v - 1];
-      cost[cur][prev_node[cur]] = 0;
-      if (rem_flow[prev_node[cur]][cur] == 0)@ $ \hfill #446 $ @
-        cost[prev_node[cur]][cur] = inf;
-      cur = prev_node[cur];
     }
+    if (check_imp) return imp;
+    return visited[sink];
+  }                                        /*ry*/
+  /*lp*/ bool recalc_dist_bellman_ford() { // return whether there is
+                                           // a negative cycle
+    int i = 0;
+    for (; i < (int)start.size() - 1 && recalc_dist(true); ++i) {
+    }
+    return i == (int)start.size() - 1;
+  } /*rp*/
+  /*ly*/ pair<ll, /*ry*/ ll /*ly*/> /*ry*/ calc_flow(
+    int _source, int _sink) {
+    source = _source;
+    sink = _sink;
+    assert(max(source, sink) < start.size() - 1);
+    ll tot_flow = 0;
+    ll tot_cost = 0;
+    /*lp*/ if (recalc_dist_bellman_ford()) {
+      assert(false);
+    } else {                         /*rp*/
+      /*ly*/ while (recalc_dist()) { /*ry*/
+        ll flow = 0;
+        while (dinic_bfs()) {
+          now = start;
+          ll cur;
+          while (cur = dinic_dfs(source, INF)) flow += cur;
+        }
+        tot_flow += flow;
+        /*ly*/ tot_cost += sink_pot * flow; /*ry*/
+      }
+    }
+    return /*ly*/ {/*ry*/ tot_flow /*ly*/, tot_cost} /*ry*/;
   }
-}@ $ \hfill %803 $ @
-int main() { // http://www.spoj.com/problems/GREED/
-  cin >> t;
+  ll flow_on_edge(int idx) {
+    assert(idx < cap.size());
+    return orig_cap[idx] - cap[cap_loc[idx]];
+  }
+};
+const int nmax = 1055;
+int main() {
+  int t;
+  scanf("%d", &t);
   for (int i = 0; i < t; ++i) {
-    cin >> n;
-    for (int j = 0; j < nmax; ++j) {
-      for (int k = 0; k < nmax; ++k) {
-        cost[j][k] = inf;
-        rem_flow[j][k] = 0;
-      }
-    }
+    vector<tuple<int, int, ll, ll, ll> > edges;
+    int n;
+    scanf("%d", &n);
     for (int j = 1; j <= n; ++j) {
-      cost[j][2 * n + 1] = 0;
-      rem_flow[j][2 * n + 1] = 1;
+      edges.emplace_back(j, 2 * n + 1, 1, 0, 0);
     }
     for (int j = 1; j <= n; ++j) {
       int card;
-      cin >> card;
-      ++rem_flow[0][card];
-      cost[0][card] = 0;
+      scanf("%d", &card);
+      edges.emplace_back(0, card, 1, 0, 0);
     }
     int ex_c;
-    cin >> ex_c;
+    scanf("%d", &ex_c);
     for (int j = 0; j < ex_c; ++j) {
       int a, b;
-      cin >> a >> b;
+      scanf("%d %d", &a, &b);
       if (b < a) swap(a, b);
-      cost[a][b] = 1;
-      rem_flow[a][b] = nmax;
-      cost[b][n + b] = 0;
-      rem_flow[b][n + b] = nmax;
-      cost[n + b][a] = 1;
-      rem_flow[n + b][a] = nmax;
+      edges.emplace_back(a, b, nmax, 0, 1);
+      edges.emplace_back(b, n + b, nmax, 0, 0);
+      edges.emplace_back(n + b, a, nmax, 0, 1);
     }
-    v = 2 * n + 2;
-    min_cost_max_flow();
-    cout << tot_cost << '\n';
+    int v = 2 * n + 2;
+    MaxFlow mf(edges);
+    printf("%d\n", (int)mf.calc_flow(0, v - 1).second);
   }
+  /*
+     int n,m;
+     cin >> n >> m;
+  // arguments source and sink, memory usage O(largest node index +
+  input size), sink doesn't need to be last index vector<tuple<int,
+  int, ll, ll> > edges; for(int i = 0; i < m; ++i){ int a,b; ll c;
+  scanf("%d %d %lld", &a, &b, &c);
+  if(a != b){
+  edges.emplace_back(a, b, c, c); //(a, b, c, 0) for directed
+  }
+  }
+  MaxFlow mf(edges);
+  cout << mf.calc_flow(1, n) << '\n';
+  //cout << mf.flow\_on\_edge(edge\_index) << endl; // return flow on
+  this edge
+  */
 }
 \end{minted}
 \section{Min Cost Max Flow with Cycle Cancelling $\mathcal{O}(\text{flow} \cdot nm)$}
