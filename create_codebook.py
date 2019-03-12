@@ -4,7 +4,7 @@ import shlex
 import subprocess
 
 def add_hash(line, crc_line_start, crc_line_num, comment, delim = '#'):
-    os.system("sed \'/^\\s*$/d\' tmp | head -" + str(crc_line_num) + " | tail -" +str(crc_line_num - crc_line_start) + " | tr -d \'[[:space:]]\' | cksum | cut -f1 -d ' ' | tail -c 4 >tmp2")
+    os.system("sed \'/^\\s*$/d\' tmp | head -" + str(crc_line_num) + " | tail -" +str(crc_line_num - crc_line_start) + " | tr -d \'[[:space:]]\' | cksum | cut -f1 -d ' ' | tail -c 5 >tmp2")
     #sed gives errors but seams to work
     fin2 = open("tmp2", "r")
     line = line.rstrip()
@@ -43,6 +43,7 @@ for file in file_ord:
     hashing = False
     multiline_comment = False
     comment = False
+    define = False
     last_needs_end = False
     need_write_hash = False
     escape_str = "!escape "
@@ -94,6 +95,7 @@ for file in file_ord:
     if(use_minted):
         ftmp = open("tmp", "r")
         crc_line_num = 0
+        crc_since_last = 0
         it = iter(ftmp.readlines())
     for line in fin.readlines():
         escape_idx = line.find(escape_str)
@@ -113,6 +115,7 @@ for file in file_ord:
         elif(hash_beg_idx != -1):
             crc_line_start = crc_line_num
             hashing = True
+            crc_since_last = 0
         elif(hash_end_idx != -1):
             hash_str = add_hash("", crc_line_start, crc_line_num, comment, '%');
             hash_str = hash_str.rstrip()
@@ -124,12 +127,12 @@ for file in file_ord:
         elif(hash_unpause_idx != -1):
             hashing = True;
         else:
-            if(need_write_hash):
-                hash_str = add_hash("", crc_line_start, crc_line_num, comment, '#');
-                hash_str = hash_str.rstrip()
-                fout.write(hash_str)
-                need_write_hash = False
+            if(last_needs_end):
+                fout.write("\n")
+                last_needs_end = False
             if(outputting and not line.isspace()):
+                idxd = line.rfind("#")
+                define = idxd != -1
                 idx1 = line.rfind("/*") #not perfect
                 idx2 = line.rfind("*/")
                 idx3 = line.rfind("//")
@@ -146,17 +149,38 @@ for file in file_ord:
                     else:
                         fout.write("\\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, texcomments=true, mathescape=true]{"+lang+"}\n")
                     need_minted = False
-                if(last_needs_end):
-                    fout.write("\n")
+                write_line = line
+                min_idx = 1000
+                if(idxd != -1):
+                    min_idx = min(min_idx, idxd)
+                if(idx3 != -1):
+                    min_idx = min(min_idx, idx3)
+                if(multiline_comment and idx1 != -1 and idx2 == -1):
+                    min_idx = min(min_idx, idx1)
+                if(multiline_comment and idx1 == -1 and idx2 == -1):
+                    min_idx = 0
+                if(min_idx != 1000):
+                    write1 = write_line[:min_idx]
+                    write2 = write_line[min_idx:]
+                    write2 = write2.replace("_", "\_")
+                    write_line = write1+write2
+                write_line = write_line.rstrip()
                 line = line.rstrip()
-                fout.write(line)
+                fout.write(write_line)
                 last_needs_end = True
             if(hashing):
                 strip_line = it.__next__()
                 if(not strip_line.isspace()):
                     crc_line_num += 1
-                    if(not (crc_line_num-crc_line_start) % 5):
+                    crc_since_last += 1
+                    if(crc_since_last == 5):
                         need_write_hash = True
+            if(need_write_hash and last_needs_end and len(line) < 50 and not comment and not define):
+                hash_str = add_hash("", crc_line_start, crc_line_num, comment, '#');
+                hash_str = hash_str.rstrip()
+                fout.write(hash_str)
+                need_write_hash = False
+                crc_since_last = 0
     if(last_needs_end):
         fout.write("\n")
     if(use_minted and not need_minted):

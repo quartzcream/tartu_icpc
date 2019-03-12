@@ -17,10 +17,8 @@ bool collinear() {
   double min_diff = min(abs(A - B), min(abs(A - C), abs(B - C)));
   if (min_diff < coord_max * min_delta) return true;
   point sp = (B - A) / (C - A);
-  double ang =
-    M_PI / 2 -
-    abs(abs(arg(sp)) - M_PI / 2); // positive angle with the real line
-  return ang < min_delta;
+  double ang = M_PI / 2 - abs(abs(arg(sp)) - M_PI / 2);
+  return ang < min_delta; // positive angle with the real line
 }
 //!finish
 //!start

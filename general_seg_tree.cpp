@@ -20,7 +20,7 @@ struct Seg{
 
 struct Lazy{
 	ll add;
-	ll assign_val; //LLONG\_MIN if no assign;
+	ll assign_val; //LLONG_MIN if no assign;
 	void init(){
 		add = 0;
 		assign_val = LLONG_MIN;

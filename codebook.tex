@@ -91,25 +91,36 @@
 \end{center}
 \tableofcontents
 \par\noindent\rule{\textwidth}{0.4pt}
-\section{Setup}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, texcomments=true, mathescape=true]{bash}
-set smartindent cindent
-set ts=4 sw=4 expandtab
-syntax enable
-set clipboard=unnamedplus
-# setxkbmap -option caps:escape
-# valgrind --vgdb-error=0 ./a <inp &
-# gdb a
-# target remote | vgdb
+alias g++='g++ -g -Wall -Wshadow -DCDEBUG' #.basrc
+alias a='setxkbmap us -option'
+alias m='setxkbmap us -option caps:escape'
+alias ma='setxkbmap us -variant dvp -option caps:escape'
+#settings
+gsettings set org.compiz.core:/org/compiz/profiles/Default/plugins/core/ hsize 4
+gsettings set org.gnome.desktop.wm.preferences focus-mode 'sloppy'
+set si cin #.vimrc
+set ts=4 sw=4 noet
+set cb=unnamed
+(global-set-key (kbd "C-x <next>") 'other-window) #.emacs
+(global-set-key (kbd "C-x <prior>") 'previous-multiframe-window)
+(global-set-key (kbd "C-M-z") 'ansi-term)
+(global-linum-mode 1)
+(column-number-mode 1)
+(show-paren-mode 1)
+(setq-default indent-tabs-mode nil)
+valgrind --vgdb-error=0 ./a <inp & #valgrind
+gdb a
+target remote | vgdb
 \end{minted}
 \section{crc.sh}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, texcomments=true, mathescape=true]{bash}
 #!/bin/envbash
-for j in `seq 5 5 200`; do
-  sed '/^\s*$/d' $1 | head -$j | tr -d '[[:space:]]' | cksum | cut -f1 -d ' ' | tail -c 4 #whistespaces don't matter.
+for j in `seq 1 1 200`; do
+  sed '/^\s*$/d' $1 | head -$j | tr -d '[[:space:]]' | cksum | cut -f1 -d ' ' | tail -c 5 #whistespaces don't matter.
 done #there shouldn't be any COMMENTS.
 #copy lines being checked to separate file.
-# \$ ./crc.sh tmp.cpp
+# \$ ./crc.sh tmp.cpp | grep XXXX
 \end{minted}
 \section{gcc ordered set}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
@@ -117,30 +128,83 @@ done #there shouldn't be any COMMENTS.
 #ifndef CDEBUG
 #undef DEBUG
 #define DEBUG(...) ((void)0);
-#define NDEBUG@ $ \hfill #438 $ @
+#define NDEBUG
 #endif
 #define ran(i, a, b) for (auto i = (a); i < (b); i++)
 #include <bits/stdc++.h>
-typedef long long ll;
-typedef long double ld;@ $ \hfill #546 $ @
+typedef long long ll;@ $ \hfill #1736 $ @
+typedef long double ld;
 using namespace std;
 #include <ext/pb\_ds/assoc\_container.hpp>
 #include <ext/pb\_ds/tree\_policy.hpp>
-using namespace __gnu_pbds;
-template <typename T>@ $ \hfill #822 $ @
+using namespace __gnu_pbds;@ $ \hfill #5119 $ @
+template <typename T>
 using ordered_set = tree<T, null_type, less<T>, rb_tree_tag,
   tree_order_statistics_node_update>;
 int main() {
-  ordered_set<int> cur;
-  cur.insert(1);@ $ \hfill #325 $ @
+  ordered_set<int> cur;@ $ \hfill #3802 $ @
+  cur.insert(1);
   cur.insert(3);
   cout << cur.order_of_key(2)
        << endl; // the number of elements in the set less than 2
-  cout << *cur.find_by_order(0)
-       << endl; // the 0-th smallest number in the set(0-based)$ \hfill #478 $
+  cout << *cur.find_by_order(0)@ $ \hfill #0578 $ @
+       << endl; // the 0-th smallest number in the set(0-based)
   cout << *cur.find_by_order(1)
        << endl; // the 1-th smallest number in the set(0-based)
-}@ $ \hfill %954 $ @
+}@ $ \hfill %4198 $ @
+\end{minted}
+\section{Triangle centers}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+const double min_delta = 1e-13;
+const double coord_max = 1e6;
+typedef complex<double> point;
+point A, B, C; // vertixes of the triangle
+bool collinear() {@ $ \hfill #0823 $ @
+  double min_diff = min(abs(A - B), min(abs(A - C), abs(B - C)));
+  if (min_diff < coord_max * min_delta) return true;
+  point sp = (B - A) / (C - A);
+  double ang = M_PI / 2 - abs(abs(arg(sp)) - M_PI / 2);
+  return ang < min_delta; // positive angle with the real line
+}@ $ \hfill #8446 $ @@ $ \hfill %8446 $ @
+point circum_center() {
+  if (collinear()) return point(NAN, NAN);
+  // squared lengths of sides
+  double a2 = norm(B - C);
+  double b2 = norm(A - C);
+  double c2 = norm(A - B);@ $ \hfill #6715 $ @
+  // barycentric coordinates of the circumcenter
+  double c_A = a2 * (b2 + c2 - a2); // sin(2 * alpha) works also
+  double c_B = b2 * (a2 + c2 - b2);
+  double c_C = c2 * (a2 + b2 - c2);
+  double sum = c_A + c_B + c_C;
+  c_A /= sum;@ $ \hfill #9407 $ @
+  c_B /= sum;
+  c_C /= sum;
+  return c_A * A + c_B * B + c_C * C; // cartesian
+}@ $ \hfill %6856 $ @
+point centroid() { // center of mass
+  return (A + B + C) / 3.0;
+}
+point ortho_center() { // euler line
+  point O = circum_center();@ $ \hfill #3895 $ @
+  return O + 3.0 * (centroid() - O);
+};
+point nine_point_circle_center() { // euler line
+  point O = circum_center();
+  return O + 1.5 * (centroid() - O);@ $ \hfill #8193 $ @
+};@ $ \hfill %3031 $ @
+point in_center() {
+  if (collinear()) return point(NAN, NAN);
+  double a = abs(B - C); // side lenghts
+  double b = abs(A - C);
+  double c = abs(A - B);@ $ \hfill #5954 $ @
+  // trilinear coordinates are (1,1,1)
+  double sum = a + b + c;
+  a /= sum;
+  b /= sum;
+  c /= sum;                     // barycentric
+  return a * A + b * B + c * C; // cartesian
+}@ $ \hfill #4892 $ @@ $ \hfill %4892 $ @
 \end{minted}
 \end{multicols}
 \boldmath
@@ -203,166 +267,111 @@ Area of a spherical polygon:
 \unboldmath
 \setlength\columnsep{10mm}
 \begin{multicols*}{2}
-\section{Triangle centers}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
-const double min_delta = 1e-13;
-const double coord_max = 1e6;
-typedef complex<double> point;
-point A, B, C; // vertixes of the triangle
-bool collinear() {@ $ \hfill #823 $ @
-  double min_diff = min(abs(A - B), min(abs(A - C), abs(B - C)));
-  if (min_diff < coord_max * min_delta) return true;
-  point sp = (B - A) / (C - A);
-  double ang =
-    M_PI / 2 -@ $ \hfill #638 $ @
-    abs(abs(arg(sp)) - M_PI / 2); // positive angle with the real line
-  return ang < min_delta;
-}@ $ \hfill %446 $ @
-point circum_center() {
-  if (collinear()) return point(NAN, NAN);
-  // squared lengths of sides
-  double a2 = norm(B - C);
-  double b2 = norm(A - C);
-  double c2 = norm(A - B);@ $ \hfill #715 $ @
-  // barycentric coordinates of the circumcenter
-  double c_A = a2 * (b2 + c2 - a2); // sin(2 * alpha) works also
-  double c_B = b2 * (a2 + c2 - b2);
-  double c_C = c2 * (a2 + b2 - c2);
-  double sum = c_A + c_B + c_C;
-  c_A /= sum;@ $ \hfill #407 $ @
-  c_B /= sum;
-  c_C /= sum;
-  return c_A * A + c_B * B + c_C * C; // cartesian
-}@ $ \hfill %856 $ @
-point centroid() { // center of mass
-  return (A + B + C) / 3.0;
-}
-point ortho_center() { // euler line
-  point O = circum_center();@ $ \hfill #895 $ @
-  return O + 3.0 * (centroid() - O);
-};
-point nine_point_circle_center() { // euler line
-  point O = circum_center();
-  return O + 1.5 * (centroid() - O);@ $ \hfill #193 $ @
-};@ $ \hfill %031 $ @
-point in_center() {
-  if (collinear()) return point(NAN, NAN);
-  double a = abs(B - C); // side lenghts
-  double b = abs(A - C);
-  double c = abs(A - B);@ $ \hfill #954 $ @
-  // trilinear coordinates are (1,1,1)
-  double sum = a + b + c;
-  a /= sum;
-  b /= sum;
-  c /= sum;                     // barycentric
-  return a * A + b * B + c * C; // cartesian$ \hfill #596 $
-}@ $ \hfill %892 $ @
-\end{minted}
 \section{Seg-Seg intersection, halfplane intersection area}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 struct Seg {
   Vec a, b;
   Vec d() { return b - a; }
 };
-Vec intersection(Seg l, Seg r) {@ $ \hfill #327 $ @
+Vec intersection(Seg l, Seg r) {@ $ \hfill #6327 $ @
   Vec dl = l.d(), dr = r.d();
   if (cross(dl, dr) == 0) return {nanl(""), nanl("")};
   double h = cross(dr, l.a - r.a) / len(dr);
   double dh = cross(dr, dl) / len(dr);
-  return l.a + dl * (h / -dh);@ $ \hfill #893 $ @
+  return l.a + dl * (h / -dh);@ $ \hfill #8893 $ @
 }
 // Returns the area bounded by halfplanes
 double calc_area(vector<Seg> lines) {
   double lb = -HUGE_VAL, ub = HUGE_VAL;
   vector<Seg> linesBySide[2];
-  for (auto line : lines) {@ $ \hfill #454 $ @
+  for (auto line : lines) {@ $ \hfill #2454 $ @
     if (line.b.y == line.a.y) {
       if (line.a.x < line.b.x) {
         lb = max(lb, line.a.y);
       } else {
-        ub = min(ub, line.a.y);@ $ \hfill #029 $ @
+        ub = min(ub, line.a.y);@ $ \hfill #5029 $ @
       }
     } else if (line.a.y < line.b.y) {
       linesBySide[1].push_back(line);
     } else {
-      linesBySide[0].push_back({line.b, line.a});@ $ \hfill #613 $ @
+      linesBySide[0].push_back({line.b, line.a});@ $ \hfill #0613 $ @
     }
   }
   sort(
     linesBySide[0].begin(), linesBySide[0].end(), [](Seg l, Seg r) {
-      if (cross(l.d(), r.d()) == 0)@ $ \hfill #123 $ @
+      if (cross(l.d(), r.d()) == 0)@ $ \hfill #0123 $ @
         return normal(l.d()) * l.a > normal(r.d()) * r.a;
       return cross(l.d(), r.d()) < 0;
     });
   sort(
-    linesBySide[1].begin(), linesBySide[1].end(), [](Seg l, Seg r) {@ $ \hfill #115 $ @
-      if (cross(l.d(), r.d()) == 0)
+    linesBySide[1].begin(), linesBySide[1].end(), [](Seg l, Seg r) {
+      if (cross(l.d(), r.d()) == 0)@ $ \hfill #9277 $ @
         return normal(l.d()) * l.a < normal(r.d()) * r.a;
       return cross(l.d(), r.d()) > 0;
     });
   // Now find the application area of the lines and clean up redundant
   // ones
-  vector<double> applyStart[2];@ $ \hfill #597 $ @
-  for (int side = 0; side < 2; side++) {
+  vector<double> applyStart[2];
+  for (int side = 0; side < 2; side++) {@ $ \hfill #3617 $ @
     vector<double> &apply = applyStart[side];
     vector<Seg> curLines;
     for (auto line : linesBySide[side]) {
-      while (curLines.size() > 0) {@ $ \hfill #412 $ @
-        Seg other = curLines.back();
+      while (curLines.size() > 0) {
+        Seg other = curLines.back();@ $ \hfill #2919 $ @
         if (cross(line.d(), other.d()) != 0) {
           double start = intersection(line, other).y;
           if (start > apply.back()) break;
-        }@ $ \hfill #503 $ @
-        curLines.pop_back();
+        }
+        curLines.pop_back();@ $ \hfill #3443 $ @
         apply.pop_back();
       }
       if (curLines.size() == 0) {
-        apply.push_back(-HUGE_VAL);@ $ \hfill #321 $ @
-      } else {
+        apply.push_back(-HUGE_VAL);
+      } else {@ $ \hfill #1841 $ @
         apply.push_back(intersection(line, curLines.back()).y);
       }
       curLines.push_back(line);
-    }@ $ \hfill #047 $ @
-    linesBySide[side] = curLines;
+    }
+    linesBySide[side] = curLines;@ $ \hfill #1880 $ @
   }
   applyStart[0].push_back(HUGE_VALL);
   applyStart[1].push_back(HUGE_VALL);
-  double result = 0;@ $ \hfill #908 $ @
-  {
+  double result = 0;
+  {@ $ \hfill #4257 $ @
     double lb = -HUGE_VALL, ub;
     for (int i = 0, j = 0; i < (int)linesBySide[0].size() &&
                            j < (int)linesBySide[1].size();
-         lb = ub) {@ $ \hfill #251 $ @
+         lb = ub) {
       ub = min(applyStart[0][i + 1], applyStart[1][j + 1]);
-      double alb = lb, aub = ub;
+      double alb = lb, aub = ub;@ $ \hfill #4728 $ @
       Seg l0 = linesBySide[0][i], l1 = linesBySide[1][j];
       if (cross(l1.d(), l0.d()) > 0) {
-        alb = max(alb, intersection(l0, l1).y);@ $ \hfill #743 $ @
+        alb = max(alb, intersection(l0, l1).y);
       } else if (cross(l1.d(), l0.d()) < 0) {
-        aub = min(aub, intersection(l0, l1).y);
+        aub = min(aub, intersection(l0, l1).y);@ $ \hfill #9292 $ @
       }
       alb = max(alb, lb);
-      aub = min(aub, ub);@ $ \hfill #839 $ @
+      aub = min(aub, ub);
       aub = max(aub, alb);
-      {
+      {@ $ \hfill #9556 $ @
         double x1 = l0.a.x + (alb - l0.a.y) / l0.d().y * l0.d().x;
         double x2 = l0.a.x + (aub - l0.a.y) / l0.d().y * l0.d().x;
-        result -= (aub - alb) * (x1 + x2) / 2;@ $ \hfill #075 $ @
+        result -= (aub - alb) * (x1 + x2) / 2;
       }
-      {
+      {@ $ \hfill #2735 $ @
         double x1 = l1.a.x + (alb - l1.a.y) / l1.d().y * l1.d().x;
         double x2 = l1.a.x + (aub - l1.a.y) / l1.d().y * l1.d().x;
-        result += (aub - alb) * (x1 + x2) / 2;@ $ \hfill #717 $ @
+        result += (aub - alb) * (x1 + x2) / 2;
       }
       if (applyStart[0][i + 1] < applyStart[1][j + 1]) {
-        i++;
+        i++;@ $ \hfill #9855 $ @
       } else {
-        j++;@ $ \hfill #446 $ @
+        j++;
       }
     }
-  }
+  }@ $ \hfill #5549 $ @
   return result;
-}@ $ \hfill %103 $ @
+}@ $ \hfill %5103 $ @
 \end{minted}
 \section{Convex polygon algorithms}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
@@ -370,242 +379,242 @@ typedef pair<int, int> Vec;
 typedef pair<Vec, Vec> Seg;
 typedef vector<Seg>::iterator SegIt;
 #define F first
-#define S second@ $ \hfill #608 $ @
-#define MP(x, y) make_pair(x, y)
+#define S second
+#define MP(x, y) make\_pair(x, y)
 ll dot(Vec &v1, Vec &v2) { return (ll)v1.F * v2.F + (ll)v1.S * v2.S; }
-ll cross(Vec &v1, Vec &v2) {
+ll cross(Vec &v1, Vec &v2) {@ $ \hfill #6913 $ @
   return (ll)v1.F * v2.S - (ll)v2.F * v1.S;
-}@ $ \hfill #541 $ @
+}
 ll dist_sq(Vec &p1, Vec &p2) {
   return (ll)(p2.F - p1.F) * (p2.F - p1.F) +
-         (ll)(p2.S - p1.S) * (p2.S - p1.S);
-}@ $ \hfill %008 $ @
+         (ll)(p2.S - p1.S) * (p2.S - p1.S);@ $ \hfill #3216 $ @
+}@ $ \hfill %8008 $ @
 struct Hull {
   vector<Seg> hull;
   SegIt up_beg;
   template <typename It>
-  void extend(It beg, It end) { // O(n)$ \hfill #096 $
-    vector<Vec> r;
+  void extend(It beg, It end) { // O(n)
+    vector<Vec> r;@ $ \hfill #4033 $ @
     for (auto it = beg; it != end; ++it) {
       if (r.empty() || *it != r.back()) {
         while (r.size() >= 2) {
-          int n = r.size();@ $ \hfill #442 $ @
+          int n = r.size();
           Vec v1 = {r[n - 1].F - r[n - 2].F, r[n - 1].S - r[n - 2].S};
           Vec v2 = {it->F - r[n - 2].F, it->S - r[n - 2].S};
-          if (cross(v1, v2) > 0) break;
+          if (cross(v1, v2) > 0) break;@ $ \hfill #3588 $ @
           r.pop_back();
-        }@ $ \hfill #605 $ @
+        }
         r.push_back(*it);
       }
-    }
+    }@ $ \hfill #6639 $ @
     ran(i, 0, (int)r.size() - 1) hull.emplace_back(r[i], r[i + 1]);
-  }@ $ \hfill #572 $ @
+  }
   Hull(vector<Vec> &vert) {         // atleast 2 distinct points
     sort(vert.begin(), vert.end()); // O(n log(n))
-    extend(vert.begin(), vert.end());
+    extend(vert.begin(), vert.end());@ $ \hfill #6560 $ @
     int diff = hull.size();
-    extend(vert.rbegin(), vert.rend());@ $ \hfill #964 $ @
+    extend(vert.rbegin(), vert.rend());
     up_beg = hull.begin() + diff;
-  }@ $ \hfill %722 $ @
+  }@ $ \hfill %0722 $ @
   bool contains(Vec p) { // O(log(n))
     if (p < hull.front().F || p > up_beg->F) return false;
     {
       auto it_low = lower_bound(
-        hull.begin(), up_beg, MP(MP(p.F, (int)-2e9), MP(0, 0)));@ $ \hfill #542 $ @
-      if (it_low != hull.begin()) --it_low;
+        hull.begin(), up_beg, MP(MP(p.F, (int)-2e9), MP(0, 0)));
+      if (it_low != hull.begin()) --it_low;@ $ \hfill #3373 $ @
       Vec a = {it_low->S.F - it_low->F.F, it_low->S.S - it_low->F.S};
       Vec b = {p.F - it_low->F.F, p.S - it_low->F.S};
       if (cross(a, b) < 0) // < 0 is inclusive, <=0 is exclusive
-        return false;@ $ \hfill #681 $ @
-    }
+        return false;
+    }@ $ \hfill #2197 $ @
     {
       auto it_up = lower_bound(hull.rbegin(),
         hull.rbegin() + (hull.end() - up_beg),
-        MP(MP(p.F, (int)2e9), MP(0, 0)));@ $ \hfill #423 $ @
+        MP(MP(p.F, (int)2e9), MP(0, 0)));
       if (it_up - hull.rbegin() == hull.end() - up_beg) --it_up;
       Vec a = {it_up->F.F - it_up->S.F, it_up->F.S - it_up->S.S};
       Vec b = {p.F - it_up->S.F, p.S - it_up->S.S};
       if (cross(a, b) > 0) // > 0 is inclusive, >=0 is exclusive
-        return false;@ $ \hfill #227 $ @
+        return false;@ $ \hfill #7227 $ @
     }
     return true;
-  }@ $ \hfill %826 $ @
+  }@ $ \hfill %1826 $ @
   // The function can have only one local min and max
   // and may be constant only at min and max.
   template <typename T>
   SegIt max(function<T(Seg &)> f) { // O(log(n))
     auto l = hull.begin();
     auto r = hull.end();
-    SegIt b = hull.end();@ $ \hfill #566 $ @
+    SegIt b = hull.end();@ $ \hfill #8566 $ @
     T b_v;
     while (r - l > 2) {
       auto m = l + (r - l) / 2;
       T l_v = f(*l);
-      T l_n_v = f(*(l + 1));@ $ \hfill #586 $ @
+      T l_n_v = f(*(l + 1));@ $ \hfill #3586 $ @
       T m_v = f(*m);
       T m_n_v = f(*(m + 1));
       if (b == hull.end() || l_v > b_v) {
         b = l; // If max is at l we may remove it from the range.
-        b_v = l_v;@ $ \hfill #332 $ @
+        b_v = l_v;@ $ \hfill #7332 $ @
       }
       if (l_n_v > l_v) {
         if (m_v < l_v) {
           r = m;
-        } else {@ $ \hfill #279 $ @
+        } else {@ $ \hfill #7279 $ @
           if (m_n_v > m_v) {
             l = m + 1;
           } else {
             r = m + 1;
-          }@ $ \hfill #656 $ @
+          }@ $ \hfill #0656 $ @
         }
       } else {
         if (m_v < l_v) {
           l = m + 1;
-        } else {@ $ \hfill #311 $ @
+        } else {@ $ \hfill #7311 $ @
           if (m_n_v > m_v) {
             l = m + 1;
           } else {
             r = m + 1;
-          }@ $ \hfill #469 $ @
+          }@ $ \hfill #4469 $ @
         }
       }
     }
     T l_v = f(*l);
-    if (b == hull.end() || l_v > b_v) {@ $ \hfill #864 $ @
+    if (b == hull.end() || l_v > b_v) {@ $ \hfill #9864 $ @
       b = l;
       b_v = l_v;
     }
     if (r - l > 1) {
-      T l_n_v = f(*(l + 1));@ $ \hfill #972 $ @
+      T l_n_v = f(*(l + 1));@ $ \hfill #5972 $ @
       if (b == hull.end() || l_n_v > b_v) {
         b = l + 1;
         b_v = l_n_v;
       }
-    }@ $ \hfill #086 $ @
+    }@ $ \hfill #9086 $ @
     return b;
-  }@ $ \hfill %504 $ @
+  }@ $ \hfill %9504 $ @
   SegIt closest(Vec p) { // p can't be internal(can be on border),
                          // hull must have atleast 3 points
     Seg &ref_p = hull.front(); // O(log(n))
     return max(function<double(Seg &)>(
       [&p, &ref_p](
-        Seg &seg) { // accuracy of used type should be coord^-2$ \hfill #071 $
-        if (p == seg.F) return 10 - M_PI;
+        Seg &seg) { // accuracy of used type should be coord^-2
+        if (p == seg.F) return 10 - M_PI;@ $ \hfill #0134 $ @
         Vec v1 = {seg.S.F - seg.F.F, seg.S.S - seg.F.S};
         Vec v2 = {p.F - seg.F.F, p.S - seg.F.S};
         ll c_p = cross(v1, v2);
-        if (c_p > 0) { // order the backside by angle$ \hfill #868 $
+        if (c_p > 0) { // order the backside by angle
           Vec v1 = {ref_p.F.F - p.F, ref_p.F.S - p.S};
           Vec v2 = {seg.F.F - p.F, seg.F.S - p.S};
-          ll d_p = dot(v1, v2);
+          ll d_p = dot(v1, v2);@ $ \hfill #5063 $ @
           ll c_p = cross(v2, v1);
-          return atan2(c_p, d_p) / 2;@ $ \hfill #384 $ @
+          return atan2(c_p, d_p) / 2;
         }
         ll d_p = dot(v1, v2);
-        double res = atan2(d_p, c_p);
+        double res = atan2(d_p, c_p);@ $ \hfill #0469 $ @
         if (d_p <= 0 && res > 0) res = -M_PI;
-        if (res > 0) {@ $ \hfill #050 $ @
+        if (res > 0) {
           res += 20;
         } else {
-          res = 10 - res;
+          res = 10 - res;@ $ \hfill #7417 $ @
         }
-        return res;@ $ \hfill #631 $ @
+        return res;
       }));
-  }@ $ \hfill %283 $ @
+  }@ $ \hfill %8283 $ @
   template <int DIRECTION> // 1 or -1
   Vec tan_point(Vec p) {   // can't be internal or on border
     //-1 iff CCW rotation of ray from p to res takes it away from
     // polygon?
     Seg &ref_p = hull.front(); // O(log(n))
     auto best_seg = max(function<double(Seg &)>(
-      [&p, &ref_p](@ $ \hfill #209 $ @
+      [&p, &ref_p](@ $ \hfill #5209 $ @
         Seg &seg) { // accuracy of used type should be coord^-2
         Vec v1 = {ref_p.F.F - p.F, ref_p.F.S - p.S};
         Vec v2 = {seg.F.F - p.F, seg.F.S - p.S};
         ll d_p = dot(v1, v2);
-        ll c_p = DIRECTION * cross(v2, v1);@ $ \hfill #762 $ @
+        ll c_p = DIRECTION * cross(v2, v1);@ $ \hfill #9762 $ @
         return atan2(c_p, d_p); // order by signed angle
       }));
     return best_seg->F;
-  }@ $ \hfill %037 $ @
+  }@ $ \hfill %5037 $ @
   SegIt max_in_dir(Vec v) { // first is the ans. O(log(n))
     return max(
       function<ll(Seg &)>([&v](Seg &seg) { return dot(v, seg.F); }));
-  }@ $ \hfill %596 $ @
+  }@ $ \hfill %9596 $ @
   pair<SegIt, SegIt> intersections(Seg l) { // O(log(n))
     int x = l.S.F - l.F.F;
     int y = l.S.S - l.F.S;
     Vec dir = {-y, x};
-    auto it_max = max_in_dir(dir);@ $ \hfill #740 $ @
+    auto it_max = max_in_dir(dir);@ $ \hfill #4740 $ @
     auto it_min = max_in_dir(MP(y, -x));
     ll opt_val = dot(dir, l.F);
     if (dot(dir, it_max->F) < opt_val ||
         dot(dir, it_min->F) > opt_val)
-      return MP(hull.end(), hull.end());@ $ \hfill #276 $ @
+      return MP(hull.end(), hull.end());@ $ \hfill #0276 $ @
     SegIt it_r1, it_r2;
     function<bool(Seg &, Seg &)> inc_c([&dir](Seg &lft, Seg &rgt) {
       return dot(dir, lft.F) < dot(dir, rgt.F);
     });
-    function<bool(Seg &, Seg &)> dec_c([&dir](Seg &lft, Seg &rgt) {@ $ \hfill #431 $ @
-      return dot(dir, lft.F) > dot(dir, rgt.F);
+    function<bool(Seg &, Seg &)> dec_c([&dir](Seg &lft, Seg &rgt) {
+      return dot(dir, lft.F) > dot(dir, rgt.F);@ $ \hfill #0483 $ @
     });
     if (it_min <= it_max) {
       it_r1 = upper_bound(it_min, it_max + 1, l, inc_c) - 1;
-      if (dot(dir, hull.front().F) >= opt_val) {@ $ \hfill #689 $ @
+      if (dot(dir, hull.front().F) >= opt_val) {
         it_r2 = upper_bound(hull.begin(), it_min + 1, l, dec_c) - 1;
-      } else {
+      } else {@ $ \hfill #9409 $ @
         it_r2 = upper_bound(it_max, hull.end(), l, dec_c) - 1;
       }
-    } else {@ $ \hfill #552 $ @
+    } else {
       it_r1 = upper_bound(it_max, it_min + 1, l, dec_c) - 1;
-      if (dot(dir, hull.front().F) <= opt_val) {
+      if (dot(dir, hull.front().F) <= opt_val) {@ $ \hfill #9772 $ @
         it_r2 = upper_bound(hull.begin(), it_max + 1, l, inc_c) - 1;
       } else {
-        it_r2 = upper_bound(it_min, hull.end(), l, inc_c) - 1;@ $ \hfill #220 $ @
+        it_r2 = upper_bound(it_min, hull.end(), l, inc_c) - 1;
       }
-    }
+    }@ $ \hfill #9450 $ @
     return MP(it_r1, it_r2);
-  }@ $ \hfill %498 $ @
+  }@ $ \hfill %1498 $ @
   Seg diameter() { // O(n)
     Seg res;
     ll dia_sq = 0;
     auto it1 = hull.begin();
-    auto it2 = up_beg;@ $ \hfill #632 $ @
+    auto it2 = up_beg;@ $ \hfill #2632 $ @
     Vec v1 = {hull.back().S.F - hull.back().F.F,
       hull.back().S.S - hull.back().F.S};
     while (it2 != hull.begin()) {
       Vec v2 = {(it2 - 1)->S.F - (it2 - 1)->F.F,
-        (it2 - 1)->S.S - (it2 - 1)->F.S};@ $ \hfill #150 $ @
+        (it2 - 1)->S.S - (it2 - 1)->F.S};@ $ \hfill #5150 $ @
       if (cross(v1, v2) > 0) break;
       --it2;
     }
     while (it2 != hull.end()) { // check all antipodal pairs
-      if (dist_sq(it1->F, it2->F) > dia_sq) {@ $ \hfill #246 $ @
+      if (dist_sq(it1->F, it2->F) > dia_sq) {@ $ \hfill #1246 $ @
         res = {it1->F, it2->F};
         dia_sq = dist_sq(res.F, res.S);
       }
       Vec v1 = {it1->S.F - it1->F.F, it1->S.S - it1->F.S};
-      Vec v2 = {it2->S.F - it2->F.F, it2->S.S - it2->F.S};@ $ \hfill #529 $ @
-      if (cross(v1, v2) == 0) {
+      Vec v2 = {it2->S.F - it2->F.F, it2->S.S - it2->F.S};
+      if (cross(v1, v2) == 0) {@ $ \hfill #9381 $ @
         if (dist_sq(it1->S, it2->F) > dia_sq) {
           res = {it1->S, it2->F};
           dia_sq = dist_sq(res.F, res.S);
-        }@ $ \hfill #406 $ @
-        if (dist_sq(it1->F, it2->S) > dia_sq) {
+        }
+        if (dist_sq(it1->F, it2->S) > dia_sq) {@ $ \hfill #7011 $ @
           res = {it1->F, it2->S};
           dia_sq = dist_sq(res.F, res.S);
         } // report cross pairs at parallel lines.
-        ++it1;@ $ \hfill #362 $ @
-        ++it2;
+        ++it1;
+        ++it2;@ $ \hfill #5626 $ @
       } else if (cross(v1, v2) < 0) {
         ++it1;
       } else {
-        ++it2;@ $ \hfill #936 $ @
-      }
+        ++it2;
+      }@ $ \hfill #4406 $ @
     }
     return res;
   }
-};@ $ \hfill %383 $ @
+};@ $ \hfill %9383 $ @
 \end{minted}
 \section{Delaunay triangulation $\mathcal{O}(n\log n)}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
@@ -613,131 +622,131 @@ const int max_co = (1 << 28) - 5;
 struct Vec {
   int x, y;
   bool operator==(const Vec &oth) { return x == oth.x && y == oth.y; }
-  bool operator!=(const Vec &oth) { return !operator==(oth); }@ $ \hfill #679 $ @
+  bool operator!=(const Vec &oth) { return !operator==(oth); }
   Vec operator-(const Vec &oth) { return {x - oth.x, y - oth.y}; }
-};
+};@ $ \hfill #2919 $ @
 ll cross(Vec a, Vec b) { return (ll)a.x * b.y - (ll)a.y * b.x; }
 ll dot(Vec a, Vec b) { return (ll)a.x * b.x + (ll)a.y * b.y; }
-struct Edge {@ $ \hfill #732 $ @
+struct Edge {
   Vec tar;
-  Edge *nxt;
+  Edge *nxt;@ $ \hfill #8008 $ @
   Edge *inv = NULL;
   Edge *rep = NULL;
-  bool vis = false;@ $ \hfill #668 $ @
+  bool vis = false;
 };
-struct Seg {
+struct Seg {@ $ \hfill #7311 $ @
   Vec a, b;
   bool operator==(const Seg &oth) { return a == oth.a && b == oth.b; }
-  bool operator!=(const Seg &oth) { return !operator==(oth); }@ $ \hfill #245 $ @
+  bool operator!=(const Seg &oth) { return !operator==(oth); }
 };
-ll orient(Vec a, Vec b, Vec c) {
+ll orient(Vec a, Vec b, Vec c) {@ $ \hfill #6432 $ @
   return (ll)a.x * (b.y - c.y) + (ll)b.x * (c.y - a.y) +
          (ll)c.x * (a.y - b.y);
-}@ $ \hfill %334 $ @
+}@ $ \hfill %6334 $ @
 bool in_c_circle(Vec *arr, Vec d) {
   if (cross(arr[1] - arr[0], arr[2] - arr[0]) == 0)
     return true; // degenerate
   ll m[3][3];
-  ran(i, 0, 3) {@ $ \hfill #264 $ @
+  ran(i, 0, 3) {@ $ \hfill #4264 $ @
     m[i][0] = arr[i].x - d.x;
     m[i][1] = arr[i].y - d.y;
     m[i][2] = m[i][0] * m[i][0];
     m[i][2] += m[i][1] * m[i][1];
-  }@ $ \hfill #305 $ @
+  }@ $ \hfill #7305 $ @
   __int128 res = 0;
   res += (__int128)(m[0][0] * m[1][1] - m[0][1] * m[1][0]) * m[2][2];
   res += (__int128)(m[1][0] * m[2][1] - m[1][1] * m[2][0]) * m[0][2];
   res -= (__int128)(m[0][0] * m[2][1] - m[0][1] * m[2][0]) * m[1][2];
-  return res > 0;@ $ \hfill #845 $ @
-}@ $ \hfill %793 $ @
+  return res > 0;@ $ \hfill #1845 $ @
+}@ $ \hfill %6793 $ @
 Edge *add_triangle(Edge *a, Edge *b, Edge *c) {
   Edge *old[] = {a, b, c};
   Edge *tmp = new Edge[3];
   ran(i, 0, 3) {
-    old[i]->rep = tmp + i;@ $ \hfill #219 $ @
+    old[i]->rep = tmp + i;@ $ \hfill #8219 $ @
     tmp[i] = {old[i]->tar, tmp + (i + 1) % 3, old[i]->inv};
     if (tmp[i].inv) tmp[i].inv->inv = tmp + i;
   }
   return tmp;
-}@ $ \hfill #178 $ @
+}@ $ \hfill #8178 $ @
 Edge *add_point(Vec p, Edge *cur) { // returns outgoing edge
   Edge *triangle[] = {cur, cur->nxt, cur->nxt->nxt};
   ran(i, 0, 3) {
     if (orient(triangle[i]->tar, triangle[(i + 1) % 3]->tar, p) < 0)
-      return NULL;@ $ \hfill #233 $ @
+      return NULL;@ $ \hfill #0233 $ @
   }
   ran(i, 0, 3) {
     if (triangle[i]->rep) {
       Edge *res = add_point(p, triangle[i]->rep);
-      if (res)@ $ \hfill #636 $ @
+      if (res)@ $ \hfill #5636 $ @
         return res; // unless we are on last layer we must exit here
     }
   }
   Edge p_as_e{p};
-  Edge tmp{cur->tar};@ $ \hfill #432 $ @
+  Edge tmp{cur->tar};@ $ \hfill #1432 $ @
   tmp.inv = add_triangle(&p_as_e, &tmp, cur = cur->nxt);
   Edge *res = tmp.inv->nxt;
   tmp.tar = cur->tar;
   tmp.inv = add_triangle(&p_as_e, &tmp, cur = cur->nxt);
-  tmp.tar = cur->tar;@ $ \hfill #359 $ @
+  tmp.tar = cur->tar;@ $ \hfill #8359 $ @
   res->inv = add_triangle(&p_as_e, &tmp, cur = cur->nxt);
   res->inv->inv = res;
   return res;
 }
-Edge *delaunay(vector<Vec> &points) {@ $ \hfill #029 $ @
+Edge *delaunay(vector<Vec> &points) {@ $ \hfill #3029 $ @
   random_shuffle(points.begin(), points.end());
   Vec arr[] = {{4 * max_co, 4 * max_co}, {-4 * max_co, max_co},
     {max_co, -4 * max_co}};
   Edge *res = new Edge[3];
-  ran(i, 0, 3) res[i] = {arr[i], res + (i + 1) % 3};@ $ \hfill #480 $ @
-  for (Vec &cur : points) {
+  ran(i, 0, 3) res[i] = {arr[i], res + (i + 1) % 3};
+  for (Vec &cur : points) {@ $ \hfill #4575 $ @
     Edge *loc = add_point(cur, res);
     Edge *out = loc;
     arr[0] = cur;
-    while (true) {@ $ \hfill #601 $ @
-      arr[1] = out->tar;
+    while (true) {
+      arr[1] = out->tar;@ $ \hfill #3471 $ @
       arr[2] = out->nxt->tar;
       Edge *e = out->nxt->inv;
       if (e && in_c_circle(arr, e->nxt->tar)) {
-        Edge tmp{cur};@ $ \hfill #056 $ @
+        Edge tmp{cur};
         tmp.inv = add_triangle(&tmp, out, e->nxt);
-        tmp.tar = e->nxt->tar;
+        tmp.tar = e->nxt->tar;@ $ \hfill #9851 $ @
         tmp.inv->inv = add_triangle(&tmp, e->nxt->nxt, out->nxt->nxt);
         out = tmp.inv->nxt;
-        continue;@ $ \hfill #173 $ @
+        continue;
       }
-      out = out->nxt->nxt->inv;
+      out = out->nxt->nxt->inv;@ $ \hfill #0151 $ @
       if (out->tar == loc->tar) break;
     }
-  }@ $ \hfill #032 $ @
+  }
   return res;
-}@ $ \hfill %769 $ @
+}@ $ \hfill #6769 $ @@ $ \hfill %6769 $ @
 void extract_triangles(Edge *cur, vector<vector<Seg> > &res) {
   if (!cur->vis) {
     bool inc = true;
     Edge *it = cur;
-    do {@ $ \hfill #769 $ @
+    do {@ $ \hfill #3769 $ @
       it->vis = true;
       if (it->rep) {
         extract_triangles(it->rep, res);
         inc = false;
-      }@ $ \hfill #104 $ @
+      }@ $ \hfill #2104 $ @
       it = it->nxt;
     } while (it != cur);
     if (inc) {
       Edge *triangle[3] = {cur, cur->nxt, cur->nxt->nxt};
-      res.resize(res.size() + 1);@ $ \hfill #207 $ @
+      res.resize(res.size() + 1);@ $ \hfill #6207 $ @
       vector<Seg> &tar = res.back();
       ran(i, 0, 3) {
         if ((abs(triangle[i]->tar.x) < max_co &&
               abs(triangle[(i + 1) % 3]->tar.x) < max_co))
-          tar.push_back(@ $ \hfill #011 $ @
+          tar.push_back(@ $ \hfill #3011 $ @
             {triangle[i]->tar, triangle[(i + 1) % 3]->tar});
       }
       if (tar.empty()) res.pop_back();
     }
-  }@ $ \hfill #602 $ @
-}@ $ \hfill %626 $ @
+  }@ $ \hfill #8602 $ @
+}@ $ \hfill %5626 $ @
 \end{minted}
 \section{Aho Corasick $\mathcal{O}(|\text{alpha}|\sum{\text{len}})$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
@@ -745,68 +754,68 @@ const int alpha_size = 26;
 struct Node {
   Node *nxt[alpha_size]; // May use other structures to move in trie
   Node *suffix;
-  Node() { memset(nxt, 0, alpha_size * sizeof(Node *)); }@ $ \hfill #248 $ @
-  int cnt = 0;
+  Node() { memset(nxt, 0, alpha_size * sizeof(Node *)); }
+  int cnt = 0;@ $ \hfill #1006 $ @
 };
 Node *aho_corasick(vector<vector<char> > &dict) {
   Node *root = new Node;
-  root->suffix = 0;@ $ \hfill #292 $ @
-  vector<pair<vector<char> *, Node *> > state;
+  root->suffix = 0;
+  vector<pair<vector<char> *, Node *> > state;@ $ \hfill #9056 $ @
   for (vector<char> &s : dict) state.emplace_back(&s, root);
   for (int i = 0; !state.empty(); ++i) {
     vector<pair<vector<char> *, Node *> > nstate;
-    for (auto &cur : state) {@ $ \hfill #306 $ @
+    for (auto &cur : state) {
       Node *nxt = cur.second->nxt[(*cur.first)[i]];
-      if (nxt) {
+      if (nxt) {@ $ \hfill #1331 $ @
         cur.second = nxt;
       } else {
-        nxt = new Node;@ $ \hfill #266 $ @
+        nxt = new Node;
         cur.second->nxt[(*cur.first)[i]] = nxt;
-        Node *suf = cur.second->suffix;
+        Node *suf = cur.second->suffix;@ $ \hfill #5283 $ @
         cur.second = nxt;
         nxt->suffix = root; // set correct suffix link
-        while (suf) {@ $ \hfill #249 $ @
+        while (suf) {
           if (suf->nxt[(*cur.first)[i]]) {
             nxt->suffix = suf->nxt[(*cur.first)[i]];
-            break;
+            break;@ $ \hfill #3580 $ @
           }
-          suf = suf->suffix;@ $ \hfill #562 $ @
+          suf = suf->suffix;
         }
       }
       if (cur.first->size() > i + 1) nstate.push_back(cur);
-    }
-    state = nstate;@ $ \hfill #417 $ @
+    }@ $ \hfill #3263 $ @
+    state = nstate;
   }
   return root;
-}@ $ \hfill %882 $ @
+}@ $ \hfill %2882 $ @
 // auxilary functions for searhing and counting
 Node *walk(Node *cur,
   char c) { // longest prefix in dict that is suffix of walked string.
   while (true) {
     if (cur->nxt[c]) return cur->nxt[c];
-    if (!cur->suffix) return cur;@ $ \hfill #414 $ @
+    if (!cur->suffix) return cur;@ $ \hfill #5414 $ @
     cur = cur->suffix;
   }
-}@ $ \hfill %529 $ @
+}@ $ \hfill %1529 $ @
 void cnt_matches(Node *root, vector<char> &match_in) {
   Node *cur = root;
   for (char c : match_in) {
     cur = walk(cur, c);
-    ++cur->cnt;@ $ \hfill #015 $ @
+    ++cur->cnt;@ $ \hfill #0015 $ @
   }
-}@ $ \hfill %156 $ @
+}@ $ \hfill %8156 $ @
 void add_cnt(Node *root) { // After counting matches propagete ONCE to
                            // suffixes for final counts
   vector<Node *> to_visit = {root};
   ran(i, 0, to_visit.size()) {
     Node *cur = to_visit[i];
-    ran(j, 0, alpha_size) {@ $ \hfill #662 $ @
+    ran(j, 0, alpha_size) {@ $ \hfill #0662 $ @
       if (cur->nxt[j]) to_visit.push_back(cur->nxt[j]);
     }
   }
   for (int i = to_visit.size() - 1; i > 0; --i)
-    to_visit[i]->suffix->cnt += to_visit[i]->cnt;@ $ \hfill #950 $ @
-}@ $ \hfill %488 $ @
+    to_visit[i]->suffix->cnt += to_visit[i]->cnt;@ $ \hfill #7950 $ @
+}@ $ \hfill %0488 $ @
 int main() {
   int n, len;
   scanf("%d %d", &len, &n);
@@ -838,48 +847,48 @@ class Node {
  private:
   map<char, Node *>
     nxt_char; // Map is faster than hashtable and unsorted arrays
- public:@ $ \hfill #994 $ @
+ public:@ $ \hfill #4994 $ @
   int len; // Length of longest suffix in equivalence class.
   Node *suf;
   bool has_nxt(char c) const { return nxt_char.count(c); }
   Node *nxt(char c) {
-    if (!has_nxt(c)) return NULL;@ $ \hfill #788 $ @
+    if (!has_nxt(c)) return NULL;@ $ \hfill #3788 $ @
     return nxt_char[c];
   }
   void set_nxt(char c, Node *node) { nxt_char[c] = node; }
   Node *split(int new_len, char c) {
-    Node *new_n = new Node;@ $ \hfill #449 $ @
+    Node *new_n = new Node;@ $ \hfill #0449 $ @
     new_n->nxt_char = nxt_char;
     new_n->len = new_len;
     new_n->suf = suf;
     suf = new_n;
-    return new_n;@ $ \hfill #130 $ @
-  }@ $ \hfill %044 $ @
+    return new_n;@ $ \hfill #3130 $ @
+  }@ $ \hfill %0044 $ @
   // Extra functions for matching and counting
   Node *lower_depth(int depth) { // move to longest suffix of current
                                  // with a maximum length of depth.
     if (suf->len >= depth) return suf->lower_depth(depth);
     return this;
   }
-  Node *walk(char c, int depth,@ $ \hfill #736 $ @
+  Node *walk(char c, int depth,@ $ \hfill #5736 $ @
     int &match_len) { // move to longest suffix of walked path that is
                       // a substring
     match_len = min(match_len,
       len); // includes depth limit(needed for finding matches)
-    if (has_nxt(c)) { // as suffixes are in classes match\_len must be
+    if (has_nxt(c)) { // as suffixes are in classes match\\_len must be
                       // tracked externally
-      ++match_len;@ $ \hfill #153 $ @
+      ++match_len;@ $ \hfill #7153 $ @
       return nxt(c)->lower_depth(depth);
     }
     if (suf) return suf->walk(c, depth, match_len);
     return this;
-  }@ $ \hfill %969 $ @
+  }@ $ \hfill #8969 $ @@ $ \hfill %8969 $ @
   int paths_to_end = 0;
   void set_as_end() { // All suffixes of current node are marked as
                       // ending nodes.
     paths_to_end += 1;
     if (suf) suf->set_as_end();
-  }@ $ \hfill #041 $ @
+  }@ $ \hfill #3041 $ @
   bool vis = false;
   void calc_paths_to_end() { // Call ONCE from ROOT. For each node
                              // calculates number of ways to reach an
@@ -887,73 +896,73 @@ class Node {
     if (!vis) { // paths\_to\_end is ocurence count for any strings in
                 // current suffix equivalence class.
       vis = true;
-      for (auto cur : nxt_char) {@ $ \hfill #035 $ @
+      for (auto cur : nxt_char) {@ $ \hfill #6035 $ @
         cur.second->calc_paths_to_end();
         paths_to_end += cur.second->paths_to_end;
       }
     }
-  }@ $ \hfill %996 $ @
+  }@ $ \hfill #1996 $ @@ $ \hfill %1996 $ @
   // Transform into suffix tree of reverse string
   map<char, Node *> tree_links;
   int end_dist = 1 << 30;
   int calc_end_dist() {
     if (end_dist == 1 << 30) {
-      if (nxt_char.empty()) end_dist = 0;@ $ \hfill #524 $ @
+      if (nxt_char.empty()) end_dist = 0;@ $ \hfill #7524 $ @
       for (auto cur : nxt_char)
         end_dist = min(end_dist, 1 + cur.second->calc_end_dist());
     }
     return end_dist;
-  }@ $ \hfill #021 $ @
+  }@ $ \hfill #2021 $ @
   bool vis_t = false;
   void build_suffix_tree(string &s) { // Call ONCE from ROOT.
     if (!vis_t) {
       vis_t = true;
-      if (suf)@ $ \hfill #270 $ @
+      if (suf)@ $ \hfill #6270 $ @
         suf->tree_links[s[s.size() - end_dist - suf->len - 1]] = this;
       for (auto cur : nxt_char) cur.second->build_suffix_tree(s);
     }
   }
-};@ $ \hfill #268 $ @
+};@ $ \hfill #1268 $ @
 struct SufAuto {
   Node *last;
   Node *root;
   void extend(char new_c) {
-    Node *new_end = new Node;@ $ \hfill #340 $ @
+    Node *new_end = new Node;@ $ \hfill #4340 $ @
     new_end->len = last->len + 1;
     Node *suf_w_nxt = last;
     while (suf_w_nxt && !suf_w_nxt->has_nxt(new_c)) {
       suf_w_nxt->set_nxt(new_c, new_end);
-      suf_w_nxt = suf_w_nxt->suf;@ $ \hfill #217 $ @
+      suf_w_nxt = suf_w_nxt->suf;@ $ \hfill #2217 $ @
     }
     if (!suf_w_nxt) {
       new_end->suf = root;
     } else {
-      Node *max_sbstr = suf_w_nxt->nxt(new_c);@ $ \hfill #618 $ @
+      Node *max_sbstr = suf_w_nxt->nxt(new_c);@ $ \hfill #0618 $ @
       if (suf_w_nxt->len + 1 == max_sbstr->len) {
         new_end->suf = max_sbstr;
       } else {
         Node *eq_sbstr = max_sbstr->split(suf_w_nxt->len + 1, new_c);
-        new_end->suf = eq_sbstr;@ $ \hfill #295 $ @
+        new_end->suf = eq_sbstr;@ $ \hfill #8295 $ @
         Node *w_edge_to_eq_sbstr = suf_w_nxt;
         while (w_edge_to_eq_sbstr != 0 &&
                w_edge_to_eq_sbstr->nxt(new_c) == max_sbstr) {
           w_edge_to_eq_sbstr->set_nxt(new_c, eq_sbstr);
-          w_edge_to_eq_sbstr = w_edge_to_eq_sbstr->suf;@ $ \hfill #678 $ @
-        }
+          w_edge_to_eq_sbstr = w_edge_to_eq_sbstr->suf;
+        }@ $ \hfill #2463 $ @
       }
     }
     last = new_end;
-  }@ $ \hfill %135 $ @
+  }@ $ \hfill %1135 $ @
   SufAuto(string &s) {
     root = new Node;
     root->len = 0;
     root->suf = NULL;
-    last = root;@ $ \hfill #604 $ @
+    last = root;@ $ \hfill #9604 $ @
     for (char c : s) extend(c);
     root->calc_end_dist(); // To build suffix tree use reversed string
     root->build_suffix_tree(s);
   }
-};@ $ \hfill %251 $ @
+};@ $ \hfill #6251 $ @@ $ \hfill %6251 $ @
 \end{minted}
 \section{Dinic}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
@@ -1139,12 +1148,12 @@ int main() {
   int, ll, ll> > edges; for(int i = 0; i < m; ++i){ int a,b; ll c;
   scanf("%d %d %lld", &a, &b, &c);
   if(a != b){
-  edges.emplace_back(a, b, c, c); //(a, b, c, 0) for directed
+  edges.emplace\_back(a, b, c, c); //(a, b, c, 0) for directed
   }
   }
   MaxFlow mf(edges);
-  cout << mf.calc_flow(1, n) << '\n';
-  //cout << mf.flow\_on\_edge(edge\_index) << endl; // return flow on
+  cout << mf.calc\_flow(1, n) << '\n';
+  //cout << mf.flow\\_on\\_edge(edge\\_index) << endl; // return flow on
   this edge
   */
 }
@@ -1155,111 +1164,111 @@ struct Network {
   struct Node;
   struct Edge {
     Node *u, *v;
-    int f, c, cost;@ $ \hfill #965 $ @
+    int f, c, cost;@ $ \hfill #2965 $ @
     Node* from(Node* pos) {
       if (pos == u) return v;
       return u;
     }
-    int getCap(Node* pos) {@ $ \hfill #145 $ @
+    int getCap(Node* pos) {@ $ \hfill #4145 $ @
       if (pos == u) return c - f;
       return f;
     }
     int addFlow(Node* pos, int toAdd) {
-      if (pos == u) {@ $ \hfill #369 $ @
+      if (pos == u) {@ $ \hfill #6369 $ @
         f += toAdd;
         return toAdd * cost;
       } else {
         f -= toAdd;
-        return -toAdd * cost;@ $ \hfill #987 $ @
+        return -toAdd * cost;@ $ \hfill #8987 $ @
       }
     }
   };
   struct Node {
-    vector<Edge*> conn;@ $ \hfill #577 $ @
+    vector<Edge*> conn;@ $ \hfill #1577 $ @
     int index;
   };
   deque<Node> nodes;
   deque<Edge> edges;
-  Node* addNode() {@ $ \hfill #057 $ @
+  Node* addNode() {@ $ \hfill #5057 $ @
     nodes.push_back(Node());
     nodes.back().index = nodes.size() - 1;
     return &nodes.back();
   }
-  Edge* addEdge(Node* u, Node* v, int f, int c, int cost) {@ $ \hfill #518 $ @
-    edges.push_back({u, v, f, c, cost});
+  Edge* addEdge(Node* u, Node* v, int f, int c, int cost) {
+    edges.push_back({u, v, f, c, cost});@ $ \hfill #5123 $ @
     u->conn.push_back(&edges.back());
     v->conn.push_back(&edges.back());
     return &edges.back();
-  }@ $ \hfill #692 $ @
+  }
   // Assumes all needed flow has already been added
-  int minCostMaxFlow() {
+  int minCostMaxFlow() {@ $ \hfill #0927 $ @
     int n = nodes.size();
     int result = 0;
     struct State {
-      int p;@ $ \hfill #091 $ @
-      Edge* used;
+      int p;
+      Edge* used;@ $ \hfill #7358 $ @
     };
     while (1) {
       vector<vector<State> > state(1, vector<State>(n, {0, 0}));
-      for (int lev = 0; lev < n; lev++) {@ $ \hfill #158 $ @
-        state.push_back(state[lev]);
+      for (int lev = 0; lev < n; lev++) {
+        state.push_back(state[lev]);@ $ \hfill #0078 $ @
         for (int i = 0; i < n; i++) {
           if (lev == 0 || state[lev][i].p < state[lev - 1][i].p) {
             for (Edge* edge : nodes[i].conn) {
-              if (edge->getCap(&nodes[i]) > 0) {@ $ \hfill #760 $ @
-                int np =
+              if (edge->getCap(&nodes[i]) > 0) {
+                int np =@ $ \hfill #7871 $ @
                   state[lev][i].p +
                   (edge->u == &nodes[i] ? edge->cost : -edge->cost);
                 int ni = edge->from(&nodes[i])->index;
-                if (np < state[lev + 1][ni].p) {@ $ \hfill #281 $ @
-                  state[lev + 1][ni].p = np;
+                if (np < state[lev + 1][ni].p) {
+                  state[lev + 1][ni].p = np;@ $ \hfill #3940 $ @
                   state[lev + 1][ni].used = edge;
                 }
               }
-            }@ $ \hfill #460 $ @
-          }
+            }
+          }@ $ \hfill #3693 $ @
         }
       }
       // Now look at the last level
       bool valid = false;
-      for (int i = 0; i < n; i++)@ $ \hfill #283 $ @
-        if (state[n - 1][i].p > state[n][i].p) {
+      for (int i = 0; i < n; i++)
+        if (state[n - 1][i].p > state[n][i].p) {@ $ \hfill #5398 $ @
           valid = true;
           vector<Edge*> path;
           int cap = 1000000000;
-          Node* cur = &nodes[i];@ $ \hfill #352 $ @
-          int clev = n;
+          Node* cur = &nodes[i];
+          int clev = n;@ $ \hfill #6663 $ @
           vector<bool> explr(n, false);
           while (!explr[cur->index]) {
             explr[cur->index] = true;
-            State cstate = state[clev][cur->index];@ $ \hfill #954 $ @
-            cur = cstate.used->from(cur);
+            State cstate = state[clev][cur->index];
+            cur = cstate.used->from(cur);@ $ \hfill #3984 $ @
             path.push_back(cstate.used);
           }
           reverse(path.begin(), path.end());
-          {@ $ \hfill #592 $ @
-            int i = 0;
+          {
+            int i = 0;@ $ \hfill #9784 $ @
             Node* cur2 = cur;
             do {
               cur2 = path[i]->from(cur2);
-              i++;@ $ \hfill #990 $ @
-            } while (cur2 != cur);
+              i++;
+            } while (cur2 != cur);@ $ \hfill #9838 $ @
             path.resize(i);
           }
           for (auto edge : path) {
-            cap = min(cap, edge->getCap(cur));@ $ \hfill #297 $ @
-            cur = edge->from(cur);
+            cap = min(cap, edge->getCap(cur));
+            cur = edge->from(cur);@ $ \hfill #8867 $ @
           }
           for (auto edge : path) {
             result += edge->addFlow(cur, cap);
-            cur = edge->from(cur);@ $ \hfill #599 $ @
-          }
+            cur = edge->from(cur);
+          }@ $ \hfill #4467 $ @
         }
       if (!valid) break;
     }
-    return result;@ $ \hfill #550 $ @
-  }
-};@ $ \hfill %900 $ @
+    return result;
+  }@ $ \hfill #4029 $ @
+};@ $ \hfill %2900 $ @
 \end{minted}
 \section{DMST $\mathcal{O}(E \log V)$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
@@ -1267,140 +1276,140 @@ struct EdgeDesc {
   int from, to, w;
 };
 struct DMST {
-  struct Node;@ $ \hfill #091 $ @
+  struct Node;@ $ \hfill #6091 $ @
   struct Edge {
     Node *from;
     Node *tar;
     int w;
-    bool inc;@ $ \hfill #186 $ @
+    bool inc;@ $ \hfill #2186 $ @
   };
   struct Circle {
     bool vis = false;
     vector<Edge *> contents;
-    void clean(int idx);@ $ \hfill #946 $ @
+    void clean(int idx);@ $ \hfill #9946 $ @
   };
   const static greater<pair<ll, Edge *> >
     comp; // Can use inline static since C++17
   static vector<Circle> to_process;
-  static bool no_dmst;@ $ \hfill #478 $ @
+  static bool no_dmst;@ $ \hfill #6478 $ @
   static Node *root;
   struct Node {
     Node *par = NULL;
     vector<pair<int, int> > out_cands; // Circ, edge idx
-    vector<pair<ll, Edge *> > con;@ $ \hfill #608 $ @
+    vector<pair<ll, Edge *> > con;@ $ \hfill #7608 $ @
     bool in_use = false;
     ll w = 0; // extra to add to edges in con
     Node *anc() {
       if (!par) return this;
-      while (par->par) par = par->par;@ $ \hfill #721 $ @
+      while (par->par) par = par->par;@ $ \hfill #8721 $ @
       return par;
     }
     void clean() {
       if (!no_dmst) {
-        in_use = false;@ $ \hfill #465 $ @
+        in_use = false;@ $ \hfill #3465 $ @
         for (auto &cur : out_cands)
           to_process[cur.first].clean(cur.second);
       }
     }
-    Node *con_to_root() {@ $ \hfill #488 $ @
+    Node *con_to_root() {@ $ \hfill #6488 $ @
       if (anc() == root) return root;
       in_use = true;
       Node *super = this; // Will become root or the first Node
                           // encountered in a loop.
       while (super == this) {
-        while (@ $ \hfill #363 $ @
+        while (@ $ \hfill #8363 $ @
           !con.empty() && con.front().second->tar->anc() == anc()) {
           pop_heap(con.begin(), con.end(), comp);
           con.pop_back();
         }
-        if (con.empty()) {@ $ \hfill #506 $ @
+        if (con.empty()) {@ $ \hfill #2506 $ @
           no_dmst = true;
           return root;
         }
         pop_heap(con.begin(), con.end(), comp);
-        auto nxt = con.back();@ $ \hfill #541 $ @
+        auto nxt = con.back();@ $ \hfill #9541 $ @
         con.pop_back();
         w = -nxt.first;
         if (nxt.second->tar
               ->in_use) { // anc() wouldn't change anything
-          super = nxt.second->tar->anc();@ $ \hfill #174 $ @
+          super = nxt.second->tar->anc();@ $ \hfill #9174 $ @
           to_process.resize(to_process.size() + 1);
         } else {
           super = nxt.second->tar->con_to_root();
         }
-        if (super != root) {@ $ \hfill #595 $ @
+        if (super != root) {@ $ \hfill #6595 $ @
           to_process.back().contents.push_back(nxt.second);
           out_cands.emplace_back(to_process.size() - 1,
             to_process.back().contents.size() - 1);
         } else { // Clean circles
-          nxt.second->inc = true;@ $ \hfill #848 $ @
+          nxt.second->inc = true;@ $ \hfill #8848 $ @
           nxt.second->from->clean();
         }
       }
       if (super != root) { // we are some loops non first Node.
-        if (con.size() > super->con.size()) {@ $ \hfill #860 $ @
+        if (con.size() > super->con.size()) {@ $ \hfill #9860 $ @
           swap(con,
             super->con); // Largest con in loop should not be copied.
           swap(w, super->w);
         }
-        for (auto cur : con) {@ $ \hfill #064 $ @
+        for (auto cur : con) {@ $ \hfill #0064 $ @
           super->con.emplace_back(
             cur.first - super->w + w, cur.second);
           push_heap(super->con.begin(), super->con.end(), comp);
         }
-      }@ $ \hfill #295 $ @
+      }@ $ \hfill #2295 $ @
       par = super; // root or anc() of first Node encountered in a
                    // loop
       return super;
     }
   };
-  Node *cur_root;@ $ \hfill #995 $ @
+  Node *cur_root;@ $ \hfill #2995 $ @
   vector<Node> graph;
   vector<Edge> edges;
   DMST(int n, vector<EdgeDesc> &desc,
     int r) { // Self loops and multiple edges are okay.
-    graph.resize(n);@ $ \hfill #989 $ @
+    graph.resize(n);@ $ \hfill #7989 $ @
     cur_root = &graph[r];
     for (auto &cur : desc) // Edges are reversed internally
       edges.push_back(Edge{&graph[cur.to], &graph[cur.from], cur.w});
     for (int i = 0; i < desc.size(); ++i)
-      graph[desc[i].to].con.emplace_back(desc[i].w, &edges[i]);@ $ \hfill #895 $ @
-    for (int i = 0; i < n; ++i)
+      graph[desc[i].to].con.emplace_back(desc[i].w, &edges[i]);
+    for (int i = 0; i < n; ++i)@ $ \hfill #3693 $ @
       make_heap(graph[i].con.begin(), graph[i].con.end(), comp);
   }
   bool find() {
-    root = cur_root;@ $ \hfill #771 $ @
-    no_dmst = false;
+    root = cur_root;
+    no_dmst = false;@ $ \hfill #8798 $ @
     for (auto &cur : graph) {
       cur.con_to_root();
       to_process.clear();
-      if (no_dmst) return false;@ $ \hfill #405 $ @
-    }
+      if (no_dmst) return false;
+    }@ $ \hfill #1711 $ @
     return true;
-  }@ $ \hfill %732 $ @
+  }@ $ \hfill %4732 $ @
   ll weight() {
     ll res = 0;
     for (auto &cur : edges) {
       if (cur.inc) res += cur.w;
-    }@ $ \hfill #369 $ @
+    }@ $ \hfill #6369 $ @
     return res;
-  }@ $ \hfill %477 $ @
+  }@ $ \hfill %1477 $ @
 };
 void DMST::Circle::clean(int idx) {
   if (!vis) {
     vis = true;
-    for (int i = 0; i < contents.size(); ++i) {@ $ \hfill #814 $ @
+    for (int i = 0; i < contents.size(); ++i) {@ $ \hfill #8814 $ @
       if (i != idx) {
         contents[i]->inc = true;
         contents[i]->from->clean();
       }
-    }@ $ \hfill #711 $ @
+    }@ $ \hfill #0711 $ @
   }
 }
 const greater<pair<ll, DMST::Edge *> > DMST::comp;
 vector<DMST::Circle> DMST::to_process;
-bool DMST::no_dmst;@ $ \hfill #417 $ @
-DMST::Node *DMST::root;@ $ \hfill %771 $ @
+bool DMST::no_dmst;@ $ \hfill #8417 $ @
+DMST::Node *DMST::root;@ $ \hfill %0771 $ @
 \end{minted}
 \section{Bridges $\mathcal{O}(n)$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
@@ -1408,42 +1417,42 @@ struct vert;
 struct edge {
   bool exists = true;
   vert *dest;
-  edge *rev;@ $ \hfill #922 $ @
+  edge *rev;@ $ \hfill #8922 $ @
   edge(vert *_dest) : dest(_dest) { rev = NULL; }
   vert &operator*() { return *dest; }
   vert *operator->() { return dest; }
   bool is_bridge();
-};@ $ \hfill #116 $ @
+};@ $ \hfill #0116 $ @
 struct vert {
   deque<edge> con;
   int val = 0;
   int seen;
-  int dfs(int upd, edge *ban) { // handles multiple edges$ \hfill #331 $
-    if (!val) {
+  int dfs(int upd, edge *ban) { // handles multiple edges
+    if (!val) {@ $ \hfill #1288 $ @
       val = upd;
       seen = val;
       for (edge &nxt : con) {
-        if (nxt.exists && (&nxt) != ban)@ $ \hfill #866 $ @
+        if (nxt.exists && (&nxt) != ban)
           seen = min(seen, nxt->dfs(upd + 1, nxt.rev));
-      }
+      }@ $ \hfill #8194 $ @
     }
     return seen;
-  }@ $ \hfill %624 $ @
+  }@ $ \hfill %8624 $ @
   void remove_adj_bridges() {
     for (edge &nxt : con) {
       if (nxt.is_bridge()) nxt.exists = false;
     }
-  }@ $ \hfill %106 $ @
+  }@ $ \hfill #7106 $ @@ $ \hfill %7106 $ @
   int cnt_adj_bridges() {
     int res = 0;
     for (edge &nxt : con) res += nxt.is_bridge();
     return res;
-  }@ $ \hfill %056 $ @
+  }@ $ \hfill #9056 $ @@ $ \hfill %9056 $ @
 };
 bool edge::is_bridge() {
   return exists &&
          (dest->seen > rev->dest->val || dest->val < rev->dest->seen);
-}@ $ \hfill %223 $ @
+}@ $ \hfill #5223 $ @@ $ \hfill %5223 $ @
 vert graph[nmax];
 int main() { // Mechanics Practice BRIDGES
   int n, m;
@@ -1468,51 +1477,51 @@ struct Graph {
   int n;
   vector<vector<int> > conn;
   Graph(int nsize) {
-    n = nsize;@ $ \hfill #987 $ @
+    n = nsize;@ $ \hfill #0987 $ @
     conn.resize(n);
   }
   void add_edge(int u, int v) { conn[u].push_back(v); }
   void _topsort_dfs(int pos, vector<int> &result, vector<bool> &explr,
-    vector<vector<int> > &revconn) {@ $ \hfill #592 $ @
+    vector<vector<int> > &revconn) {@ $ \hfill #5592 $ @
     if (explr[pos]) return;
     explr[pos] = true;
     for (auto next : revconn[pos])
       _topsort_dfs(next, result, explr, revconn);
-    result.push_back(pos);@ $ \hfill #810 $ @
+    result.push_back(pos);@ $ \hfill #3810 $ @
   }
   vector<int> topsort() {
     vector<vector<int> > revconn(n);
     for (int u = 0; u < n; u++) {
-      for (auto v : conn[u]) revconn[v].push_back(u);@ $ \hfill #775 $ @
-    }
+      for (auto v : conn[u]) revconn[v].push_back(u);
+    }@ $ \hfill #1886 $ @
     vector<int> result;
     vector<bool> explr(n, false);
     for (int i = 0; i < n; i++)
-      _topsort_dfs(i, result, explr, revconn);@ $ \hfill #178 $ @
-    reverse(result.begin(), result.end());
+      _topsort_dfs(i, result, explr, revconn);
+    reverse(result.begin(), result.end());@ $ \hfill #5382 $ @
     return result;
   }
   void dfs(int pos, vector<int> &result, vector<bool> &explr) {
-    if (explr[pos]) return;@ $ \hfill #591 $ @
-    explr[pos] = true;
+    if (explr[pos]) return;
+    explr[pos] = true;@ $ \hfill #9284 $ @
     for (auto next : conn[pos]) dfs(next, result, explr);
     result.push_back(pos);
-  }@ $ \hfill %603 $ @
+  }@ $ \hfill %8603 $ @
   vector<vector<int> > scc() {
     vector<int> order = topsort();
     reverse(order.begin(), order.end());
     vector<bool> explr(n, false);
-    vector<vector<int> > results;@ $ \hfill #020 $ @
+    vector<vector<int> > results;@ $ \hfill #7020 $ @
     for (auto it = order.rbegin(); it != order.rend(); ++it) {
       vector<int> component;
       _topsort_dfs(*it, component, explr, conn);
       sort(component.begin(), component.end());
-      results.push_back(component);@ $ \hfill #741 $ @
+      results.push_back(component);@ $ \hfill #2741 $ @
     }
     sort(results.begin(), results.end());
     return results;
   }
-};@ $ \hfill %983 $ @
+};@ $ \hfill #4983 $ @@ $ \hfill %4983 $ @
 // Solution for:
 // http://codeforces.com/group/PjzGiggT71/contest/221700/problem/C
 int main() {
@@ -1556,117 +1565,117 @@ struct Seg {
   ll sum = 0;
   void recalc(const Seg &lhs_seg, int lhs_len, const Seg &rhs_seg,
     int rhs_len) {
-    sum = lhs_seg.sum + rhs_seg.sum;@ $ \hfill #684 $ @
+    sum = lhs_seg.sum + rhs_seg.sum;@ $ \hfill #7684 $ @
   }
 } __attribute__((packed));
 struct Lazy {
   ll add;
-  ll assign_val; // LLONG\_MIN if no assign;$ \hfill #529 $
-  void init() {
+  ll assign_val; // LLONG\_MIN if no assign;
+  void init() {@ $ \hfill #7883 $ @
     add = 0;
     assign_val = LLONG_MIN;
   }
-  Lazy() { init(); }@ $ \hfill #819 $ @
+  Lazy() { init(); }
   void split(Lazy &lhs_lazy, Lazy &rhs_lazy, int len) {
-    lhs_lazy = *this;
+    lhs_lazy = *this;@ $ \hfill #7654 $ @
     rhs_lazy = *this;
     init();
-  }@ $ \hfill #953 $ @
+  }
   void merge(Lazy &oth, int len) {
-    if (oth.assign_val != LLONG_MIN) {
+    if (oth.assign_val != LLONG_MIN) {@ $ \hfill #0050 $ @
       add = 0;
       assign_val = oth.assign_val;
-    }@ $ \hfill #949 $ @
+    }
     add += oth.add;
-  }
+  }@ $ \hfill #2924 $ @
   void apply_to_seg(Seg &cur, int len) const {
     if (assign_val != LLONG_MIN) {
-      cur.sum = len * assign_val;@ $ \hfill #204 $ @
+      cur.sum = len * assign_val;
     }
-    cur.sum += len * add;
+    cur.sum += len * add;@ $ \hfill #6280 $ @
   }
-} __attribute__((packed));@ $ \hfill %625 $ @
-struct Node { // Following code should not need to be modified
+} __attribute__((packed));
+@ $ \hfill %0625 $ @struct Node { // Following code should not need to be modified
   int ver;
   bool is_lazy = false;
   Seg seg;
-  Lazy lazy;@ $ \hfill #321 $ @
+  Lazy lazy;@ $ \hfill #6321 $ @
   Node *lc = NULL, *rc = NULL;
   void init() {
     if (!lc) {
       lc = new Node{ver};
-      rc = new Node{ver};@ $ \hfill #313 $ @
+      rc = new Node{ver};@ $ \hfill #5313 $ @
     }
   }
   Node *upd(int L, int R, int l, int r, Lazy &val, int tar_ver) {
     if (ver != tar_ver) {
-      Node *rep = new Node(*this);@ $ \hfill #874 $ @
+      Node *rep = new Node(*this);@ $ \hfill #8874 $ @
       rep->ver = tar_ver;
       return rep->upd(L, R, l, r, val, tar_ver);
     }
     if (L >= l && R <= r) {
-      val.apply_to_seg(seg, R - L);@ $ \hfill #138 $ @
+      val.apply_to_seg(seg, R - L);@ $ \hfill #2138 $ @
       lazy.merge(val, R - L);
       is_lazy = true;
     } else {
       init();
-      int M = (L + R) / 2;@ $ \hfill #209 $ @
+      int M = (L + R) / 2;@ $ \hfill #8209 $ @
       if (is_lazy) {
         Lazy l_val, r_val;
         lazy.split(l_val, r_val, R - L);
         lc = lc->upd(L, M, L, M, l_val, ver);
-        rc = rc->upd(M, R, M, R, r_val, ver);@ $ \hfill #104 $ @
+        rc = rc->upd(M, R, M, R, r_val, ver);@ $ \hfill #8104 $ @
         is_lazy = false;
       }
       Lazy l_val, r_val;
       val.split(l_val, r_val, R - L);
-      if (l < M) lc = lc->upd(L, M, l, r, l_val, ver);@ $ \hfill #045 $ @
+      if (l < M) lc = lc->upd(L, M, l, r, l_val, ver);
       if (M < r) rc = rc->upd(M, R, l, r, r_val, ver);
-      seg.recalc(lc->seg, M - L, rc->seg, R - M);
+      seg.recalc(lc->seg, M - L, rc->seg, R - M);@ $ \hfill #8581 $ @
     }
     return this;
-  }@ $ \hfill #441 $ @
+  }
   void get(int L, int R, int l, int r, Seg *&lft_res, Seg *&tmp,
-    bool last_ver) {
+    bool last_ver) {@ $ \hfill #9373 $ @
     if (L >= l && R <= r) {
       tmp->recalc(*lft_res, L - l, seg, R - L);
-      swap(lft_res, tmp);@ $ \hfill #394 $ @
+      swap(lft_res, tmp);
     } else {
-      init();
+      init();@ $ \hfill #6654 $ @
       int M = (L + R) / 2;
       if (is_lazy) {
-        Lazy l_val, r_val;@ $ \hfill #803 $ @
+        Lazy l_val, r_val;
         lazy.split(l_val, r_val, R - L);
         lc = lc->upd(L, M, L, M, l_val, ver + last_ver);
-        lc->ver = ver;
+        lc->ver = ver;@ $ \hfill #2185 $ @
         rc = rc->upd(M, R, M, R, r_val, ver + last_ver);
-        rc->ver = ver;@ $ \hfill #593 $ @
+        rc->ver = ver;
         is_lazy = false;
       }
       if (l < M) lc->get(L, M, l, r, lft_res, tmp, last_ver);
       if (M < r) rc->get(M, R, l, r, lft_res, tmp, last_ver);
-    }@ $ \hfill #770 $ @
+    }@ $ \hfill #4770 $ @
   }
 } __attribute__((packed));
 struct SegTree {        // indexes start from 0, ranges are [beg, end)
   vector<Node *> roots; // versions start from 0
-  int len;@ $ \hfill #873 $ @
+  int len;@ $ \hfill #4873 $ @
   SegTree(int _len) : len(_len) { roots.push_back(new Node{0}); }
   int upd(int l, int r, Lazy &val, bool new_ver = false) {
     Node *cur_root =
       roots.back()->upd(0, len, l, r, val, roots.size() - !new_ver);
-    if (cur_root != roots.back()) roots.push_back(cur_root);@ $ \hfill #700 $ @
-    return roots.size() - 1;
+    if (cur_root != roots.back()) roots.push_back(cur_root);
+    return roots.size() - 1;@ $ \hfill #1461 $ @
   }
   Seg get(int l, int r, int ver = -1) {
     if (ver == -1) ver = roots.size() - 1;
-    Seg seg1, seg2;@ $ \hfill #751 $ @
-    Seg *pres = &seg1, *ptmp = &seg2;
+    Seg seg1, seg2;
+    Seg *pres = &seg1, *ptmp = &seg2;@ $ \hfill #9427 $ @
     roots[ver]->get(0, len, l, r, pres, ptmp, roots.size() - 1);
     return *pres;
   }
-};@ $ \hfill #542 $ @@ $ \hfill %542 $ @
-int main() {
+};
+@ $ \hfill %7542 $ @int main() {
   int n, m; // solves Mechanics Practice LAZY
   cin >> n >> m;
   SegTree seg_tree(1 << 17);
@@ -1701,11 +1710,11 @@ class dummy {
  public:
   dummy() {}
   dummy(int, int) {}
-  void set(int, int) {}@ $ \hfill #531 $ @
+  void set(int, int) {}@ $ \hfill #9531 $ @
   int query(int left, int right) {
     cout << this << ' ' << left << ' ' << right << endl;
   }
-};@ $ \hfill %932 $ @
+};@ $ \hfill %7932 $ @
 /* T should be the type of the data stored in each vertex;
  * DS should be the underlying data structure that is used to peform
  * the group operation. It should have the following methods:
@@ -1721,85 +1730,85 @@ template <typename T, class DS>
 class HLD {
   int vertexc;
   vector<int> *adj;
-  vector<int> subtree_size;@ $ \hfill #178 $ @
+  vector<int> subtree_size;@ $ \hfill #6178 $ @
   DS structure;
   DS aux;
   void build_sizes(int vertex, int parent) {
     subtree_size[vertex] = 1;
-    for (int child : adj[vertex]) {@ $ \hfill #037 $ @
+    for (int child : adj[vertex]) {@ $ \hfill #2037 $ @
       if (child != parent) {
         build_sizes(child, vertex);
         subtree_size[vertex] += subtree_size[child];
       }
-    }@ $ \hfill #759 $ @
+    }@ $ \hfill #6759 $ @
   }
   int cur;
   vector<int> ord;
   vector<int> chain_root;
-  vector<int> par;@ $ \hfill #593 $ @
+  vector<int> par;@ $ \hfill #9593 $ @
   void build_hld(int vertex, int parent, int chain_source) {
     cur++;
     ord[vertex] = cur;
     chain_root[vertex] = chain_source;
-    par[vertex] = parent;@ $ \hfill #432 $ @
+    par[vertex] = parent;@ $ \hfill #0432 $ @
     if (adj[vertex].size() > 1 ||
         (vertex == 1 && adj[vertex].size() == 1)) {
       int big_child, big_size = -1;
       for (int child : adj[vertex]) {
-        if ((child != parent) && (subtree_size[child] > big_size)) {@ $ \hfill #042 $ @
-          big_child = child;
+        if ((child != parent) && (subtree_size[child] > big_size)) {
+          big_child = child;@ $ \hfill #9151 $ @
           big_size = subtree_size[child];
         }
       }
-      build_hld(big_child, vertex, chain_source);@ $ \hfill #254 $ @
-      for (int child : adj[vertex]) {
+      build_hld(big_child, vertex, chain_source);
+      for (int child : adj[vertex]) {@ $ \hfill #3027 $ @
         if ((child != parent) && (child != big_child))
           build_hld(child, vertex, child);
       }
-    }@ $ \hfill #461 $ @
-  }
+    }
+  }@ $ \hfill #8562 $ @
  public:
   HLD(int _vertexc) {
     vertexc = _vertexc;
-    adj = new vector<int>[vertexc + 5];@ $ \hfill #800 $ @
-  }
+    adj = new vector<int>[vertexc + 5];
+  }@ $ \hfill #3486 $ @
   void add_edge(int u, int v) {
     adj[u].push_back(v);
     adj[v].push_back(u);
-  }@ $ \hfill #587 $ @
-  void build(T initial) {
+  }
+  void build(T initial) {@ $ \hfill #4566 $ @
     subtree_size = vector<int>(vertexc + 5);
     ord = vector<int>(vertexc + 5);
     chain_root = vector<int>(vertexc + 5);
-    par = vector<int>(vertexc + 5);@ $ \hfill #976 $ @
-    cur = 0;
+    par = vector<int>(vertexc + 5);
+    cur = 0;@ $ \hfill #2693 $ @
     build_sizes(1, -1);
     build_hld(1, -1, 1);
     structure = DS(vertexc + 5, initial);
-    aux = DS(50, initial);@ $ \hfill #638 $ @
-  }
+    aux = DS(50, initial);
+  }@ $ \hfill #7758 $ @
   void set(int vertex, int value) {
     structure.set(ord[vertex], value);
   }
-  T query_path(@ $ \hfill #325 $ @
+  T query_path(
     int u, int v) { /* returns the "sum" of the path u->v */
-    int cur_id = 0;
+    int cur_id = 0;@ $ \hfill #4754 $ @
     while (chain_root[u] != chain_root[v]) {
       if (ord[u] > ord[v]) {
-        cur_id++;@ $ \hfill #052 $ @
+        cur_id++;
         aux.set(cur_id, structure.query(ord[chain_root[u]], ord[u]));
-        u = par[chain_root[u]];
+        u = par[chain_root[u]];@ $ \hfill #4538 $ @
       } else {
         cur_id++;
-        aux.set(cur_id, structure.query(ord[chain_root[v]], ord[v]));@ $ \hfill #485 $ @
+        aux.set(cur_id, structure.query(ord[chain_root[v]], ord[v]));
         v = par[chain_root[v]];
-      }
+      }@ $ \hfill #1595 $ @
     }
     cur_id++;
-    aux.set(cur_id,@ $ \hfill #041 $ @
+    aux.set(cur_id,
       structure.query(min(ord[u], ord[v]), max(ord[u], ord[v])));
-    return aux.query(1, cur_id);
-  }@ $ \hfill %905 $ @
+    return aux.query(1, cur_id);@ $ \hfill #7150 $ @
+  }@ $ \hfill %1905 $ @
   void print() {
     for (int i = 1; i <= vertexc; i++)
       cout << i << ' ' << ord[i] << ' ' << chain_root[i] << ' '
@@ -1835,54 +1844,54 @@ template <typename elem_t, typename coord_t, coord_t n_inf,
   typename ret_t>
 class BIT {
   vector<coord_t> positions;
-  vector<elem_t> elems;@ $ \hfill #324 $ @
+  vector<elem_t> elems;@ $ \hfill #6324 $ @
   bool initiated = false;
  public:
   BIT() { positions.push_back(n_inf); }
   void initiate() {
-    if (initiated) {@ $ \hfill #330 $ @
+    if (initiated) {@ $ \hfill #7330 $ @
       for (elem_t &c_elem : elems) c_elem.initiate();
     } else {
       initiated = true;
       sort(positions.begin(), positions.end());
-      positions.resize(unique(positions.begin(), positions.end()) -@ $ \hfill #822 $ @
-                       positions.begin());
+      positions.resize(unique(positions.begin(), positions.end()) -
+                       positions.begin());@ $ \hfill #0556 $ @
       elems.resize(positions.size());
     }
   }
-  template <typename... loc_form>@ $ \hfill #620 $ @
-  void update(coord_t cord, loc_form... args) {
+  template <typename... loc_form>
+  void update(coord_t cord, loc_form... args) {@ $ \hfill #3679 $ @
     if (initiated) {
       int pos =
         lower_bound(positions.begin(), positions.end(), cord) -
-        positions.begin();@ $ \hfill #346 $ @
+        positions.begin();
       for (; pos < positions.size(); pos += pos & -pos)
-        elems[pos].update(args...);
+        elems[pos].update(args...);@ $ \hfill #6433 $ @
     } else {
       positions.push_back(cord);
-    }@ $ \hfill #542 $ @
+    }
   }
-  template <typename... loc_form>
+  template <typename... loc_form>@ $ \hfill #9641 $ @
   ret_t query(coord_t cord,
     loc_form... args) { // sum in open interval (-inf, cord)
-    ret_t res = 0;@ $ \hfill #326 $ @
+    ret_t res = 0;
     int pos = (lower_bound(positions.begin(), positions.end(), cord) -
-                positions.begin()) -
+                positions.begin()) -@ $ \hfill #3911 $ @
               1;
     for (; pos > 0; pos -= pos & -pos)
-      res += elems[pos].query(args...);@ $ \hfill #549 $ @
+      res += elems[pos].query(args...);
     return res;
-  }
+  }@ $ \hfill #8137 $ @
 };
 template <typename internal_type>
-struct wrapped {@ $ \hfill #616 $ @
+struct wrapped {
   internal_type a = 0;
-  void update(internal_type b) { a += b; }
+  void update(internal_type b) { a += b; }@ $ \hfill #9484 $ @
   internal_type query() { return a; }
   // Should never be called, needed for compilation
   void initiate() { cerr << 'i' << endl; }
-  void update() { cerr << 'u' << endl; }@ $ \hfill #636 $ @
-};@ $ \hfill %714 $ @
+  void update() { cerr << 'u' << endl; }
+};@ $ \hfill %3714 $ @
 int main() {
   // retun type should be same as type inside wrapped
   BIT<BIT<wrapped<ll>, int, INT_MIN, ll>, int, INT_MIN, ll> fenwick;
@@ -1908,84 +1917,84 @@ mt19937 randgen;
 struct Treap {
   struct Node {
     int key;
-    int value;@ $ \hfill #615 $ @
+    int value;@ $ \hfill #5615 $ @
     unsigned int priority;
     long long total;
     Node* lch;
     Node* rch;
-    Node(int new_key, int new_value) {@ $ \hfill #698 $ @
+    Node(int new_key, int new_value) {@ $ \hfill #5698 $ @
       key = new_key;
       value = new_value;
       priority = randgen();
       total = new_value;
-      lch = 0;@ $ \hfill #232 $ @
+      lch = 0;@ $ \hfill #7232 $ @
       rch = 0;
     }
     void update() {
       total = value;
-      if (lch) total += lch->total;@ $ \hfill #295 $ @
+      if (lch) total += lch->total;@ $ \hfill #4295 $ @
       if (rch) total += rch->total;
     }
   };
   deque<Node> nodes;
-  Node* root = 0;@ $ \hfill #633 $ @
+  Node* root = 0;@ $ \hfill #9633 $ @
   pair<Node*, Node*> split(int key, Node* cur) {
     if (cur == 0) return {0, 0};
     pair<Node*, Node*> result;
     if (key <= cur->key) {
-      auto ret = split(key, cur->lch);@ $ \hfill #233 $ @
+      auto ret = split(key, cur->lch);@ $ \hfill #5233 $ @
       cur->lch = ret.second;
       result = {ret.first, cur};
     } else {
       auto ret = split(key, cur->rch);
-      cur->rch = ret.first;@ $ \hfill #988 $ @
+      cur->rch = ret.first;@ $ \hfill #6988 $ @
       result = {cur, ret.second};
     }
     cur->update();
     return result;
-  }@ $ \hfill #230 $ @
+  }@ $ \hfill #7230 $ @
   Node* merge(Node* left, Node* right) {
     if (left == 0) return right;
     if (right == 0) return left;
     Node* top;
-    if (left->priority < right->priority) {@ $ \hfill #282 $ @
+    if (left->priority < right->priority) {@ $ \hfill #6282 $ @
       left->rch = merge(left->rch, right);
       top = left;
     } else {
       right->lch = merge(left, right->lch);
-      top = right;@ $ \hfill #510 $ @
+      top = right;@ $ \hfill #3510 $ @
     }
     top->update();
     return top;
   }
-  void insert(int key, int value) {@ $ \hfill #918 $ @
+  void insert(int key, int value) {@ $ \hfill #8918 $ @
     nodes.push_back(Node(key, value));
     Node* cur = &nodes.back();
     pair<Node*, Node*> ret = split(key, root);
     cur = merge(ret.first, cur);
-    cur = merge(cur, ret.second);@ $ \hfill #760 $ @
+    cur = merge(cur, ret.second);@ $ \hfill #9760 $ @
     root = cur;
   }
   void erase(int key) {
     Node *left, *mid, *right;
-    tie(left, mid) = split(key, root);@ $ \hfill #416 $ @
+    tie(left, mid) = split(key, root);@ $ \hfill #1416 $ @
     tie(mid, right) = split(key + 1, mid);
     root = merge(left, right);
   }
   long long sum_upto(int key, Node* cur) {
-    if (cur == 0) return 0;@ $ \hfill #634 $ @
+    if (cur == 0) return 0;@ $ \hfill #7634 $ @
     if (key <= cur->key) {
       return sum_upto(key, cur->lch);
     } else {
       long long result = cur->value + sum_upto(key, cur->rch);
-      if (cur->lch) result += cur->lch->total;@ $ \hfill #122 $ @
+      if (cur->lch) result += cur->lch->total;@ $ \hfill #8122 $ @
       return result;
     }
   }
   long long get(int l, int r) {
-    return sum_upto(r + 1, root) - sum_upto(l, root);@ $ \hfill #509 $ @
-  }
-};@ $ \hfill %959 $ @
+    return sum_upto(r + 1, root) - sum_upto(l, root);
+  }@ $ \hfill #0094 $ @
+};@ $ \hfill %4959 $ @
 // Solution for:
 // http://codeforces.com/group/UO1GDa2Gwb/contest/219104/problem/TREAP
 int main() {
@@ -2020,43 +2029,43 @@ typedef unsigned char uchar;
 template <typename T>
 void msd_radixsort(
   T *start, T *sec_start, int arr_size, int d = sizeof(T) - 1) {
-  const int msd_radix_lim = 100;@ $ \hfill #866 $ @
+  const int msd_radix_lim = 100;@ $ \hfill #4866 $ @
   const T mask = 255;
   int bucket_sizes[256]{};
   for (T *it = start; it != start + arr_size; ++it) {
     ++bucket_sizes[((*it) >> (d * 8)) & mask];
-    //++bucket_sizes[*((uchar*)it+d)];
-  }@ $ \hfill #772 $ @
+    //++bucket\_sizes[*((uchar*)it+d)];
+  }@ $ \hfill #8772 $ @
   T *locs_mem[257];
   locs_mem[0] = sec_start;
   T **locs = locs_mem + 1;
   locs[0] = sec_start;
-  for (int j = 0; j < 255; ++j) {@ $ \hfill #818 $ @
+  for (int j = 0; j < 255; ++j) {@ $ \hfill #5818 $ @
     locs[j + 1] = locs[j] + bucket_sizes[j];
   }
   for (T *it = start; it != start + arr_size; ++it) {
     uchar bucket_id = ((*it) >> (d * 8)) & mask;
-    *(locs[bucket_id]++) = *it;@ $ \hfill #361 $ @
+    *(locs[bucket_id]++) = *it;@ $ \hfill #6361 $ @
   }
   locs = locs_mem;
   if (d) {
     T *locs_old[256];
-    locs_old[0] = start;@ $ \hfill #153 $ @
+    locs_old[0] = start;@ $ \hfill #3153 $ @
     for (int j = 0; j < 255; ++j) {
       locs_old[j + 1] = locs_old[j] + bucket_sizes[j];
     }
     for (int j = 0; j < 256; ++j) {
-      if (locs[j + 1] - locs[j] < msd_radix_lim) {@ $ \hfill #867 $ @
-        std::sort(locs[j], locs[j + 1]);
+      if (locs[j + 1] - locs[j] < msd_radix_lim) {
+        std::sort(locs[j], locs[j + 1]);@ $ \hfill #1018 $ @
         if (d & 1) {
           copy(locs[j], locs[j + 1], locs_old[j]);
         }
-      } else {@ $ \hfill #946 $ @
+      } else {
         msd_radixsort(locs[j], locs_old[j], bucket_sizes[j], d - 1);
-      }
+      }@ $ \hfill #9206 $ @
     }
   }
-}@ $ \hfill %225 $ @
+}@ $ \hfill %1225 $ @
 const int nmax = 5e7;
 ll arr[nmax], tmp[nmax];
 int main() {
@@ -2072,123 +2081,123 @@ struct Complex {
   double a = 0, b = 0;
   Complex &operator/=(const int &oth) {
     a /= oth;
-    b /= oth;@ $ \hfill #139 $ @
+    b /= oth;@ $ \hfill #1139 $ @
     return *this;
   }
 };
 Complex operator+(const Complex &lft, const Complex &rgt) {
-  return Complex{lft.a + rgt.a, lft.b + rgt.b};@ $ \hfill #384 $ @
+  return Complex{lft.a + rgt.a, lft.b + rgt.b};@ $ \hfill #8384 $ @
 }
 Complex operator-(const Complex &lft, const Complex &rgt) {
   return Complex{lft.a - rgt.a, lft.b - rgt.b};
 }
-Complex operator*(const Complex &lft, const Complex &rgt) {@ $ \hfill #560 $ @
-  return Complex{
+Complex operator*(const Complex &lft, const Complex &rgt) {
+  return Complex{@ $ \hfill #5371 $ @
     lft.a * rgt.a - lft.b * rgt.b, lft.a * rgt.b + lft.b * rgt.a};
 }
 Complex conj(const Complex &cur) { return Complex{cur.a, -cur.b}; }
-void fft_rec(Complex *arr, Complex *root_pow, int len) {@ $ \hfill #385 $ @
-  if (len != 1) {
+void fft_rec(Complex *arr, Complex *root_pow, int len) {
+  if (len != 1) {@ $ \hfill #7637 $ @
     fft_rec(arr, root_pow, len >> 1);
     fft_rec(arr + len, root_pow, len >> 1);
   }
-  root_pow += len;@ $ \hfill #216 $ @
-  for (int i = 0; i < len; ++i) {
+  root_pow += len;
+  for (int i = 0; i < len; ++i) {@ $ \hfill #0670 $ @
     Complex tmp = arr[i] + root_pow[i] * arr[i + len];
     arr[i + len] = arr[i] - root_pow[i] * arr[i + len];
     arr[i] = tmp;
-  }@ $ \hfill #249 $ @
-}
+  }
+}@ $ \hfill #7078 $ @
 void fft(vector<Complex> &arr, int ord, bool invert) {
   assert(arr.size() == 1 << ord);
   static vector<Complex> root_pow(1);
-  static int inc_pow = 1;@ $ \hfill #669 $ @
-  static bool is_inv = false;
+  static int inc_pow = 1;
+  static bool is_inv = false;@ $ \hfill #0102 $ @
   if (inc_pow <= ord) {
     int idx = root_pow.size();
     root_pow.resize(1 << ord);
-    for (; inc_pow <= ord; ++inc_pow) {@ $ \hfill #517 $ @
-      for (int idx_p = 0; idx_p < 1 << (ord - 1);
+    for (; inc_pow <= ord; ++inc_pow) {
+      for (int idx_p = 0; idx_p < 1 << (ord - 1);@ $ \hfill #3349 $ @
            idx_p += 1 << (ord - inc_pow), ++idx) {
         root_pow[idx] = Complex{cos(-idx_p * M_PI / (1 << (ord - 1))),
           sin(-idx_p * M_PI / (1 << (ord - 1)))};
-        if (is_inv) root_pow[idx].b = -root_pow[idx].b;@ $ \hfill #105 $ @
-      }
+        if (is_inv) root_pow[idx].b = -root_pow[idx].b;
+      }@ $ \hfill #6357 $ @
     }
   }
   if (invert != is_inv) {
-    is_inv = invert;@ $ \hfill #750 $ @
-    for (Complex &cur : root_pow) cur.b = -cur.b;
+    is_inv = invert;
+    for (Complex &cur : root_pow) cur.b = -cur.b;@ $ \hfill #7526 $ @
   }
   for (int i = 1, j = 0; i < (1 << ord); ++i) {
     int m = 1 << (ord - 1);
-    bool cont = true;@ $ \hfill #122 $ @
-    while (cont) {
+    bool cont = true;
+    while (cont) {@ $ \hfill #0510 $ @
       cont = j & m;
       j ^= m;
       m >>= 1;
-    }@ $ \hfill #844 $ @
-    if (i < j) swap(arr[i], arr[j]);
+    }
+    if (i < j) swap(arr[i], arr[j]);@ $ \hfill #0506 $ @
   }
   fft_rec(arr.data(), root_pow.data(), 1 << (ord - 1));
   if (invert)
-    for (int i = 0; i < (1 << ord); ++i) arr[i] /= (1 << ord);@ $ \hfill #343 $ @
-}@ $ \hfill %380 $ @
+    for (int i = 0; i < (1 << ord); ++i) arr[i] /= (1 << ord);
+}@ $ \hfill #4380 $ @@ $ \hfill %4380 $ @
 void mult_poly_mod(
   vector<int> &a, vector<int> &b, vector<int> &c) { // c += a*b
   static vector<Complex>
     arr[4]; // correct upto 0.5-2M elements(mod ~= 1e9)
-  if (c.size() < 400) {@ $ \hfill #811 $ @
+  if (c.size() < 400) {@ $ \hfill #8811 $ @
     for (int i = 0; i < a.size(); ++i)
       for (int j = 0; j < b.size() && i + j < c.size(); ++j)
         c[i + j] = ((ll)a[i] * b[j] + c[i + j]) % mod;
   } else {
-    int fft_ord = 32 - __builtin_clz(c.size());@ $ \hfill #629 $ @
+    int fft_ord = 32 - __builtin_clz(c.size());@ $ \hfill #4629 $ @
     if (arr[0].size() != 1 << fft_ord)
       for (int i = 0; i < 4; ++i) arr[i].resize(1 << fft_ord);
     for (int i = 0; i < 4; ++i)
       fill(arr[i].begin(), arr[i].end(), Complex{});
-    for (int &cur : a)@ $ \hfill #591 $ @
+    for (int &cur : a)@ $ \hfill #9591 $ @
       if (cur < 0) cur += mod;
     for (int &cur : b)
       if (cur < 0) cur += mod;
     const int shift = 15;
-    const int mask = (1 << shift) - 1;@ $ \hfill #625 $ @
+    const int mask = (1 << shift) - 1;@ $ \hfill #2625 $ @
     for (int i = 0; i < min(a.size(), c.size()); ++i) {
       arr[0][i].a = a[i] & mask;
       arr[1][i].a = a[i] >> shift;
     }
-    for (int i = 0; i < min(b.size(), c.size()); ++i) {@ $ \hfill #528 $ @
-      arr[0][i].b = b[i] & mask;
+    for (int i = 0; i < min(b.size(), c.size()); ++i) {
+      arr[0][i].b = b[i] & mask;@ $ \hfill #3501 $ @
       arr[1][i].b = b[i] >> shift;
     }
     for (int i = 0; i < 2; ++i) fft(arr[i], fft_ord, false);
-    for (int i = 0; i < 2; ++i) {@ $ \hfill #644 $ @
-      for (int j = 0; j < 2; ++j) {
+    for (int i = 0; i < 2; ++i) {
+      for (int j = 0; j < 2; ++j) {@ $ \hfill #9971 $ @
         int tar = 2 + (i + j) / 2;
         Complex mult = {0, -0.25};
         if (i ^ j) mult = {0.25, 0};
-        for (int k = 0; k < (1 << fft_ord); ++k) {@ $ \hfill #983 $ @
+        for (int k = 0; k < (1 << fft_ord); ++k) {
           int rev_k = ((1 << fft_ord) - k) % (1 << fft_ord);
           Complex ca = arr[i][k] + conj(arr[i][rev_k]);
           Complex cb = arr[j][k] - conj(arr[j][rev_k]);
           arr[tar][k] = arr[tar][k] + mult * ca * cb;
-        }@ $ \hfill #471 $ @
+        }@ $ \hfill #4471 $ @
       }
     }
     for (int i = 2; i < 4; ++i) {
       fft(arr[i], fft_ord, true);
-      for (int k = 0; k < (int)c.size(); ++k) {@ $ \hfill #403 $ @
+      for (int k = 0; k < (int)c.size(); ++k) {@ $ \hfill #8403 $ @
         c[k] = (c[k] + (((ll)(arr[i][k].a + 0.5) % mod)
                          << (shift * 2 * (i - 2)))) %
                mod;
         c[k] = (c[k] + (((ll)(arr[i][k].b + 0.5) % mod)
-                         << (shift * (2 * (i - 2) + 1)))) %@ $ \hfill #108 $ @
-               mod;
+                         << (shift * (2 * (i - 2) + 1)))) %
+               mod;@ $ \hfill #8289 $ @
       }
     }
   }
-}@ $ \hfill %231 $ @
+}@ $ \hfill %1231 $ @
 \end{minted}
 \section{Fast mod mult, Rabbin Miller prime check, Pollard rho factorization $\mathcal{O}(\sqrt{p})$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
@@ -2196,112 +2205,112 @@ struct ModArithm {
   ull n;
   ld rec;
   ModArithm(ull _n) : n(_n) { // n in [2, 1<<63)
-    rec = 1.0L / n;@ $ \hfill #237 $ @
+    rec = 1.0L / n;@ $ \hfill #0237 $ @
   }
   ull multf(ull a, ull b) { // a, b in [0, min(2*n, 1<<63))
     ull mult = (ld)a * b * rec + 0.5L;
     ll res = a * b - mult * n;
-    if (res < 0) res += n;@ $ \hfill #780 $ @
+    if (res < 0) res += n;@ $ \hfill #0780 $ @
     return res; // in [0, n-1)
   }
   ull sqp1(ull a) { return multf(a, a) + 1; }
-};@ $ \hfill %493 $ @
+};@ $ \hfill %9493 $ @
 ull pow_mod(ull a, ull n, ModArithm &arithm) {
   ull res = 1;
   for (ull i = 1; i <= n; i <<= 1) {
     if (n & i) res = arithm.multf(res, a);
-    a = arithm.multf(a, a);@ $ \hfill #758 $ @
+    a = arithm.multf(a, a);@ $ \hfill #1758 $ @
   }
   return res;
-}@ $ \hfill %144 $ @
+}@ $ \hfill %2144 $ @
 vector<char> small_primes = {
   2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
 bool is_prime(ull n) { // n <= 1<<63, 1M rand/s
   ModArithm arithm(n);
-  if (n == 2 || n == 3) return true;@ $ \hfill #104 $ @
+  if (n == 2 || n == 3) return true;@ $ \hfill #8104 $ @
   if (!(n & 1) || n == 1) return false;
   ull s = __builtin_ctz(n - 1);
   ull d = (n - 1) >> s;
   for (ull a : small_primes) {
-    if (a >= n) break;@ $ \hfill #402 $ @
+    if (a >= n) break;@ $ \hfill #6402 $ @
     a = pow_mod(a, d, arithm);
     if (a == 1 || a == n - 1) continue;
     for (ull r = 1; r < s; ++r) {
       a = arithm.multf(a, a);
-      if (a == 1) return false;@ $ \hfill #876 $ @
+      if (a == 1) return false;@ $ \hfill #0876 $ @
       if (a == n - 1) break;
     }
     if (a != n - 1) return false;
   }
-  return true;@ $ \hfill #806 $ @
-}@ $ \hfill %975 $ @
+  return true;@ $ \hfill #4806 $ @
+}@ $ \hfill %0975 $ @
 ll pollard_rho(ll n) {
   ModArithm arithm(n);
   int cum_cnt = 64 - __builtin_clz(n);
   cum_cnt *= cum_cnt / 5 + 1;
-  while (true) {@ $ \hfill #118 $ @
+  while (true) {@ $ \hfill #2118 $ @
     ll lv = rand() % n;
     ll v = arithm.sqp1(lv);
     int idx = 1;
     int tar = 1;
-    while (true) {@ $ \hfill #290 $ @
+    while (true) {@ $ \hfill #5290 $ @
       ll cur = 1;
       ll v_cur = v;
       int j_stop = min(cum_cnt, tar - idx);
       for (int j = 0; j < j_stop; ++j) {
-        cur = arithm.multf(cur, abs(v_cur - lv));@ $ \hfill #468 $ @
+        cur = arithm.multf(cur, abs(v_cur - lv));@ $ \hfill #4468 $ @
         v_cur = arithm.sqp1(v_cur);
         ++idx;
       }
       if (!cur) {
-        for (int j = 0; j < cum_cnt; ++j) {@ $ \hfill #912 $ @
+        for (int j = 0; j < cum_cnt; ++j) {@ $ \hfill #7912 $ @
           ll g = __gcd(abs(v - lv), n);
           if (g == 1) {
             v = arithm.sqp1(v);
           } else if (g == n) {
-            break;@ $ \hfill #906 $ @
+            break;@ $ \hfill #0906 $ @
           } else {
             return g;
           }
         }
-        break;@ $ \hfill #208 $ @
+        break;@ $ \hfill #7208 $ @
       } else {
         ll g = __gcd(cur, n);
         if (g != 1) return g;
       }
-      v = v_cur;@ $ \hfill #298 $ @
+      v = v_cur;@ $ \hfill #2298 $ @
       idx += j_stop;
       if (idx == tar) {
         lv = v;
         tar *= 2;
-        v = arithm.sqp1(v);@ $ \hfill #174 $ @
+        v = arithm.sqp1(v);@ $ \hfill #1174 $ @
         ++idx;
       }
     }
   }
-}@ $ \hfill %542 $ @
+}@ $ \hfill #3542 $ @@ $ \hfill %3542 $ @
 map<ll, int> prime_factor(ll n,
   map<ll, int> *res = NULL) { // n <= 1<<61, ~1000/s (<500/s on CF)
   if (!res) {
     map<ll, int> res_act;
-    for (int p : small_primes) {@ $ \hfill #770 $ @
+    for (int p : small_primes) {@ $ \hfill #3770 $ @
       while (!(n % p)) {
         ++res_act[p];
         n /= p;
       }
-    }@ $ \hfill #612 $ @
+    }@ $ \hfill #4612 $ @
     if (n != 1) prime_factor(n, &res_act);
     return res_act;
   }
   if (is_prime(n)) {
-    ++(*res)[n];@ $ \hfill #963 $ @
+    ++(*res)[n];@ $ \hfill #1963 $ @
   } else {
     ll factor = pollard_rho(n);
     prime_factor(factor, res);
     prime_factor(n / factor, res);
-  }@ $ \hfill #350 $ @
+  }@ $ \hfill #5350 $ @
   return map<ll, int>();
-} // Usage: fact = prime\_factor(n);$ \hfill %477 $
+} // Usage: fact = prime\\_factor(n);$ \hfill %5477 $
 \end{minted}
 \section{Symmetric Submodular Functions; Queyrannes's algorithm}
 \noindent {\bf SSF}: such function $f : V \rightarrow R$ that satisfies $f(A) = f(V/A)$
@@ -2353,36 +2362,36 @@ template <typename K>
 static vector<K> berlekamp_massey(vector<K> ss) {
   vector<K> ts(ss.size());
   vector<K> cs(ss.size());
-  cs[0] = K::unity;@ $ \hfill #349 $ @
+  cs[0] = K::unity;@ $ \hfill #0349 $ @
   fill(cs.begin() + 1, cs.end(), K::zero);
   vector<K> bs = cs;
   int l = 0, m = 1;
   K b = K::unity;
-  for (int k = 0; k < (int)ss.size(); k++) {@ $ \hfill #390 $ @
+  for (int k = 0; k < (int)ss.size(); k++) {@ $ \hfill #4390 $ @
     K d = ss[k];
     assert(l <= k);
     for (int i = 1; i <= l; i++) d += cs[i] * ss[k - i];
     if (d == K::zero) {
-      m++;@ $ \hfill #445 $ @
+      m++;@ $ \hfill #8445 $ @
     } else if (2 * l <= k) {
       K w = d / b;
       ts = cs;
       for (int i = 0; i < (int)cs.size() - m; i++)
-        cs[i + m] -= w * bs[i];@ $ \hfill #661 $ @
+        cs[i + m] -= w * bs[i];@ $ \hfill #9661 $ @
       l = k + 1 - l;
       swap(bs, ts);
       b = d;
       m = 1;
-    } else {@ $ \hfill #815 $ @
+    } else {@ $ \hfill #2815 $ @
       K w = d / b;
       for (int i = 0; i < (int)cs.size() - m; i++)
         cs[i + m] -= w * bs[i];
       m++;
-    }@ $ \hfill #888 $ @
+    }@ $ \hfill #8888 $ @
   }
   cs.resize(l + 1);
   while (cs.back() == K::zero) cs.pop_back();
   return cs;
-}@ $ \hfill %267 $ @
+}@ $ \hfill #6267 $ @@ $ \hfill %6267 $ @
 \end{minted}
 \end{document}

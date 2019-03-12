@@ -76,7 +76,7 @@ class Node {
   void calc_paths_to_end() { // Call ONCE from ROOT. For each node
                              // calculates number of ways to reach an
                              // end node.
-    if (!vis) { // paths\_to\_end is ocurence count for any strings in
+    if (!vis) { // paths_to_end is ocurence count for any strings in
                 // current suffix equivalence class.
       vis = true;
       for (auto cur : nxt_char) {

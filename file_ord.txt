@@ -2,8 +2,8 @@ header.tex
 setup.sh
 crc_simple.sh
 ordered_set.cpp
-geometry_section.tex
 triangle.cpp
+geometry_section.tex
 Library/Geometry/segment2d.h
 convex_hull.cpp
 delaunay.cpp
