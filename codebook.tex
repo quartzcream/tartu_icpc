@@ -1805,6 +1805,132 @@ int main() {
   }
 }
 \end{minted}
+\section{Splay Tree + Link-Cut $O(N\log{N})$}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+struct Tree *treev;
+struct Tree {
+  struct T {
+    int i;
+    constexpr T() : i(-1) {}@ $ \hfill #7635 $ @
+    T(int _i) : i(_i) {}
+    operator int() const { return i; }
+    explicit operator bool() const { return i != -1; }
+    Tree *operator->() { return treev + i; }
+  };@ $ \hfill #2337 $ @
+  T c[2], p;
+  /* insert monoid here */
+  /*lg*/ T link; /*rg*/
+  Tree() {
+    /* init monoid here */
+    /*lg*/ link = -1; /*rg*/
+  }@ $ \hfill #0939 $ @
+};
+using T = Tree::T;
+constexpr T NIL;
+void update(T t) { /* recalculate the monoid here */
+}@ $ \hfill #3006 $ @
+void propagate(T t) {
+  assert(t);
+  /*lg*/
+  for (T c : t->c)
+    if (c) c->link = t->link;
+  /*rg*/
+  /* lazily propagate updates here */
+}@ $ \hfill #8514 $ @
+/*lp*/
+void lazy_reverse(T t) { /* lazily reverse t here */
+}
+/*rp*/
+T splay(T n) {
+  for (;;) {
+    propagate(n);@ $ \hfill #3792 $ @
+    T p = n->p;
+    if (p == NIL) break;
+    propagate(p);
+    ll px = p->c[1] == n;
+    assert(p->c[px] == n);@ $ \hfill #0245 $ @
+    T g = p->p;
+    if (g == NIL) { /* zig */
+      p->c[px] = n->c[px ^ 1];
+      p->c[px]->p = p;
+      n->c[px ^ 1] = p;@ $ \hfill #4750 $ @
+      n->c[px ^ 1]->p = n;
+      n->p = NIL;
+      update(p);
+      update(n);
+      break;@ $ \hfill #8981 $ @
+    }
+    propagate(g);
+    ll gx = g->c[1] == p;
+    assert(g->c[gx] == p);
+    T gg = g->p;@ $ \hfill #5659 $ @
+    ll ggx = gg && gg->c[1] == g;
+    if (gg) assert(gg->c[ggx] == g);
+    if (gx == px) { /* zig zig */
+      g->c[gx] = p->c[gx ^ 1];
+      g->c[gx]->p = g;@ $ \hfill #5608 $ @
+      p->c[gx ^ 1] = g;
+      p->c[gx ^ 1]->p = p;
+      p->c[gx] = n->c[gx ^ 1];
+      p->c[gx]->p = p;
+      n->c[gx ^ 1] = p;@ $ \hfill #1439 $ @
+      n->c[gx ^ 1]->p = n;
+    } else { /* zig zag */
+      g->c[gx] = n->c[gx ^ 1];
+      g->c[gx]->p = g;
+      n->c[gx ^ 1] = g;@ $ \hfill #9140 $ @
+      n->c[gx ^ 1]->p = n;
+      p->c[gx ^ 1] = n->c[gx];
+      p->c[gx ^ 1]->p = p;
+      n->c[gx] = p;
+      n->c[gx]->p = n;@ $ \hfill #2928 $ @
+    }
+    if (gg) gg->c[ggx] = n;
+    n->p = gg;
+    update(g);
+    update(p);@ $ \hfill #9645 $ @
+    update(n);
+    if (gg) update(gg);
+  }
+  return n;
+}@ $ \hfill #4920 $ @
+T extreme(T t, int x) {
+  while (t->c[x]) t = t->c[x];
+  return t;
+}
+T set_child(T t, int x, T a) {@ $ \hfill #2821 $ @
+  T o = t->c[x];
+  t->c[x] = a;
+  update(t);
+  o->p = NIL;
+  a->p = t;@ $ \hfill #4262 $ @
+  return o;
+}
+/************* Link-Cut Tree: **************/
+T expose(T t) {
+  set_child(splay(t), 1, NIL);
+  T leader = splay(extreme(t, 0));
+  if (leader->link == NIL) return t;
+  set_child(splay(leader), 0, expose(leader->link));
+  return splay(t);
+}
+void link(T t, T p) {
+  assert(t->link == NIL);
+  t->link = p;
+}
+T cut(T t) {
+  T p = t->link;
+  if (p) expose(p);
+  t->link = NIL;
+  return p;
+}
+/*lp*/
+void make_root(T t) {
+  expose(t);
+  lazy_reverse(extreme(splay(t), 0));@ $ \hfill #4240 $ @
+}
+/*rp*/@ $ \hfill %8430 $ @
+\end{minted}
 \section{Templated multi dimensional BIT $\mathcal{O}(\log(n)^\text{dim})$ per query}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 // Fully overloaded any dimensional BIT, use any type for coordinates,

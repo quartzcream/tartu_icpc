@@ -16,6 +16,7 @@ bridges.cpp
 2sat.cpp
 general_seg_tree.cpp
 HLD.cpp
+linkcut.cpp
 multi_dim_fenwick.cpp
 treap.cpp
 radixsort.cpp
