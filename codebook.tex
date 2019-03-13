@@ -281,97 +281,89 @@ Vec intersection(Seg l, Seg r) {@ $ \hfill #6327 $ @
   return l.a + dl * (h / -dh);@ $ \hfill #8893 $ @
 }
 // Returns the area bounded by halfplanes
-double calc_area(vector<Seg> lines) {
+double calc_area(const vector<Seg>& lines) {
   double lb = -HUGE_VAL, ub = HUGE_VAL;
-  vector<Seg> linesBySide[2];
-  for (auto line : lines) {@ $ \hfill #2454 $ @
+  vector<Seg> slines[2];
+  for (auto line : lines) {@ $ \hfill #1804 $ @
     if (line.b.y == line.a.y) {
       if (line.a.x < line.b.x) {
         lb = max(lb, line.a.y);
       } else {
-        ub = min(ub, line.a.y);@ $ \hfill #5029 $ @
+        ub = min(ub, line.a.y);@ $ \hfill #6288 $ @
       }
     } else if (line.a.y < line.b.y) {
-      linesBySide[1].push_back(line);
+      slines[1].push_back(line);
     } else {
-      linesBySide[0].push_back({line.b, line.a});@ $ \hfill #0613 $ @
+      slines[0].push_back({line.b, line.a});@ $ \hfill #3607 $ @
     }
   }
-  sort(
-    linesBySide[0].begin(), linesBySide[0].end(), [](Seg l, Seg r) {
-      if (cross(l.d(), r.d()) == 0)@ $ \hfill #0123 $ @
+  ran(i, 0, 2) {
+    sort(slines[i].begin(), slines[i].end(), [&](Seg l, Seg r) {
+      if (cross(l.d(), r.d()) == 0)@ $ \hfill #4919 $ @
         return normal(l.d()) * l.a > normal(r.d()) * r.a;
-      return cross(l.d(), r.d()) < 0;
+      return (1 - 2 * i) * cross(l.d(), r.d()) < 0;
     });
-  sort(
-    linesBySide[1].begin(), linesBySide[1].end(), [](Seg l, Seg r) {
-      if (cross(l.d(), r.d()) == 0)@ $ \hfill #9277 $ @
-        return normal(l.d()) * l.a < normal(r.d()) * r.a;
-      return cross(l.d(), r.d()) > 0;
-    });
+  }
   // Now find the application area of the lines and clean up redundant
   // ones
-  vector<double> applyStart[2];
-  for (int side = 0; side < 2; side++) {@ $ \hfill #3617 $ @
-    vector<double> &apply = applyStart[side];
-    vector<Seg> curLines;
-    for (auto line : linesBySide[side]) {
-      while (curLines.size() > 0) {
-        Seg other = curLines.back();@ $ \hfill #2919 $ @
+  vector<double> ap_s[2];@ $ \hfill #9949 $ @
+  ran(side, 0, 2) {
+    vector<double>& apply = ap_s[side];
+    vector<Seg> clines;
+    for (auto line : slines[side]) {
+      while (clines.size() > 0) {@ $ \hfill #3099 $ @
+        Seg other = clines.back();
         if (cross(line.d(), other.d()) != 0) {
           double start = intersection(line, other).y;
           if (start > apply.back()) break;
-        }
-        curLines.pop_back();@ $ \hfill #3443 $ @
+        }@ $ \hfill #7856 $ @
+        clines.pop_back();
         apply.pop_back();
       }
-      if (curLines.size() == 0) {
-        apply.push_back(-HUGE_VAL);
-      } else {@ $ \hfill #1841 $ @
-        apply.push_back(intersection(line, curLines.back()).y);
+      if (clines.size() == 0) {
+        apply.push_back(-HUGE_VAL);@ $ \hfill #0868 $ @
+      } else {
+        apply.push_back(intersection(line, clines.back()).y);
       }
-      curLines.push_back(line);
-    }
-    linesBySide[side] = curLines;@ $ \hfill #1880 $ @
+      clines.push_back(line);
+    }@ $ \hfill #8545 $ @
+    slines[side] = clines;
   }
-  applyStart[0].push_back(HUGE_VALL);
-  applyStart[1].push_back(HUGE_VALL);
-  double result = 0;
-  {@ $ \hfill #4257 $ @
+  ap_s[0].push_back(HUGE_VALL);
+  ap_s[1].push_back(HUGE_VALL);
+  double result = 0;@ $ \hfill #3234 $ @
+  {
     double lb = -HUGE_VALL, ub;
-    for (int i = 0, j = 0; i < (int)linesBySide[0].size() &&
-                           j < (int)linesBySide[1].size();
-         lb = ub) {
-      ub = min(applyStart[0][i + 1], applyStart[1][j + 1]);
-      double alb = lb, aub = ub;@ $ \hfill #4728 $ @
-      Seg l0 = linesBySide[0][i], l1 = linesBySide[1][j];
-      if (cross(l1.d(), l0.d()) > 0) {
-        alb = max(alb, intersection(l0, l1).y);
-      } else if (cross(l1.d(), l0.d()) < 0) {
-        aub = min(aub, intersection(l0, l1).y);@ $ \hfill #9292 $ @
+    for (int i = 0, j = 0;
+         i < (int)slines[0].size() && j < (int)slines[1].size();
+         lb = ub) {@ $ \hfill #4531 $ @
+      ub = min(ap_s[0][i + 1], ap_s[1][j + 1]);
+      double alb = lb, aub = ub;
+      Seg l[2] = {slines[0][i], slines[1][j]};
+      if (cross(l[1].d(), l[0].d()) > 0) {
+        alb = max(alb, intersection(l[0], l[1]).y);
+      } else if (cross(l[1].d(), l[0].d()) < 0) {@ $ \hfill #2627 $ @
+        aub = min(aub, intersection(l[0], l[1]).y);
       }
       alb = max(alb, lb);
       aub = min(aub, ub);
-      aub = max(aub, alb);
-      {@ $ \hfill #9556 $ @
-        double x1 = l0.a.x + (alb - l0.a.y) / l0.d().y * l0.d().x;
-        double x2 = l0.a.x + (aub - l0.a.y) / l0.d().y * l0.d().x;
-        result -= (aub - alb) * (x1 + x2) / 2;
-      }
-      {@ $ \hfill #2735 $ @
-        double x1 = l1.a.x + (alb - l1.a.y) / l1.d().y * l1.d().x;
-        double x2 = l1.a.x + (aub - l1.a.y) / l1.d().y * l1.d().x;
-        result += (aub - alb) * (x1 + x2) / 2;
-      }
-      if (applyStart[0][i + 1] < applyStart[1][j + 1]) {
-        i++;@ $ \hfill #9855 $ @
+      aub = max(aub, alb);@ $ \hfill #8493 $ @
+      ran(k, 0, 2) {
+        double x1 =
+          l[0].a.x + (alb - l[0].a.y) / l[0].d().y * l[0].d().x;
+        double x2 =
+          l[0].a.x + (aub - l[0].a.y) / l[0].d().y * l[0].d().x;
+        result += (-1 + 2 * k) * (aub - alb) * (x1 + x2) / 2;
+      }@ $ \hfill #9267 $ @
+      if (ap_s[0][i + 1] < ap_s[1][j + 1]) {
+        i++;
       } else {
         j++;
-      }
+      }@ $ \hfill #3074 $ @
     }
-  }@ $ \hfill #5549 $ @
+  }
   return result;
-}@ $ \hfill %5103 $ @
+}@ $ \hfill %0513 $ @
 \end{minted}
 \section{Convex polygon algorithms}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
@@ -843,46 +835,43 @@ int main() {
 \end{minted}
 \section{Suffix automaton and tree $\mathcal{O}((n+q)\log(|\text{alpha}|))$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
-class Node {
- private:
-  map<char, Node *>
-    nxt_char; // Map is faster than hashtable and unsorted arrays
- public:@ $ \hfill #4994 $ @
+struct Node {
+  map<char, Node *> nxt_char;
+  // Map is faster than hashtable and unsorted arrays
   int len; // Length of longest suffix in equivalence class.
   Node *suf;
   bool has_nxt(char c) const { return nxt_char.count(c); }
-  Node *nxt(char c) {
-    if (!has_nxt(c)) return NULL;@ $ \hfill #3788 $ @
+  Node *nxt(char c) {@ $ \hfill #9664 $ @
+    if (!has_nxt(c)) return NULL;
     return nxt_char[c];
   }
   void set_nxt(char c, Node *node) { nxt_char[c] = node; }
-  Node *split(int new_len, char c) {
-    Node *new_n = new Node;@ $ \hfill #0449 $ @
+  Node *split(int new_len, char c) {@ $ \hfill #8305 $ @
+    Node *new_n = new Node;
     new_n->nxt_char = nxt_char;
     new_n->len = new_len;
     new_n->suf = suf;
-    suf = new_n;
-    return new_n;@ $ \hfill #3130 $ @
-  }@ $ \hfill %0044 $ @
+    suf = new_n;@ $ \hfill #4595 $ @
+    return new_n;
+  }@ $ \hfill %3114 $ @
   // Extra functions for matching and counting
-  Node *lower_depth(int depth) { // move to longest suffix of current
-                                 // with a maximum length of depth.
-    if (suf->len >= depth) return suf->lower_depth(depth);
+  Node *lower(int depth) {
+    // move to longest suf of current with a maximum length of depth.
+    if (suf->len >= depth) return suf->lower(depth);
     return this;
   }
-  Node *walk(char c, int depth,@ $ \hfill #5736 $ @
-    int &match_len) { // move to longest suffix of walked path that is
-                      // a substring
-    match_len = min(match_len,
-      len); // includes depth limit(needed for finding matches)
-    if (has_nxt(c)) { // as suffixes are in classes match\\_len must be
+  Node *walk(char c, int depth, int &match_len) {@ $ \hfill #2130 $ @
+    // move to longest suffix of walked path that is a substring
+    match_len = min(match_len, len);
+    // includes depth limit(needed for finding matches)
+    if (has_nxt(c)) { // as suffixes are in classes match\_len must be
                       // tracked externally
-      ++match_len;@ $ \hfill #7153 $ @
-      return nxt(c)->lower_depth(depth);
-    }
+      ++match_len;
+      return nxt(c)->lower(depth);
+    }@ $ \hfill #9589 $ @
     if (suf) return suf->walk(c, depth, match_len);
     return this;
-  }@ $ \hfill #8969 $ @@ $ \hfill %8969 $ @
+  }@ $ \hfill %2262 $ @
   int paths_to_end = 0;
   void set_as_end() { // All suffixes of current node are marked as
                       // ending nodes.
@@ -890,18 +879,18 @@ class Node {
     if (suf) suf->set_as_end();
   }@ $ \hfill #3041 $ @
   bool vis = false;
-  void calc_paths_to_end() { // Call ONCE from ROOT. For each node
-                             // calculates number of ways to reach an
-                             // end node.
-    if (!vis) { // paths\_to\_end is ocurence count for any strings in
-                // current suffix equivalence class.
+  void calc_paths() {
+    /* Call ONCE from ROOT. For each node  calculates number of ways
+     * to reach an end node. paths\_to\_end is ocurence count for any
+     * strings in current suffix equivalence class. */
+    if (!vis) {
       vis = true;
-      for (auto cur : nxt_char) {@ $ \hfill #6035 $ @
-        cur.second->calc_paths_to_end();
+      for (auto cur : nxt_char) {@ $ \hfill #2404 $ @
+        cur.second->calc_paths();
         paths_to_end += cur.second->paths_to_end;
       }
     }
-  }@ $ \hfill #1996 $ @@ $ \hfill %1996 $ @
+  }@ $ \hfill #7906 $ @@ $ \hfill %7906 $ @
   // Transform into suffix tree of reverse string
   map<char, Node *> tree_links;
   int end_dist = 1 << 30;
@@ -927,32 +916,31 @@ struct SufAuto {
   Node *last;
   Node *root;
   void extend(char new_c) {
-    Node *new_end = new Node;@ $ \hfill #4340 $ @
-    new_end->len = last->len + 1;
-    Node *suf_w_nxt = last;
-    while (suf_w_nxt && !suf_w_nxt->has_nxt(new_c)) {
-      suf_w_nxt->set_nxt(new_c, new_end);
-      suf_w_nxt = suf_w_nxt->suf;@ $ \hfill #2217 $ @
+    Node *nlast = new Node;@ $ \hfill #4696 $ @
+    nlast->len = last->len + 1;
+    Node *swn = last;
+    while (swn && !swn->has_nxt(new_c)) {
+      swn->set_nxt(new_c, nlast);
+      swn = swn->suf;@ $ \hfill #4022 $ @
     }
-    if (!suf_w_nxt) {
-      new_end->suf = root;
+    if (!swn) {
+      nlast->suf = root;
     } else {
-      Node *max_sbstr = suf_w_nxt->nxt(new_c);@ $ \hfill #0618 $ @
-      if (suf_w_nxt->len + 1 == max_sbstr->len) {
-        new_end->suf = max_sbstr;
+      Node *max_sbstr = swn->nxt(new_c);@ $ \hfill #7000 $ @
+      if (swn->len + 1 == max_sbstr->len) {
+        nlast->suf = max_sbstr;
       } else {
-        Node *eq_sbstr = max_sbstr->split(suf_w_nxt->len + 1, new_c);
-        new_end->suf = eq_sbstr;@ $ \hfill #8295 $ @
-        Node *w_edge_to_eq_sbstr = suf_w_nxt;
-        while (w_edge_to_eq_sbstr != 0 &&
-               w_edge_to_eq_sbstr->nxt(new_c) == max_sbstr) {
-          w_edge_to_eq_sbstr->set_nxt(new_c, eq_sbstr);
-          w_edge_to_eq_sbstr = w_edge_to_eq_sbstr->suf;
-        }@ $ \hfill #2463 $ @
+        Node *eq_sbstr = max_sbstr->split(swn->len + 1, new_c);
+        nlast->suf = eq_sbstr;@ $ \hfill #2075 $ @
+        Node *x = swn;
+        while (x != 0 && x->nxt(new_c) == max_sbstr) {
+          x->set_nxt(new_c, eq_sbstr);
+          x = x->suf;
+        }@ $ \hfill #4933 $ @
       }
     }
-    last = new_end;
-  }@ $ \hfill %1135 $ @
+    last = nlast;
+  }@ $ \hfill %9546 $ @
   SufAuto(string &s) {
     root = new Node;
     root->len = 0;
@@ -1112,6 +1100,8 @@ struct MaxFlow {
 };
 const int nmax = 1055;
 int main() {
+  // arguments source and sink, memory usage O(largest node index
+  // +input size)
   int t;
   scanf("%d", &t);
   for (int i = 0; i < t; ++i) {
@@ -1139,26 +1129,11 @@ int main() {
     int v = 2 * n + 2;
     MaxFlow mf(edges);
     printf("%d\n", (int)mf.calc_flow(0, v - 1).second);
+    // cout << mf.flow\_on\_edge(edge\_index) << endl;
   }
-  /*
-     int n,m;
-     cin >> n >> m;
-  // arguments source and sink, memory usage O(largest node index +
-  input size), sink doesn't need to be last index vector<tuple<int,
-  int, ll, ll> > edges; for(int i = 0; i < m; ++i){ int a,b; ll c;
-  scanf("%d %d %lld", &a, &b, &c);
-  if(a != b){
-  edges.emplace\_back(a, b, c, c); //(a, b, c, 0) for directed
-  }
-  }
-  MaxFlow mf(edges);
-  cout << mf.calc\_flow(1, n) << '\n';
-  //cout << mf.flow\\_on\\_edge(edge\\_index) << endl; // return flow on
-  this edge
-  */
 }
 \end{minted}
-\section{Min Cost Max Flow with Cycle Cancelling $\mathcal{O}(\text{flow} \cdot nm)$}
+\section{Min Cost Max Flow with Cycle Cancelling $\mathcal{O}(\text{cap} \cdot nm)$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 struct Network {
   struct Node;
@@ -1285,108 +1260,107 @@ struct DMST {
   };
   struct Circle {
     bool vis = false;
-    vector<Edge *> contents;
-    void clean(int idx);@ $ \hfill #9946 $ @
+    vector<Edge *> cont;
+    void clean(int idx);@ $ \hfill #4353 $ @
   };
-  const static greater<pair<ll, Edge *> >
-    comp; // Can use inline static since C++17
-  static vector<Circle> to_process;
-  static bool no_dmst;@ $ \hfill #6478 $ @
-  static Node *root;
-  struct Node {
+  const static greater<pair<ll, Edge *> > comp;
+  static vector<Circle> to_proc;
+  static bool no_dmst;
+  static Node *root; // Can use inline static since C++17
+  struct Node {@ $ \hfill #9916 $ @
     Node *par = NULL;
     vector<pair<int, int> > out_cands; // Circ, edge idx
-    vector<pair<ll, Edge *> > con;@ $ \hfill #7608 $ @
+    vector<pair<ll, Edge *> > con;
     bool in_use = false;
     ll w = 0; // extra to add to edges in con
-    Node *anc() {
+    Node *anc() {@ $ \hfill #0564 $ @
       if (!par) return this;
-      while (par->par) par = par->par;@ $ \hfill #8721 $ @
+      while (par->par) par = par->par;
       return par;
     }
-    void clean() {
+    void clean() {@ $ \hfill #0300 $ @
       if (!no_dmst) {
-        in_use = false;@ $ \hfill #3465 $ @
+        in_use = false;
         for (auto &cur : out_cands)
-          to_process[cur.first].clean(cur.second);
-      }
+          to_proc[cur.first].clean(cur.second);
+      }@ $ \hfill #0747 $ @
     }
-    Node *con_to_root() {@ $ \hfill #6488 $ @
+    Node *con_to_root() {
       if (anc() == root) return root;
       in_use = true;
       Node *super = this; // Will become root or the first Node
                           // encountered in a loop.
-      while (super == this) {
-        while (@ $ \hfill #8363 $ @
+      while (super == this) {@ $ \hfill #3927 $ @
+        while (
           !con.empty() && con.front().second->tar->anc() == anc()) {
           pop_heap(con.begin(), con.end(), comp);
           con.pop_back();
-        }
-        if (con.empty()) {@ $ \hfill #2506 $ @
+        }@ $ \hfill #2561 $ @
+        if (con.empty()) {
           no_dmst = true;
           return root;
         }
-        pop_heap(con.begin(), con.end(), comp);
-        auto nxt = con.back();@ $ \hfill #9541 $ @
+        pop_heap(con.begin(), con.end(), comp);@ $ \hfill #8600 $ @
+        auto nxt = con.back();
         con.pop_back();
         w = -nxt.first;
         if (nxt.second->tar
               ->in_use) { // anc() wouldn't change anything
-          super = nxt.second->tar->anc();@ $ \hfill #9174 $ @
-          to_process.resize(to_process.size() + 1);
+          super = nxt.second->tar->anc();@ $ \hfill #6612 $ @
+          to_proc.resize(to_proc.size() + 1);
         } else {
           super = nxt.second->tar->con_to_root();
         }
-        if (super != root) {@ $ \hfill #6595 $ @
-          to_process.back().contents.push_back(nxt.second);
-          out_cands.emplace_back(to_process.size() - 1,
-            to_process.back().contents.size() - 1);
+        if (super != root) {@ $ \hfill #7005 $ @
+          to_proc.back().cont.push_back(nxt.second);
+          out_cands.emplace_back(
+            to_proc.size() - 1, to_proc.back().cont.size() - 1);
         } else { // Clean circles
-          nxt.second->inc = true;@ $ \hfill #8848 $ @
+          nxt.second->inc = true;@ $ \hfill #1096 $ @
           nxt.second->from->clean();
         }
       }
       if (super != root) { // we are some loops non first Node.
-        if (con.size() > super->con.size()) {@ $ \hfill #9860 $ @
+        if (con.size() > super->con.size()) {@ $ \hfill #2844 $ @
           swap(con,
             super->con); // Largest con in loop should not be copied.
           swap(w, super->w);
         }
-        for (auto cur : con) {@ $ \hfill #0064 $ @
+        for (auto cur : con) {@ $ \hfill #3498 $ @
           super->con.emplace_back(
             cur.first - super->w + w, cur.second);
           push_heap(super->con.begin(), super->con.end(), comp);
         }
-      }@ $ \hfill #2295 $ @
+      }@ $ \hfill #6348 $ @
       par = super; // root or anc() of first Node encountered in a
                    // loop
       return super;
     }
   };
-  Node *cur_root;@ $ \hfill #2995 $ @
+  Node *croot;@ $ \hfill #0309 $ @
   vector<Node> graph;
   vector<Edge> edges;
   DMST(int n, vector<EdgeDesc> &desc,
     int r) { // Self loops and multiple edges are okay.
-    graph.resize(n);@ $ \hfill #7989 $ @
-    cur_root = &graph[r];
+    graph.resize(n);@ $ \hfill #8100 $ @
+    croot = &graph[r];
     for (auto &cur : desc) // Edges are reversed internally
       edges.push_back(Edge{&graph[cur.to], &graph[cur.from], cur.w});
     for (int i = 0; i < desc.size(); ++i)
       graph[desc[i].to].con.emplace_back(desc[i].w, &edges[i]);
-    for (int i = 0; i < n; ++i)@ $ \hfill #3693 $ @
+    for (int i = 0; i < n; ++i)@ $ \hfill #8811 $ @
       make_heap(graph[i].con.begin(), graph[i].con.end(), comp);
   }
   bool find() {
-    root = cur_root;
-    no_dmst = false;@ $ \hfill #8798 $ @
+    root = croot;
+    no_dmst = false;@ $ \hfill #5307 $ @
     for (auto &cur : graph) {
       cur.con_to_root();
-      to_process.clear();
+      to_proc.clear();
       if (no_dmst) return false;
-    }@ $ \hfill #1711 $ @
+    }@ $ \hfill #6725 $ @
     return true;
-  }@ $ \hfill %4732 $ @
+  }@ $ \hfill %1568 $ @
   ll weight() {
     ll res = 0;
     for (auto &cur : edges) {
@@ -1398,18 +1372,18 @@ struct DMST {
 void DMST::Circle::clean(int idx) {
   if (!vis) {
     vis = true;
-    for (int i = 0; i < contents.size(); ++i) {@ $ \hfill #8814 $ @
+    for (int i = 0; i < cont.size(); ++i) {@ $ \hfill #6503 $ @
       if (i != idx) {
-        contents[i]->inc = true;
-        contents[i]->from->clean();
+        cont[i]->inc = true;
+        cont[i]->from->clean();
       }
-    }@ $ \hfill #0711 $ @
+    }@ $ \hfill #8144 $ @
   }
 }
 const greater<pair<ll, DMST::Edge *> > DMST::comp;
-vector<DMST::Circle> DMST::to_process;
-bool DMST::no_dmst;@ $ \hfill #8417 $ @
-DMST::Node *DMST::root;@ $ \hfill %0771 $ @
+vector<DMST::Circle> DMST::to_proc;
+bool DMST::no_dmst;@ $ \hfill #2354 $ @
+DMST::Node *DMST::root;@ $ \hfill %2870 $ @
 \end{minted}
 \section{Bridges $\mathcal{O}(n)$}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
@@ -1475,60 +1449,57 @@ int main() { // Mechanics Practice BRIDGES
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 struct Graph {
   int n;
-  vector<vector<int> > conn;
+  vector<vector<int> > con;
   Graph(int nsize) {
-    n = nsize;@ $ \hfill #0987 $ @
-    conn.resize(n);
+    n = nsize;@ $ \hfill #0321 $ @
+    con.resize(n);
   }
-  void add_edge(int u, int v) { conn[u].push_back(v); }
-  void _topsort_dfs(int pos, vector<int> &result, vector<bool> &explr,
-    vector<vector<int> > &revconn) {@ $ \hfill #5592 $ @
+  void add_edge(int u, int v) { con[u].push_back(v); }
+  void top_dfs(int pos, vector<int> &result, vector<bool> &explr,
+    vector<vector<int> > &revcon) {@ $ \hfill #2422 $ @
     if (explr[pos]) return;
     explr[pos] = true;
-    for (auto next : revconn[pos])
-      _topsort_dfs(next, result, explr, revconn);
-    result.push_back(pos);@ $ \hfill #3810 $ @
-  }
+    for (auto next : revcon[pos])
+      top_dfs(next, result, explr, revcon);
+    result.push_back(pos);@ $ \hfill #2081 $ @
+  }@ $ \hfill %7763 $ @
   vector<int> topsort() {
-    vector<vector<int> > revconn(n);
-    for (int u = 0; u < n; u++) {
-      for (auto v : conn[u]) revconn[v].push_back(u);
-    }@ $ \hfill #1886 $ @
+    vector<vector<int> > revcon(n);
+    ran(u, 0, n) {
+      for (auto v : con[u]) revcon[v].push_back(u);
+    }@ $ \hfill #3875 $ @
     vector<int> result;
     vector<bool> explr(n, false);
-    for (int i = 0; i < n; i++)
-      _topsort_dfs(i, result, explr, revconn);
-    reverse(result.begin(), result.end());@ $ \hfill #5382 $ @
-    return result;
-  }
+    ran(i, 0, n) top_dfs(i, result, explr, revcon);
+    reverse(result.begin(), result.end());
+    return result;@ $ \hfill #7568 $ @
+  }@ $ \hfill %5339 $ @
   void dfs(int pos, vector<int> &result, vector<bool> &explr) {
     if (explr[pos]) return;
-    explr[pos] = true;@ $ \hfill #9284 $ @
-    for (auto next : conn[pos]) dfs(next, result, explr);
-    result.push_back(pos);
-  }@ $ \hfill %8603 $ @
+    explr[pos] = true;
+    for (auto next : con[pos]) dfs(next, result, explr);
+    result.push_back(pos);@ $ \hfill #6880 $ @
+  }@ $ \hfill %3565 $ @
   vector<vector<int> > scc() {
     vector<int> order = topsort();
     reverse(order.begin(), order.end());
     vector<bool> explr(n, false);
-    vector<vector<int> > results;@ $ \hfill #7020 $ @
+    vector<vector<int> > res;@ $ \hfill #9931 $ @
     for (auto it = order.rbegin(); it != order.rend(); ++it) {
-      vector<int> component;
-      _topsort_dfs(*it, component, explr, conn);
-      sort(component.begin(), component.end());
-      results.push_back(component);@ $ \hfill #2741 $ @
+      vector<int> comp;
+      top_dfs(*it, comp, explr, con);
+      sort(comp.begin(), comp.end());
+      res.push_back(comp);@ $ \hfill #2243 $ @
     }
-    sort(results.begin(), results.end());
-    return results;
+    sort(res.begin(), res.end());
+    return res;
   }
-};@ $ \hfill #4983 $ @@ $ \hfill %4983 $ @
-// Solution for:
-// http://codeforces.com/group/PjzGiggT71/contest/221700/problem/C
+};@ $ \hfill #0543 $ @@ $ \hfill %0543 $ @
 int main() {
   int n, m;
   cin >> n >> m;
   Graph g(2 * m);
-  for (int i = 0; i < n; i++) {
+  ran(i, 0, n) {
     int a, sa, b, sb;
     cin >> a >> sa >> b >> sb;
     a--, b--;
@@ -1547,15 +1518,13 @@ int main() {
       }
     }
   }
-  for (int i = 0; i < m; i++) {
+  ran(i, 0, m) {
     if (state[2 * i] == state[2 * i + 1]) {
       cout << "IMPOSSIBLE\n";
       return 0;
     }
   }
-  for (int i = 0; i < m; i++) {
-    cout << state[2 * i + 1] << '\n';
-  }
+  ran(i, 0, m) cout << state[2 * i + 1] << '\n';
   return 0;
 }
 \end{minted}
@@ -1840,70 +1809,61 @@ int main() {
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
 // Fully overloaded any dimensional BIT, use any type for coordinates,
 // elements, return\_value. Includes coordinate compression.
-template <typename elem_t, typename coord_t, coord_t n_inf,
-  typename ret_t>
-class BIT {
-  vector<coord_t> positions;
-  vector<elem_t> elems;@ $ \hfill #6324 $ @
-  bool initiated = false;
- public:
-  BIT() { positions.push_back(n_inf); }
-  void initiate() {
-    if (initiated) {@ $ \hfill #7330 $ @
-      for (elem_t &c_elem : elems) c_elem.initiate();
-    } else {
-      initiated = true;
-      sort(positions.begin(), positions.end());
-      positions.resize(unique(positions.begin(), positions.end()) -
-                       positions.begin());@ $ \hfill #0556 $ @
-      elems.resize(positions.size());
-    }
+template <typename E_T, typename C_T, C_T n_inf, typename R_T>
+struct BIT {
+  vector<C_T> pos;
+  vector<E_T> elems;
+  bool act = false;@ $ \hfill #3273 $ @
+  BIT() { pos.push_back(n_inf); }
+  void init() {
+    if (act) {
+      for (E_T &c_elem : elems) c_elem.init();
+    } else {@ $ \hfill #2594 $ @
+      act = true;
+      sort(pos.begin(), pos.end());
+      pos.resize(unique(pos.begin(), pos.end()) - pos.begin());
+      elems.resize(pos.size());
+    }@ $ \hfill #7774 $ @
   }
   template <typename... loc_form>
-  void update(coord_t cord, loc_form... args) {@ $ \hfill #3679 $ @
-    if (initiated) {
-      int pos =
-        lower_bound(positions.begin(), positions.end(), cord) -
-        positions.begin();
-      for (; pos < positions.size(); pos += pos & -pos)
-        elems[pos].update(args...);@ $ \hfill #6433 $ @
+  void update(C_T cx, loc_form... args) {
+    if (act) {
+      int x = lower_bound(pos.begin(), pos.end(), cx) - pos.begin();
+      for (; x < (int)pos.size(); x += x & -x)@ $ \hfill #7303 $ @
+        elems[x].update(args...);
     } else {
-      positions.push_back(cord);
+      pos.push_back(cx);
     }
+  }@ $ \hfill #8505 $ @
+  template <typename... loc_form>
+  R_T query(C_T cx, loc_form... args) { // sum in (-inf, cx)
+    R_T res = 0;
+    int x = lower_bound(pos.begin(), pos.end(), cx) - pos.begin() - 1;
+    for (; x > 0; x -= x & -x) res += elems[x].query(args...);
+    return res;@ $ \hfill #2526 $ @
   }
-  template <typename... loc_form>@ $ \hfill #9641 $ @
-  ret_t query(coord_t cord,
-    loc_form... args) { // sum in open interval (-inf, cord)
-    ret_t res = 0;
-    int pos = (lower_bound(positions.begin(), positions.end(), cord) -
-                positions.begin()) -@ $ \hfill #3911 $ @
-              1;
-    for (; pos > 0; pos -= pos & -pos)
-      res += elems[pos].query(args...);
-    return res;
-  }@ $ \hfill #8137 $ @
 };
-template <typename internal_type>
+template <typename I_T>
 struct wrapped {
-  internal_type a = 0;
-  void update(internal_type b) { a += b; }@ $ \hfill #9484 $ @
-  internal_type query() { return a; }
+  I_T a = 0;@ $ \hfill #6509 $ @
+  void update(I_T b) { a += b; }
+  I_T query() { return a; }
   // Should never be called, needed for compilation
-  void initiate() { cerr << 'i' << endl; }
-  void update() { cerr << 'u' << endl; }
-};@ $ \hfill %3714 $ @
-int main() {
+  void init() { DEBUG('i') }
+  void update() { DEBUG('u') }
+};@ $ \hfill #2858 $ @
+@ $ \hfill %2858 $ @int main() {
   // retun type should be same as type inside wrapped
   BIT<BIT<wrapped<ll>, int, INT_MIN, ll>, int, INT_MIN, ll> fenwick;
   int dim = 2;
   vector<tuple<int, int, ll> > to_insert;
   to_insert.emplace_back(1, 1, 1);
-  // set up all positions that are to be used for update
+  // set up all pos that are to be used for update
   for (int i = 0; i < dim; ++i) {
     for (auto &cur : to_insert)
-      fenwick.update(get<0>(cur),
-        get<1>(cur)); // May include value which won't be used
-    fenwick.initiate();
+      fenwick.update(get<0>(cur), get<1>(cur));
+    // May include value which won't be used
+    fenwick.init();
   }
   // actual use
   for (auto &cur : to_insert)
@@ -2025,52 +1985,40 @@ int main() {
 \end{minted}
 \section{Radixsort 50M 64 bit integers as single array in 1 sec}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
-typedef unsigned char uchar;
 template <typename T>
-void msd_radixsort(
-  T *start, T *sec_start, int arr_size, int d = sizeof(T) - 1) {
-  const int msd_radix_lim = 100;@ $ \hfill #4866 $ @
-  const T mask = 255;
-  int bucket_sizes[256]{};
-  for (T *it = start; it != start + arr_size; ++it) {
-    ++bucket_sizes[((*it) >> (d * 8)) & mask];
-    //++bucket\_sizes[*((uchar*)it+d)];
-  }@ $ \hfill #8772 $ @
-  T *locs_mem[257];
-  locs_mem[0] = sec_start;
-  T **locs = locs_mem + 1;
-  locs[0] = sec_start;
-  for (int j = 0; j < 255; ++j) {@ $ \hfill #5818 $ @
-    locs[j + 1] = locs[j] + bucket_sizes[j];
+void rsort(T *a, T *b, int size, int d = sizeof(T) - 1) {
+  int b_s[256]{};
+  ran(i, 0, size) { ++b_s[(a[i] >> (d * 8)) & 255]; }
+  // ++b\_s[*((uchar *)(a + i) + d)];
+  T *mem[257];@ $ \hfill #5369 $ @
+  mem[0] = b;
+  T **l_b = mem + 1;
+  l_b[0] = b;
+  ran(i, 0, 255) { l_b[i + 1] = l_b[i] + b_s[i]; }
+  for (T *it = a; it != a + size; ++it) {@ $ \hfill #6813 $ @
+    T id = ((*it) >> (d * 8)) & 255;
+    *(l_b[id]++) = *it;
   }
-  for (T *it = start; it != start + arr_size; ++it) {
-    uchar bucket_id = ((*it) >> (d * 8)) & mask;
-    *(locs[bucket_id]++) = *it;@ $ \hfill #6361 $ @
-  }
-  locs = locs_mem;
-  if (d) {
-    T *locs_old[256];
-    locs_old[0] = start;@ $ \hfill #3153 $ @
-    for (int j = 0; j < 255; ++j) {
-      locs_old[j + 1] = locs_old[j] + bucket_sizes[j];
-    }
-    for (int j = 0; j < 256; ++j) {
-      if (locs[j + 1] - locs[j] < msd_radix_lim) {
-        std::sort(locs[j], locs[j + 1]);@ $ \hfill #1018 $ @
-        if (d & 1) {
-          copy(locs[j], locs[j + 1], locs_old[j]);
-        }
+  l_b = mem;
+  if (d) {@ $ \hfill #5681 $ @
+    T *l_a[256];
+    l_a[0] = a;
+    ran(i, 0, 255) l_a[i + 1] = l_a[i] + b_s[i];
+    ran(i, 0, 256) {
+      if (l_b[i + 1] - l_b[i] < 100) {@ $ \hfill #1162 $ @
+        sort(l_b[i], l_b[i + 1]);
+        if (d & 1) copy(l_b[i], l_b[i + 1], l_a[i]);
       } else {
-        msd_radixsort(locs[j], locs_old[j], bucket_sizes[j], d - 1);
-      }@ $ \hfill #9206 $ @
+        rsort(l_b[i], l_a[i], b_s[i], d - 1);
+      }@ $ \hfill #7759 $ @
     }
   }
-}@ $ \hfill %1225 $ @
+}@ $ \hfill %0571 $ @
 const int nmax = 5e7;
 ll arr[nmax], tmp[nmax];
 int main() {
   for (int i = 0; i < nmax; ++i) arr[i] = ((ll)rand() << 32) | rand();
-  msd_radixsort(arr, tmp, nmax);
+  rsort(arr, tmp, nmax);
   assert(is_sorted(arr, arr + nmax));
 }
 \end{minted}

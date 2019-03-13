@@ -1,51 +1,49 @@
-#include <bits/stdc++.h>
-using namespace std;
+#define DEBUG(...) cerr << __VA_ARGS__ << endl;
 
+#ifndef CDEBUG
+#undef DEBUG
+#define DEBUG(...) ((void)0);
+#endif
+
+#define ran(i, a, b) for (auto i = (a); i < (b); i++)
+
+#include <bits/stdc++.h>
 typedef long long ll;
+typedef long double ld;
+typedef unsigned char uchar;
+using namespace std;
 //!escape \section{Radixsort 50M 64 bit integers as single array in 1 sec}
 //!begin_codebook
 //!start
-typedef unsigned char uchar;
 
-template<typename T>
-void msd_radixsort(T *start, T *sec_start, int arr_size, int d=sizeof(T)-1){
-  const int msd_radix_lim = 100;
-  const T mask = 255;
-	int bucket_sizes[256]{};
-	for(T *it = start; it!=start+arr_size; ++it){
-		++bucket_sizes[((*it)>>(d*8))&mask];
-		//++bucket_sizes[*((uchar*)it+d)];
-	}
-	T *locs_mem[257];
-	locs_mem[0] = sec_start;
-  T **locs = locs_mem+1;
-	locs[0] = sec_start;
-	for(int j=0; j<255; ++j){
-		locs[j+1] = locs[j]+bucket_sizes[j];
-	}
-	for(T *it = start; it!=start+arr_size; ++it){
-    uchar bucket_id = ((*it)>>(d*8))&mask;
-    *(locs[bucket_id]++) = *it;
-	}
-  locs = locs_mem;
-	if(d){
-    T *locs_old[256];
-    locs_old[0] = start;
-    for(int j=0; j<255; ++j){
-      locs_old[j+1] = locs_old[j]+bucket_sizes[j];
+template <typename T>
+void rsort(T *a, T *b, int size, int d = sizeof(T) - 1) {
+  int b_s[256]{};
+  ran(i, 0, size) { ++b_s[(a[i] >> (d * 8)) & 255]; }
+  // ++b_s[*((uchar *)(a + i) + d)];
+  T *mem[257];
+  mem[0] = b;
+  T **l_b = mem + 1;
+  l_b[0] = b;
+  ran(i, 0, 255) { l_b[i + 1] = l_b[i] + b_s[i]; }
+  for (T *it = a; it != a + size; ++it) {
+    T id = ((*it) >> (d * 8)) & 255;
+    *(l_b[id]++) = *it;
+  }
+  l_b = mem;
+  if (d) {
+    T *l_a[256];
+    l_a[0] = a;
+    ran(i, 0, 255) l_a[i + 1] = l_a[i] + b_s[i];
+    ran(i, 0, 256) {
+      if (l_b[i + 1] - l_b[i] < 100) {
+        sort(l_b[i], l_b[i + 1]);
+        if (d & 1) copy(l_b[i], l_b[i + 1], l_a[i]);
+      } else {
+        rsort(l_b[i], l_a[i], b_s[i], d - 1);
+      }
     }
-		for(int j=0; j<256; ++j){
-			if(locs[j+1]-locs[j] < msd_radix_lim){
-				std::sort(locs[j], locs[j+1]);
-        if(d & 1){
-          copy(locs[j], locs[j+1], locs_old[j]);
-        }
-			}
-			else{
-				msd_radixsort(locs[j], locs_old[j], bucket_sizes[j], d-1);
-			}
-		}
-	}
+  }
 }
 //!finish
 
@@ -53,10 +51,9 @@ const int nmax = 5e7;
 
 ll arr[nmax], tmp[nmax];
 
-int main(){
-  for(int i=0; i<nmax; ++i)
-    arr[i] = ((ll)rand()<<32)|rand();
-  msd_radixsort(arr, tmp, nmax);
-  assert(is_sorted(arr, arr+nmax));
+int main() {
+  for (int i = 0; i < nmax; ++i) arr[i] = ((ll)rand() << 32) | rand();
+  rsort(arr, tmp, nmax);
+  assert(is_sorted(arr, arr + nmax));
 }
 //!end_codebook

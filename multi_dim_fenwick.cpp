@@ -1,93 +1,88 @@
+#define DEBUG(...) cerr << __VA_ARGS__ << endl;
+
+#ifndef CDEBUG
+#undef DEBUG
+#define DEBUG(...) ((void)0);
+#define NDEBUG
+#endif
+
+#define ran(i, a, b) for (auto i = (a); i < (b); i++)
+
 #include <bits/stdc++.h>
-
-using namespace std;
-
 typedef long long ll;
-typedef unsigned int uint;
-typedef unsigned long long ull;
-
-const int mod = 1e9 + 7;
-const int nmax = 1e5 + 5;
+typedef long double ld;
+using namespace std;
 
 //!escape \section{Templated multi dimensional BIT $\mathcal{O}(\log(n)^\text{dim})$ per query}
 
 //!begin_codebook
 //!start
-// Fully overloaded any dimensional BIT, use any type for coordinates, elements, return_value.
-// Includes coordinate compression.
-template < typename elem_t, typename coord_t, coord_t n_inf, typename ret_t > class BIT {
-  vector< coord_t > positions;
-  vector< elem_t > elems;
-  bool initiated = false;
+// Fully overloaded any dimensional BIT, use any type for coordinates,
+// elements, return_value. Includes coordinate compression.
+template <typename E_T, typename C_T, C_T n_inf, typename R_T>
+struct BIT {
+  vector<C_T> pos;
+  vector<E_T> elems;
+  bool act = false;
 
- public:
-  BIT() {
-		positions.push_back(n_inf);
-	}
-  void initiate() {
-    if (initiated) {
-      for (elem_t &c_elem : elems)
-				c_elem.initiate();
+  BIT() { pos.push_back(n_inf); }
+  void init() {
+    if (act) {
+      for (E_T &c_elem : elems) c_elem.init();
     } else {
-      initiated = true;
-      sort(positions.begin(), positions.end());
-      positions.resize(unique(positions.begin(), positions.end()) - positions.begin());
-      elems.resize(positions.size());
+      act = true;
+      sort(pos.begin(), pos.end());
+      pos.resize(unique(pos.begin(), pos.end()) - pos.begin());
+      elems.resize(pos.size());
     }
   }
-  template < typename... loc_form >
-  void update(coord_t cord, loc_form... args) {
-    if (initiated) {
-      int pos = lower_bound(positions.begin(), positions.end(), cord) - positions.begin();
-      for (; pos < positions.size(); pos += pos & -pos)
-				elems[pos].update(args...);
+  template <typename... loc_form>
+  void update(C_T cx, loc_form... args) {
+    if (act) {
+      int x = lower_bound(pos.begin(), pos.end(), cx) - pos.begin();
+      for (; x < (int)pos.size(); x += x & -x)
+        elems[x].update(args...);
     } else {
-      positions.push_back(cord);
+      pos.push_back(cx);
     }
   }
-  template < typename... loc_form >
-  ret_t query(coord_t cord, loc_form... args) { //sum in open interval (-inf, cord)
-    ret_t res = 0;
-    int pos = (lower_bound(positions.begin(), positions.end(), cord) - positions.begin())-1;
-    for (; pos > 0; pos -= pos & -pos)
-			res += elems[pos].query(args...);
+  template <typename... loc_form>
+  R_T query(C_T cx, loc_form... args) { // sum in (-inf, cx)
+    R_T res = 0;
+    int x = lower_bound(pos.begin(), pos.end(), cx) - pos.begin() - 1;
+    for (; x > 0; x -= x & -x) res += elems[x].query(args...);
     return res;
   }
 };
-template < typename internal_type >
+
+template <typename I_T>
 struct wrapped {
-  internal_type a = 0;
-  void update(internal_type b) {
-		a += b;
-	}
-  internal_type query() {
-		return a;
-	}
+  I_T a = 0;
+  void update(I_T b) { a += b; }
+  I_T query() { return a; }
   // Should never be called, needed for compilation
-  void initiate() {
-		cerr << 'i' << endl; 
-	}
-  void update() { 
-		cerr << 'u' << endl;
-	}
+  void init() { DEBUG('i') }
+  void update() { DEBUG('u') }
 };
+
 //!finish
 int main() {
   // retun type should be same as type inside wrapped
-  BIT< BIT< wrapped< ll >, int, INT_MIN, ll >, int, INT_MIN, ll > fenwick;
+  BIT<BIT<wrapped<ll>, int, INT_MIN, ll>, int, INT_MIN, ll> fenwick;
   int dim = 2;
-  vector< tuple< int, int, ll > > to_insert;
-	to_insert.emplace_back(1, 1, 1);
-  // set up all positions that are to be used for update
+  vector<tuple<int, int, ll> > to_insert;
+  to_insert.emplace_back(1, 1, 1);
+  // set up all pos that are to be used for update
   for (int i = 0; i < dim; ++i) {
     for (auto &cur : to_insert)
-      fenwick.update(get< 0 >(cur), get< 1 >(cur));  // May include value which won't be used
-    fenwick.initiate();
+      fenwick.update(get<0>(cur), get<1>(cur));
+    // May include value which won't be used
+    fenwick.init();
   }
   // actual use
-  for (auto &cur : to_insert) 
-		fenwick.update(get< 0 >(cur), get< 1 >(cur), get< 2 >(cur));
-  cout << fenwick.query(2, 2)<<'\n';
+  for (auto &cur : to_insert)
+    fenwick.update(get<0>(cur), get<1>(cur), get<2>(cur));
+  cout << fenwick.query(2, 2) << '\n';
 }
 //!end_codebook
 //

@@ -147,6 +147,7 @@ struct MaxFlow {
 };
 const int nmax = 1055;
 int main() {
+  // arguments source and sink, memory usage O(largest node index +input size)
   int t;
   scanf("%d", &t);
   for (int i = 0; i < t; ++i) {
@@ -174,23 +175,25 @@ int main() {
     int v = 2 * n + 2;
     MaxFlow mf(edges);
     printf("%d\n", (int)mf.calc_flow(0, v - 1).second);
+    //cout << mf.flow_on_edge(edge_index) << endl;
   }
-  /*
-     int n,m;
-     cin >> n >> m;
-  // arguments source and sink, memory usage O(largest node index +
-  input size), sink doesn't need to be last index vector<tuple<int,
-  int, ll, ll> > edges; for(int i = 0; i < m; ++i){ int a,b; ll c;
-  scanf("%d %d %lld", &a, &b, &c);
-  if(a != b){
-  edges.emplace_back(a, b, c, c); //(a, b, c, 0) for directed
-  }
-  }
-  MaxFlow mf(edges);
-  cout << mf.calc_flow(1, n) << '\n';
-  //cout << mf.flow\_on\_edge(edge\_index) << endl; // return flow on
-  this edge
-  */
 }
 //!end_codebook
+
+/*
+   int n,m;
+   cin >> n >> m;
+vector<tuple<int,
+int, ll, ll> > edges; for(int i = 0; i < m; ++i){ int a,b; ll c;
+scanf("%d %d %lld", &a, &b, &c);
+if(a != b){
+edges.emplace_back(a, b, c, c); //(a, b, c, 0) for directed
+}
+}
+MaxFlow mf(edges);
+cout << mf.calc_flow(1, n) << '\n';
+this edge
+*/
+
+// solves http://www.spoj.com/problems/GREED
 // solves http://www.spoj.com/problems/FASTFLOW/

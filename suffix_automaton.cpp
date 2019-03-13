@@ -21,11 +21,9 @@ const double M_PI = acos(-1.0);
 
 //!begin_codebook
 //!start
-class Node {
- private:
-  map<char, Node *>
-    nxt_char; // Map is faster than hashtable and unsorted arrays
- public:
+struct Node {
+  map<char, Node *> nxt_char;
+  // Map is faster than hashtable and unsorted arrays
   int len; // Length of longest suffix in equivalence class.
   Node *suf;
   bool has_nxt(char c) const { return nxt_char.count(c); }
@@ -45,21 +43,19 @@ class Node {
   //!finish
   //!start
   // Extra functions for matching and counting
-  Node *lower_depth(
-    int depth) { // move to longest suffix of current with a maximum
-                 // length of depth.
-    if (suf->len >= depth) return suf->lower_depth(depth);
+  Node *lower(int depth) {
+    // move to longest suf of current with a maximum length of depth.
+    if (suf->len >= depth) return suf->lower(depth);
     return this;
   }
-  Node *walk(char c, int depth,
-    int &match_len) { // move to longest suffix of walked path that is
-                      // a substring
-    match_len = min(match_len,
-      len); // includes depth limit(needed for finding matches)
-    if (has_nxt(c)) { // as suffixes are in classes match\_len must be
+  Node *walk(char c, int depth, int &match_len) {
+    // move to longest suffix of walked path that is a substring
+    match_len = min(match_len, len);
+    // includes depth limit(needed for finding matches)
+    if (has_nxt(c)) { // as suffixes are in classes match_len must be
                       // tracked externally
       ++match_len;
-      return nxt(c)->lower_depth(depth);
+      return nxt(c)->lower(depth);
     }
     if (suf) return suf->walk(c, depth, match_len);
     return this;
@@ -73,14 +69,14 @@ class Node {
     if (suf) suf->set_as_end();
   }
   bool vis = false;
-  void calc_paths_to_end() { // Call ONCE from ROOT. For each node
-                             // calculates number of ways to reach an
-                             // end node.
-    if (!vis) { // paths_to_end is ocurence count for any strings in
-                // current suffix equivalence class.
+  void calc_paths() {
+    /* Call ONCE from ROOT. For each node  calculates number of ways
+     * to reach an end node. paths_to_end is ocurence count for any
+     * strings in current suffix equivalence class. */
+    if (!vis) {
       vis = true;
       for (auto cur : nxt_char) {
-        cur.second->calc_paths_to_end();
+        cur.second->calc_paths();
         paths_to_end += cur.second->paths_to_end;
       }
     }
@@ -108,58 +104,58 @@ class Node {
     }
   }
 };
+
 struct SufAuto {
   Node *last;
   Node *root;
   void extend(char new_c) {
-    Node *new_end = new Node;
+    Node *nlast = new Node;
     //!end_codebook
     // The equivalence class containing the whole new string
     //!begin_codebook
-    new_end->len = last->len + 1;
-    Node *suf_w_nxt = last;
-    while (suf_w_nxt && !suf_w_nxt->has_nxt(new_c)) {
+    nlast->len = last->len + 1;
+    Node *swn = last;
+    while (swn && !swn->has_nxt(new_c)) {
       //!end_codebook
       /* The whole old string class is turned into the longest suffix
        * which can be turned into a substring of old state by
-       * appending new\_c */
+       * appending new_c */
       //!begin_codebook
-      suf_w_nxt->set_nxt(new_c, new_end);
-      suf_w_nxt = suf_w_nxt->suf;
+      swn->set_nxt(new_c, nlast);
+      swn = swn->suf;
     }
-    if (!suf_w_nxt) {
+    if (!swn) {
       //!end_codebook
       // The new character isn't part of the old string
       //!begin_codebook
-      new_end->suf = root;
+      nlast->suf = root;
     } else {
-      Node *max_sbstr = suf_w_nxt->nxt(new_c);
+      Node *max_sbstr = swn->nxt(new_c);
       //!end_codebook
       // Equivalence class containing longest substring which is a
       // suffix of the new state.
       //!begin_codebook
-      if (suf_w_nxt->len + 1 == max_sbstr->len) {
+      if (swn->len + 1 == max_sbstr->len) {
         //!end_codebook
         // Check whether splitting is needed
         //!begin_codebook
-        new_end->suf = max_sbstr;
+        nlast->suf = max_sbstr;
       } else {
-        Node *eq_sbstr =
-          max_sbstr->split(suf_w_nxt->len + 1, new_c);
-        new_end->suf = eq_sbstr;
+        Node *eq_sbstr = max_sbstr->split(swn->len + 1, new_c);
+        nlast->suf = eq_sbstr;
         //!end_codebook
-        // Make suffixes of suf\_w\_nxt point to eq\_sbstr instead of
-        // mox\_sbstr
+        // Make suffixes of suf_w_nxt point to eq_sbstr instead of
+        // mox_sbstr
+        // x = with_edge_to_eq_sbstr
         //!begin_codebook
-        Node *w_edge_to_eq_sbstr = suf_w_nxt;
-        while (w_edge_to_eq_sbstr != 0 &&
-               w_edge_to_eq_sbstr->nxt(new_c) == max_sbstr) {
-          w_edge_to_eq_sbstr->set_nxt(new_c, eq_sbstr);
-          w_edge_to_eq_sbstr = w_edge_to_eq_sbstr->suf;
+        Node *x = swn;
+        while (x != 0 && x->nxt(new_c) == max_sbstr) {
+          x->set_nxt(new_c, eq_sbstr);
+          x = x->suf;
         }
       }
     }
-    last = new_end;
+    last = nlast;
   }
   //!finish
   //!start
@@ -184,7 +180,7 @@ int main() {
   cin >> s;
   SufAuto s_suf(s);
   s_suf.last->set_as_end();
-  s_suf.root->calc_paths_to_end();
+  s_suf.root->calc_paths();
   cin >> n;
   for (int i = 0; i < n; ++i) {
     string x;

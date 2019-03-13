@@ -5,7 +5,7 @@
 #include<algorithm>
 using namespace std;
 
-//!escape \section{Min Cost Max Flow with Cycle Cancelling $\mathcal{O}(\text{flow} \cdot nm)$}
+//!escape \section{Min Cost Max Flow with Cycle Cancelling $\mathcal{O}(\text{cap} \cdot nm)$}
 //!begin_codebook
 //!start
 struct Network {
