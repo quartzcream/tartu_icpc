@@ -1,9 +1,10 @@
 header.tex
 setup.sh
 crc_simple.sh
-ordered_set.cpp
-triangle.cpp
 geometry_section.tex
+ordered_set.cpp
+hashes.cpp
+triangle.cpp
 Library/Geometry/segment2d.h
 convex_hull.cpp
 delaunay.cpp

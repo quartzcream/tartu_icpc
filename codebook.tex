@@ -122,90 +122,6 @@ done #there shouldn't be any COMMENTS.
 #copy lines being checked to separate file.
 # \$ ./crc.sh tmp.cpp | grep XXXX
 \end{minted}
-\section{gcc ordered set}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
-#define DEBUG(...) cerr << \_\_VA\_ARGS\_\_ << endl;
-#ifndef CDEBUG
-#undef DEBUG
-#define DEBUG(...) ((void)0);
-#define NDEBUG
-#endif
-#define ran(i, a, b) for (auto i = (a); i < (b); i++)
-#include <bits/stdc++.h>
-typedef long long ll;@ $ \hfill #1736 $ @
-typedef long double ld;
-using namespace std;
-#include <ext/pb\_ds/assoc\_container.hpp>
-#include <ext/pb\_ds/tree\_policy.hpp>
-using namespace __gnu_pbds;@ $ \hfill #5119 $ @
-template <typename T>
-using ordered_set = tree<T, null_type, less<T>, rb_tree_tag,
-  tree_order_statistics_node_update>;
-int main() {
-  ordered_set<int> cur;@ $ \hfill #3802 $ @
-  cur.insert(1);
-  cur.insert(3);
-  cout << cur.order_of_key(2)
-       << endl; // the number of elements in the set less than 2
-  cout << *cur.find_by_order(0)@ $ \hfill #0578 $ @
-       << endl; // the 0-th smallest number in the set(0-based)
-  cout << *cur.find_by_order(1)
-       << endl; // the 1-th smallest number in the set(0-based)
-}@ $ \hfill %4198 $ @
-\end{minted}
-\section{Triangle centers}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
-const double min_delta = 1e-13;
-const double coord_max = 1e6;
-typedef complex<double> point;
-point A, B, C; // vertixes of the triangle
-bool collinear() {@ $ \hfill #0823 $ @
-  double min_diff = min(abs(A - B), min(abs(A - C), abs(B - C)));
-  if (min_diff < coord_max * min_delta) return true;
-  point sp = (B - A) / (C - A);
-  double ang = M_PI / 2 - abs(abs(arg(sp)) - M_PI / 2);
-  return ang < min_delta; // positive angle with the real line
-}@ $ \hfill #8446 $ @@ $ \hfill %8446 $ @
-point circum_center() {
-  if (collinear()) return point(NAN, NAN);
-  // squared lengths of sides
-  double a2 = norm(B - C);
-  double b2 = norm(A - C);
-  double c2 = norm(A - B);@ $ \hfill #6715 $ @
-  // barycentric coordinates of the circumcenter
-  double c_A = a2 * (b2 + c2 - a2); // sin(2 * alpha) works also
-  double c_B = b2 * (a2 + c2 - b2);
-  double c_C = c2 * (a2 + b2 - c2);
-  double sum = c_A + c_B + c_C;
-  c_A /= sum;@ $ \hfill #9407 $ @
-  c_B /= sum;
-  c_C /= sum;
-  return c_A * A + c_B * B + c_C * C; // cartesian
-}@ $ \hfill %6856 $ @
-point centroid() { // center of mass
-  return (A + B + C) / 3.0;
-}
-point ortho_center() { // euler line
-  point O = circum_center();@ $ \hfill #3895 $ @
-  return O + 3.0 * (centroid() - O);
-};
-point nine_point_circle_center() { // euler line
-  point O = circum_center();
-  return O + 1.5 * (centroid() - O);@ $ \hfill #8193 $ @
-};@ $ \hfill %3031 $ @
-point in_center() {
-  if (collinear()) return point(NAN, NAN);
-  double a = abs(B - C); // side lenghts
-  double b = abs(A - C);
-  double c = abs(A - B);@ $ \hfill #5954 $ @
-  // trilinear coordinates are (1,1,1)
-  double sum = a + b + c;
-  a /= sum;
-  b /= sum;
-  c /= sum;                     // barycentric
-  return a * A + b * B + c * C; // cartesian
-}@ $ \hfill #4892 $ @@ $ \hfill %4892 $ @
-\end{minted}
 \end{multicols}
 \boldmath
 \setlength\columnsep{5mm}
@@ -267,8 +183,133 @@ Area of a spherical polygon:
 \unboldmath
 \setlength\columnsep{10mm}
 \begin{multicols*}{2}
+\section{gcc ordered set}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+#define DEBUG(...) cerr << \_\_VA\_ARGS\_\_ << endl;
+#ifndef CDEBUG
+#undef DEBUG
+#define DEBUG(...) ((void)0);
+#define NDEBUG
+#endif
+#define ran(i, a, b) for (auto i = (a); i < (b); i++)
+#include <bits/stdc++.h>
+typedef long long ll;@ $ \hfill #1736 $ @
+typedef long double ld;
+using namespace std;
+#include <ext/pb\_ds/assoc\_container.hpp>
+#include <ext/pb\_ds/tree\_policy.hpp>
+using namespace __gnu_pbds;@ $ \hfill #5119 $ @
+template <typename T>
+using ordered_set = tree<T, null_type, less<T>, rb_tree_tag,
+  tree_order_statistics_node_update>;
+int main() {
+  ordered_set<int> cur;@ $ \hfill #3802 $ @
+  cur.insert(1);
+  cur.insert(3);
+  cout << cur.order_of_key(2)
+       << endl; // the number of elements in the set less than 2
+  cout << *cur.find_by_order(0)@ $ \hfill #0578 $ @
+       << endl; // the 0-th smallest number in the set(0-based)
+  cout << *cur.find_by_order(1)
+       << endl; // the 1-th smallest number in the set(0-based)
+}@ $ \hfill %4198 $ @
+\end{minted}
+\section{PRNGs and Hash functions}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+mt19937 gen;
+uint64_t rand64() { return gen() ^ ((uint64_t)gen() << 32); }@ $ \hfill %4798 $ @
+uint64_t rand64() {
+  static uint64_t x = 1; //x != 0
+  x ^= x >> 12;
+  x ^= x << 25;
+  x ^= x >> 27;@ $ \hfill #6087 $ @
+  return x * 0x2545f4914f6cdd1d; // can remove mult
+}@ $ \hfill %9038 $ @
+uint64_t mix(uint64_t x){ //can replace constant with variable
+        uint64_t mem[2] = { x, 0xdeadbeeffeebdaedull };
+        asm volatile (
+                "pxor %%xmm0, %%xmm0;"
+                "movdqa (%0), %%xmm1;"@ $ \hfill #2024 $ @
+                "aesenc %%xmm0, %%xmm1;"
+                "movdqa %%xmm1, (%0);"
+                :
+                : "r" (&mem[0])
+                : "memory"@ $ \hfill #6956 $ @
+        );
+        return mem[0]; // use both slots for 128 bit hash
+}@ $ \hfill %9499 $ @
+uint64_t mix(uint64_t x) { //x != 0
+  x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
+  x = (x ^ (x >> 27)) * 0x94d049bb133111eb;
+  x = x ^ (x >> 31);
+  return x;@ $ \hfill #7126 $ @
+}@ $ \hfill %1575 $ @
+uint64_t unmix(uint64_t x) {
+  x = (x ^ (x >> 31) ^ (x >> 62)) * 0x319642b2d24d8ec3;
+  x = (x ^ (x >> 27) ^ (x >> 54)) * 0x96de1b173f119089;
+  x = x ^ (x >> 30) ^ (x >> 60);
+  return x;@ $ \hfill #4780 $ @
+}@ $ \hfill %2094 $ @
+uint64_t combine(uint64_t x, uint64_t y) {
+  if (y < x) swap(x, y); // remove for ord
+  return mix(mix(x) + y);
+}@ $ \hfill %1466 $ @
+\end{minted}
+\section{Triangle centers}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
+const double min_delta = 1e-13;
+const double coord_max = 1e6;
+typedef complex<double> point;
+point A, B, C; // vertixes of the triangle
+bool collinear() {@ $ \hfill #0823 $ @
+  double min_diff = min(abs(A - B), min(abs(A - C), abs(B - C)));
+  if (min_diff < coord_max * min_delta) return true;
+  point sp = (B - A) / (C - A);
+  double ang = M_PI / 2 - abs(abs(arg(sp)) - M_PI / 2);
+  return ang < min_delta; // positive angle with the real line
+}@ $ \hfill #8446 $ @@ $ \hfill %8446 $ @
+point circum_center() {
+  if (collinear()) return point(NAN, NAN);
+  // squared lengths of sides
+  double a2 = norm(B - C);
+  double b2 = norm(A - C);
+  double c2 = norm(A - B);@ $ \hfill #6715 $ @
+  // barycentric coordinates of the circumcenter
+  double c_A = a2 * (b2 + c2 - a2); // sin(2 * alpha) works also
+  double c_B = b2 * (a2 + c2 - b2);
+  double c_C = c2 * (a2 + b2 - c2);
+  double sum = c_A + c_B + c_C;
+  c_A /= sum;@ $ \hfill #9407 $ @
+  c_B /= sum;
+  c_C /= sum;
+  return c_A * A + c_B * B + c_C * C; // cartesian
+}@ $ \hfill %6856 $ @
+point centroid() { // center of mass
+  return (A + B + C) / 3.0;
+}
+point ortho_center() { // euler line
+  point O = circum_center();@ $ \hfill #3895 $ @
+  return O + 3.0 * (centroid() - O);
+};
+point nine_point_circle_center() { // euler line
+  point O = circum_center();
+  return O + 1.5 * (centroid() - O);@ $ \hfill #8193 $ @
+};@ $ \hfill %3031 $ @
+point in_center() {
+  if (collinear()) return point(NAN, NAN);
+  double a = abs(B - C); // side lenghts
+  double b = abs(A - C);
+  double c = abs(A - B);@ $ \hfill #5954 $ @
+  // trilinear coordinates are (1,1,1)
+  double sum = a + b + c;
+  a /= sum;
+  b /= sum;
+  c /= sum;                     // barycentric
+  return a * A + b * B + c * C; // cartesian
+}@ $ \hfill #4892 $ @@ $ \hfill %4892 $ @
+\end{minted}
 \section{Seg-Seg intersection, halfplane intersection area}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct Seg {
   Vec a, b;
   Vec d() { return b - a; }
@@ -366,7 +407,7 @@ double calc_area(const vector<Seg>& lines) {
 }@ $ \hfill %0513 $ @
 \end{minted}
 \section{Convex polygon algorithms}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 typedef pair<int, int> Vec;
 typedef pair<Vec, Vec> Seg;
 typedef vector<Seg>::iterator SegIt;
@@ -609,7 +650,7 @@ struct Hull {
 };@ $ \hfill %9383 $ @
 \end{minted}
 \section{Delaunay triangulation $\mathcal{O}(n\log n)}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 const int max_co = (1 << 28) - 5;
 struct Vec {
   int x, y;
@@ -741,7 +782,7 @@ void extract_triangles(Edge *cur, vector<vector<Seg> > &res) {
 }@ $ \hfill %5626 $ @
 \end{minted}
 \section{Aho Corasick $\mathcal{O}(|\text{alpha}|\sum{\text{len}})$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 const int alpha_size = 26;
 struct Node {
   Node *nxt[alpha_size]; // May use other structures to move in trie
@@ -834,7 +875,7 @@ int main() {
 }
 \end{minted}
 \section{Suffix automaton and tree $\mathcal{O}((n+q)\log(|\text{alpha}|))$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct Node {
   map<char, Node *> nxt_char;
   // Map is faster than hashtable and unsorted arrays
@@ -911,36 +952,37 @@ struct Node {
       for (auto cur : nxt_char) cur.second->build_suffix_tree(s);
     }
   }
-};@ $ \hfill #1268 $ @
+};@ $ \hfill #1268 $ @@ $ \hfill %1268 $ @
 struct SufAuto {
   Node *last;
   Node *root;
   void extend(char new_c) {
-    Node *nlast = new Node;@ $ \hfill #4696 $ @
+    Node *nlast = new Node;@ $ \hfill #0936 $ @
     nlast->len = last->len + 1;
     Node *swn = last;
     while (swn && !swn->has_nxt(new_c)) {
       swn->set_nxt(new_c, nlast);
-      swn = swn->suf;@ $ \hfill #4022 $ @
+      swn = swn->suf;@ $ \hfill #1831 $ @
     }
     if (!swn) {
       nlast->suf = root;
     } else {
-      Node *max_sbstr = swn->nxt(new_c);@ $ \hfill #7000 $ @
+      Node *max_sbstr = swn->nxt(new_c);@ $ \hfill #0855 $ @
       if (swn->len + 1 == max_sbstr->len) {
         nlast->suf = max_sbstr;
-      } else {
+      } else { // remove for minimal DFA that matches suffixes and
+               // crap
         Node *eq_sbstr = max_sbstr->split(swn->len + 1, new_c);
-        nlast->suf = eq_sbstr;@ $ \hfill #2075 $ @
-        Node *x = swn;
+        nlast->suf = eq_sbstr;@ $ \hfill #1749 $ @
+        Node *x = swn; // x = with\_edge\_to\_eq\_sbstr
         while (x != 0 && x->nxt(new_c) == max_sbstr) {
           x->set_nxt(new_c, eq_sbstr);
           x = x->suf;
-        }@ $ \hfill #4933 $ @
+        }@ $ \hfill #4310 $ @
       }
     }
     last = nlast;
-  }@ $ \hfill %9546 $ @
+  }@ $ \hfill %6146 $ @
   SufAuto(string &s) {
     root = new Node;
     root->len = 0;
@@ -953,7 +995,7 @@ struct SufAuto {
 };@ $ \hfill #6251 $ @@ $ \hfill %6251 $ @
 \end{minted}
 \section{Dinic}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct MaxFlow {
   const static ll INF = 1e18;
   int source, sink;
@@ -1134,7 +1176,7 @@ int main() {
 }
 \end{minted}
 \section{Min Cost Max Flow with Cycle Cancelling $\mathcal{O}(\text{cap} \cdot nm)$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct Network {
   struct Node;
   struct Edge {
@@ -1246,7 +1288,7 @@ struct Network {
 };@ $ \hfill %2900 $ @
 \end{minted}
 \section{DMST $\mathcal{O}(E \log V)$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct EdgeDesc {
   int from, to, w;
 };
@@ -1386,7 +1428,7 @@ bool DMST::no_dmst;@ $ \hfill #2354 $ @
 DMST::Node *DMST::root;@ $ \hfill %2870 $ @
 \end{minted}
 \section{Bridges $\mathcal{O}(n)$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct vert;
 struct edge {
   bool exists = true;
@@ -1446,7 +1488,7 @@ int main() { // Mechanics Practice BRIDGES
 }
 \end{minted}
 \section{2-Sat $\mathcal{O}(n)$ and SCC $\mathcal{O}(n)$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct Graph {
   int n;
   vector<vector<int> > con;
@@ -1529,7 +1571,7 @@ int main() {
 }
 \end{minted}
 \section{Generic persistent compressed lazy segment tree}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct Seg {
   ll sum = 0;
   void recalc(const Seg &lhs_seg, int lhs_len, const Seg &rhs_seg,
@@ -1674,7 +1716,7 @@ struct SegTree {        // indexes start from 0, ranges are [beg, end)
 }
 \end{minted}
 \section{Templated HLD $\mathcal{O}(M(n) \log n)$ per query}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 class dummy {
  public:
   dummy() {}
@@ -1806,7 +1848,7 @@ int main() {
 }
 \end{minted}
 \section{Splay Tree + Link-Cut $O(N\log{N})$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct Tree *treev;
 struct Tree {
   struct T {
@@ -1932,7 +1974,7 @@ void make_root(T t) {
 /*rp*/@ $ \hfill %8430 $ @
 \end{minted}
 \section{Templated multi dimensional BIT $\mathcal{O}(\log(n)^\text{dim})$ per query}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 // Fully overloaded any dimensional BIT, use any type for coordinates,
 // elements, return\_value. Includes coordinate compression.
 template <typename E_T, typename C_T, C_T n_inf, typename R_T>
@@ -1998,7 +2040,7 @@ struct wrapped {
 }
 \end{minted}
 \section{Treap $\mathcal{O}(\log n)$ per query}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 mt19937 randgen;
 struct Treap {
   struct Node {
@@ -2110,7 +2152,7 @@ int main() {
 }
 \end{minted}
 \section{Radixsort 50M 64 bit integers as single array in 1 sec}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 template <typename T>
 void rsort(T *a, T *b, int size, int d = sizeof(T) - 1) {
   int b_s[256]{};
@@ -2150,7 +2192,7 @@ int main() {
 \end{minted}
 \section{FFT 5M length/sec}
 integer $c = a*b$ is accurate if $c_i < 2^{49}$
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct Complex {
   double a = 0, b = 0;
   Complex &operator/=(const int &oth) {
@@ -2274,7 +2316,7 @@ void mult_poly_mod(
 }@ $ \hfill %1231 $ @
 \end{minted}
 \section{Fast mod mult, Rabbin Miller prime check, Pollard rho factorization $\mathcal{O}(\sqrt{p})$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 struct ModArithm {
   ull n;
   ld rec;
@@ -2431,7 +2473,7 @@ def enum_all_minimal_minimizers(X):
 			s = merge(tu, s)
 \end{minted}
 \section{Berlekamp-Massey $O(\mathcal{L}N)$}
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{tartu_icpc}
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
 template <typename K>
 static vector<K> berlekamp_massey(vector<K> ss) {
   vector<K> ts(ss.size());

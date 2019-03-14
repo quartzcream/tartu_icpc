@@ -104,7 +104,8 @@ struct Node {
     }
   }
 };
-
+//!finish
+//!start
 struct SufAuto {
   Node *last;
   Node *root;
@@ -140,15 +141,14 @@ struct SufAuto {
         // Check whether splitting is needed
         //!begin_codebook
         nlast->suf = max_sbstr;
-      } else {
+      } else { //remove for minimal DFA that matches suffixes and crap
         Node *eq_sbstr = max_sbstr->split(swn->len + 1, new_c);
         nlast->suf = eq_sbstr;
         //!end_codebook
         // Make suffixes of suf_w_nxt point to eq_sbstr instead of
         // mox_sbstr
-        // x = with_edge_to_eq_sbstr
         //!begin_codebook
-        Node *x = swn;
+        Node *x = swn; // x = with_edge_to_eq_sbstr
         while (x != 0 && x->nxt(new_c) == max_sbstr) {
           x->set_nxt(new_c, eq_sbstr);
           x = x->suf;
