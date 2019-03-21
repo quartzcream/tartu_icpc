@@ -1,18 +1,34 @@
+#define DEBUG(...) cerr << __VA_ARGS__ << endl;
+
+#ifndef CDEBUG
+#undef DEBUG
+#define DEBUG(...) ((void)0);
+#define NDEBUG
+#endif
+
+#define ran(i, a, b) for (auto i = (a); i < (b); i++)
+
 #include <bits/stdc++.h>
-using namespace std;
 typedef long long ll;
+typedef long double ld;
+using namespace std;
+const int mod = 1e9 + 7;
+#ifndef M_PI
+const double M_PI = acos(-1.0);
+#endif
 //!escape \section{Dinic}
 //!begin_codebook
 struct MaxFlow {
   const static ll INF = 1e18;
   int source, sink;
-  ll sink_pot = 0;
   vector<int> start, now, lvl, adj, rcap, cap_loc, bfs;
+  vector<int> cap, orig_cap;
+  /*ly*/ll sink_pot = 0;
   vector<bool> visited;
-  vector<ll> cap, orig_cap /*lg*/, cost;
+  vector<ll> cost;
   priority_queue<pair<ll, int>, vector<pair<ll, int> >,
     greater<pair<ll, int> > >
-    dist_que; /*rg*/
+    dist_que;/*ry*/
   void add_flow(int idx, ll flow, bool cont = true) {
     cap[idx] -= flow;
     if (cont) add_flow(rcap[idx], -flow, false);
@@ -25,7 +41,7 @@ struct MaxFlow {
       ++start[get<0>(cur) + 1];
       ++start[get<1>(cur) + 1];
     }
-    for (int i = 1; i < start.size(); ++i) start[i] += start[i - 1];
+    ran(i, 1, (int)start.size()) start[i] += start[i - 1];
     now = start;
     adj.resize(start.back());
     cap.resize(start.back());
@@ -48,48 +64,53 @@ struct MaxFlow {
       orig_cap.push_back(c);
     }
   }
-  bool dinic_bfs() {
+  bool dinic_bfs(int min_cap) {
     lvl.clear();
     lvl.resize(start.size());
     bfs.clear();
     bfs.resize(1, source);
     now = start;
     lvl[source] = 1;
-    for (int i = 0; i < bfs.size(); ++i) {
+    ran(i, 0, (int)bfs.size()) {
       int u = bfs[i];
       while (now[u] < start[u + 1]) {
         int v = adj[now[u]];
-        if (/*ly*/cost[now[u]] == 0 && /*ry*/cap[now[u]] > 0 && lvl[v] == 0) {
+        if (/*ly*/cost[now[u]] == 0 && /*ry*/cap[now[u]] >= min_cap && lvl[v] == 0) {
           lvl[v] = lvl[u] + 1;
+          if(v==sink) return true;
           bfs.push_back(v);
         }
         ++now[u];
       }
     }
-    return lvl[sink];
+    return false;
   }
-  ll dinic_dfs(int u, ll flow) {
+  ll dinic_dfs(int u, ll flow, int min_cap) {
     if (u == sink) return flow;
+    if (lvl[u] == lvl[sink]) return 0;
+    ll res = 0;
     while (now[u] < start[u + 1]) {
       int v = adj[now[u]];
       if (lvl[v] == lvl[u] + 1/*ly*/ && cost[now[u]] == 0 /*ry*/&&
-          cap[now[u]] != 0) {
-        ll res = dinic_dfs(v, min(flow, cap[now[u]]));
-        if (res) {
-          add_flow(now[u], res);
-          return res;
+          cap[now[u]] >= min_cap) {
+        ll cur = dinic_dfs(v, min(flow, (ll)cap[now[u]]), min_cap);
+        if (cur) {
+          add_flow(now[u], cur);
+          flow -= cur;
+          res += cur;
+          if(!flow) break;
         }
       }
       ++now[u];
     }
-    return 0;
+    return res;
   }
   /*ly*/bool recalc_dist(bool check_imp = false) {
     now = start;
     visited.clear();
     visited.resize(start.size());
     dist_que.emplace(0, source);
-    bool imp = false;
+    /*lp*/bool imp = false;/*rp*/
     while (!dist_que.empty()) {
       int u;
       ll dist;
@@ -97,7 +118,7 @@ struct MaxFlow {
       dist_que.pop();
       if (!visited[u]) {
         visited[u] = true;
-        if (check_imp && dist != 0) imp = true;
+        /*lp*/if (check_imp && dist != 0) imp = true;/*rp*/
         if (u == sink) sink_pot += dist;
         while (now[u] < start[u + 1]) {
           int v = adj[now[u]];
@@ -108,7 +129,7 @@ struct MaxFlow {
         }
       }
     }
-    if (check_imp) return imp;
+    /*lp*/if (check_imp) return imp;/*rp*/
     return visited[sink];
   } /*ry*/
   /*lp*/ bool recalc_dist_bellman_ford() { // return whether there is
@@ -122,23 +143,25 @@ struct MaxFlow {
     source = _source;
     sink = _sink;
     assert(max(source, sink) < start.size() - 1);
-    ll tot_flow = 0;
-    ll tot_cost = 0;
+    /*ly*/ll tot_flow = 0;
+    ll tot_cost = 0;/*ry*/
     /*lp*/if (recalc_dist_bellman_ford()) {
       assert(false);
     } else { /*rp*/ 
 /*ly*/      while (recalc_dist()){/*ry*/
         ll flow = 0;
-        while (dinic_bfs()) {
-          now = start;
-          ll cur;
-          while (cur = dinic_dfs(source, INF)) flow += cur;
+        for(int min_cap = 1<<30; min_cap; min_cap >>= 1){
+          while (dinic_bfs(min_cap)) {
+            now = start;
+            ll cur;
+            while (cur = dinic_dfs(source, INF, min_cap)) flow += cur;
+          }
         }
-        tot_flow += flow;
-/*ly*/       tot_cost += sink_pot * flow;/*ry*/
+        /*ly*/tot_flow += flow;
+        tot_cost += sink_pot * flow;/*ry*/
       }
     }
-    return /*ly*/{/*ry*/tot_flow/*ly*/, tot_cost}/*ry*/;
+    return /*ly*/{tot_/*ry*/flow/*ly*/, tot_cost}/*ry*/;
   }
   ll flow_on_edge(int idx) {
     assert(idx < cap.size());
@@ -147,7 +170,6 @@ struct MaxFlow {
 };
 const int nmax = 1055;
 int main() {
-  // arguments source and sink, memory usage O(largest node index +input size)
   int t;
   scanf("%d", &t);
   for (int i = 0; i < t; ++i) {

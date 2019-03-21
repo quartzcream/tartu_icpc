@@ -46,28 +46,27 @@ ll dist_sq(const Vec &p1, const Vec &p2) {
 }
 //!finish
 //!start
-const int is_query = (1 << 31) - 1;
 struct Point;
 multiset<Point>::iterator end_node;
 
 struct Point {
   Vec p;
-  // int m, b;
   typename multiset<Point>::iterator get_it() const {
     tuple<void *> tmp = {(void *)this - 32}; // gcc rb_tree dependent
     return *(multiset<Point>::iterator *)(&tmp);
   }
   bool operator<(const Point &rhs) const {
-    int part = rhs.p.S ^ is_query;
-    if ((part + 1) & ~2) return (p.F < rhs.p.F); // sort by x
+    return (p.F < rhs.p.F); // sort by x
+  }
+  bool operator<(const Vec &q) const {
     auto nxt = next(get_it());
     if (nxt == end_node) return 0; // nxt == end()
-    return part * dot(p, {rhs.p.F, 1}) <
-           part * dot(nxt->p, {rhs.p.F, 1}); // convex hull trick
+    return q.S * dot(p, {q.F, 1}) <
+           q.S * dot(nxt->p, {q.F, 1}); // convex hull trick
   }
 };
 template <int part> // 1 = upper, -1 = lower
-struct HullDynamic : public multiset<Point> {
+struct HullDynamic : public multiset<Point, less<> > {
   bool bad(iterator y) {
     if (y == begin()) return 0;
     auto x = prev(y);
@@ -75,7 +74,7 @@ struct HullDynamic : public multiset<Point> {
     if (z == end()) return y->p.F == x->p.F && y->p.S <= x->p.S;
     return part * cross(sub(y->p, x->p), sub(y->p, z->p)) <= 0;
   }
-  void insert_point(int m, int b) {
+  void insert_point(int m, int b) {// O(log(N))
     auto y = insert({{m, b}});
     if (bad(y)) {
       erase(y);
@@ -84,9 +83,9 @@ struct HullDynamic : public multiset<Point> {
     while (next(y) != end() && bad(next(y))) erase(next(y));
     while (y != begin() && bad(prev(y))) erase(prev(y));
   }
-  ll eval(int x) {    // upper maximize dot({x, 1}, v)
-    end_node = end(); // lower minimize dot({x, 1}, v)
-    auto it = lower_bound((Point){{x, part ^ is_query}});
+  ll eval(int x) {// O(log(N)) upper maximize dot({x, 1}, v)
+    end_node = end(); //       lower minimize dot({x, 1}, v)
+    auto it = lower_bound((Vec){x, part});
     return (ll)it->p.F * x + it->p.S;
   }
 };
