@@ -414,14 +414,62 @@ typedef vector<Seg>::iterator SegIt;
 #define F first
 #define S second
 #define MP(x, y) make\_pair(x, y)
-ll dot(Vec &v1, Vec &v2) { return (ll)v1.F * v2.F + (ll)v1.S * v2.S; }
-ll cross(Vec &v1, Vec &v2) {@ $ \hfill #6913 $ @
+Vec sub(const Vec &v1, const Vec &v2) {@ $ \hfill #7360 $ @
+  return MP(v1.F - v2.F, v1.S - v2.S);
+}
+ll dot(const Vec &v1, const Vec &v2) {
+  return (ll)v1.F * v2.F + (ll)v1.S * v2.S;
+}@ $ \hfill #9034 $ @
+ll cross(const Vec &v1, const Vec &v2) {
   return (ll)v1.F * v2.S - (ll)v2.F * v1.S;
 }
-ll dist_sq(Vec &p1, Vec &p2) {
-  return (ll)(p2.F - p1.F) * (p2.F - p1.F) +
-         (ll)(p2.S - p1.S) * (p2.S - p1.S);@ $ \hfill #3216 $ @
-}@ $ \hfill %8008 $ @
+ll dist_sq(const Vec &p1, const Vec &p2) {
+  return (ll)(p2.F - p1.F) * (p2.F - p1.F) +@ $ \hfill #3379 $ @
+         (ll)(p2.S - p1.S) * (p2.S - p1.S);
+}@ $ \hfill %0923 $ @
+const int is_query = (1 << 31) - 1;
+struct Point;
+multiset<Point>::iterator end_node;
+struct Point {
+  Vec p;@ $ \hfill #4011 $ @
+  // int m, b;
+  typename multiset<Point>::iterator get_it() const {
+    tuple<void *> tmp = {(void *)this - 32}; // gcc rb\_tree dependent
+    return *(multiset<Point>::iterator *)(&tmp);
+  }
+  bool operator<(const Point &rhs) const {@ $ \hfill #9723 $ @
+    int part = rhs.p.S ^ is_query;
+    if ((part + 1) & ~2) return (p.F < rhs.p.F); // sort by x
+    auto nxt = next(get_it());
+    if (nxt == end_node) return 0; // nxt == end()
+    return part * dot(p, {rhs.p.F, 1}) <@ $ \hfill #2246 $ @
+           part * dot(nxt->p, {rhs.p.F, 1}); // convex hull trick
+  }
+};
+template <int part> // 1 = upper, -1 = lower
+struct HullDynamic : public multiset<Point> {@ $ \hfill #4448 $ @
+  bool bad(iterator y) {
+    if (y == begin()) return 0;
+    auto x = prev(y);
+    auto z = next(y);
+    if (z == end()) return y->p.F == x->p.F && y->p.S <= x->p.S;
+    return part * cross(sub(y->p, x->p), sub(y->p, z->p)) <= 0;
+  }@ $ \hfill #4888 $ @
+  void insert_point(int m, int b) {
+    auto y = insert({{m, b}});
+    if (bad(y)) {
+      erase(y);
+      return;@ $ \hfill #4527 $ @
+    }
+    while (next(y) != end() && bad(next(y))) erase(next(y));
+    while (y != begin() && bad(prev(y))) erase(prev(y));
+  }
+  ll eval(int x) {    // upper maximize dot({x, 1}, v)
+    end_node = end(); // lower minimize dot({x, 1}, v)
+    auto it = lower_bound((Point){{x, part ^ is_query}});
+    return (ll)it->p.F * x + it->p.S;@ $ \hfill #4790 $ @
+  }
+};@ $ \hfill %3487 $ @
 struct Hull {
   vector<Seg> hull;
   SegIt up_beg;
@@ -585,29 +633,31 @@ struct Hull {
         dot(dir, it_min->F) > opt_val)
       return MP(hull.end(), hull.end());@ $ \hfill #0276 $ @
     SegIt it_r1, it_r2;
-    function<bool(Seg &, Seg &)> inc_c([&dir](Seg &lft, Seg &rgt) {
-      return dot(dir, lft.F) < dot(dir, rgt.F);
-    });
-    function<bool(Seg &, Seg &)> dec_c([&dir](Seg &lft, Seg &rgt) {
-      return dot(dir, lft.F) > dot(dir, rgt.F);@ $ \hfill #0483 $ @
-    });
-    if (it_min <= it_max) {
+    function<bool(const Seg &, const Seg &)> inc_c(
+      [&dir](const Seg &lft, const Seg &rgt) {
+        return dot(dir, lft.F) < dot(dir, rgt.F);
+      });@ $ \hfill #1828 $ @
+    function<bool(const Seg &, const Seg &)> dec_c(
+      [&dir](const Seg &lft, const Seg &rgt) {
+        return dot(dir, lft.F) > dot(dir, rgt.F);
+      });
+    if (it_min <= it_max) {@ $ \hfill #8337 $ @
       it_r1 = upper_bound(it_min, it_max + 1, l, inc_c) - 1;
       if (dot(dir, hull.front().F) >= opt_val) {
         it_r2 = upper_bound(hull.begin(), it_min + 1, l, dec_c) - 1;
-      } else {@ $ \hfill #9409 $ @
+      } else {
         it_r2 = upper_bound(it_max, hull.end(), l, dec_c) - 1;
-      }
+      }@ $ \hfill #1848 $ @
     } else {
       it_r1 = upper_bound(it_max, it_min + 1, l, dec_c) - 1;
-      if (dot(dir, hull.front().F) <= opt_val) {@ $ \hfill #9772 $ @
+      if (dot(dir, hull.front().F) <= opt_val) {
         it_r2 = upper_bound(hull.begin(), it_max + 1, l, inc_c) - 1;
-      } else {
+      } else {@ $ \hfill #3840 $ @
         it_r2 = upper_bound(it_min, hull.end(), l, inc_c) - 1;
       }
-    }@ $ \hfill #9450 $ @
+    }
     return MP(it_r1, it_r2);
-  }@ $ \hfill %1498 $ @
+  }@ $ \hfill #5268 $ @@ $ \hfill %5268 $ @
   Seg diameter() { // O(n)
     Seg res;
     ll dia_sq = 0;

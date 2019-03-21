@@ -28,18 +28,69 @@ typedef vector<Seg>::iterator SegIt;
 #define S second
 #define MP(x, y) make_pair(x, y)
 
-ll dot(Vec &v1, Vec &v2) { return (ll)v1.F * v2.F + (ll)v1.S * v2.S; }
+Vec sub(const Vec &v1, const Vec &v2) {
+  return MP(v1.F - v2.F, v1.S - v2.S);
+}
 
-ll cross(Vec &v1, Vec &v2) {
+ll dot(const Vec &v1, const Vec &v2) {
+  return (ll)v1.F * v2.F + (ll)v1.S * v2.S;
+}
+
+ll cross(const Vec &v1, const Vec &v2) {
   return (ll)v1.F * v2.S - (ll)v2.F * v1.S;
 }
 
-ll dist_sq(Vec &p1, Vec &p2) {
+ll dist_sq(const Vec &p1, const Vec &p2) {
   return (ll)(p2.F - p1.F) * (p2.F - p1.F) +
          (ll)(p2.S - p1.S) * (p2.S - p1.S);
 }
 //!finish
+//!start
+const int is_query = (1 << 31) - 1;
+struct Point;
+multiset<Point>::iterator end_node;
 
+struct Point {
+  Vec p;
+  // int m, b;
+  typename multiset<Point>::iterator get_it() const {
+    tuple<void *> tmp = {(void *)this - 32}; // gcc rb_tree dependent
+    return *(multiset<Point>::iterator *)(&tmp);
+  }
+  bool operator<(const Point &rhs) const {
+    int part = rhs.p.S ^ is_query;
+    if ((part + 1) & ~2) return (p.F < rhs.p.F); // sort by x
+    auto nxt = next(get_it());
+    if (nxt == end_node) return 0; // nxt == end()
+    return part * dot(p, {rhs.p.F, 1}) <
+           part * dot(nxt->p, {rhs.p.F, 1}); // convex hull trick
+  }
+};
+template <int part> // 1 = upper, -1 = lower
+struct HullDynamic : public multiset<Point> {
+  bool bad(iterator y) {
+    if (y == begin()) return 0;
+    auto x = prev(y);
+    auto z = next(y);
+    if (z == end()) return y->p.F == x->p.F && y->p.S <= x->p.S;
+    return part * cross(sub(y->p, x->p), sub(y->p, z->p)) <= 0;
+  }
+  void insert_point(int m, int b) {
+    auto y = insert({{m, b}});
+    if (bad(y)) {
+      erase(y);
+      return;
+    }
+    while (next(y) != end() && bad(next(y))) erase(next(y));
+    while (y != begin() && bad(prev(y))) erase(prev(y));
+  }
+  ll eval(int x) {    // upper maximize dot({x, 1}, v)
+    end_node = end(); // lower minimize dot({x, 1}, v)
+    auto it = lower_bound((Point){{x, part ^ is_query}});
+    return (ll)it->p.F * x + it->p.S;
+  }
+};
+//!finish
 //!start
 struct Hull {
   vector<Seg> hull;
@@ -216,12 +267,14 @@ struct Hull {
         dot(dir, it_min->F) > opt_val)
       return MP(hull.end(), hull.end());
     SegIt it_r1, it_r2;
-    function<bool(Seg &, Seg &)> inc_c([&dir](Seg &lft, Seg &rgt) {
-      return dot(dir, lft.F) < dot(dir, rgt.F);
-    });
-    function<bool(Seg &, Seg &)> dec_c([&dir](Seg &lft, Seg &rgt) {
-      return dot(dir, lft.F) > dot(dir, rgt.F);
-    });
+    function<bool(const Seg &, const Seg &)> inc_c(
+      [&dir](const Seg &lft, const Seg &rgt) {
+        return dot(dir, lft.F) < dot(dir, rgt.F);
+      });
+    function<bool(const Seg &, const Seg &)> dec_c(
+      [&dir](const Seg &lft, const Seg &rgt) {
+        return dot(dir, lft.F) > dot(dir, rgt.F);
+      });
     if (it_min <= it_max) {
       it_r1 = upper_bound(it_min, it_max + 1, l, inc_c) - 1;
       if (dot(dir, hull.front().F) >= opt_val) {
@@ -297,6 +350,96 @@ bool intersects(Seg line,
 double dist(Vec &p1, Vec &p2) {
   return sqrt((ll)(p2.F - p1.F) * (p2.F - p1.F) +
               (ll)(p2.S - p1.S) * (p2.S - p1.S));
+}
+
+void test_dynamic_hull() {
+  for (int r = 2; r < 1e9; r *= 2) {
+    for (int i = 2; i < 200; ++i) {
+      for (int t = 0; t < 100; ++t) {
+        bool diff = false;
+        vector<Vec> points;
+        do {
+          points.clear();
+          ran(j, 0, i) {
+            points.emplace_back(
+              rand() % (2 * r) - r, rand() % (2 * r) - r);
+          }
+          ran(j, 0, i) {
+            if (points[j] != points[0]) diff = true;
+          }
+        } while (!diff);
+        Hull hull(points);
+        HullDynamic<1> hull_dyn;
+        ran(j, 0, i) hull_dyn.insert_point(points[j].F, points[j].S);
+        auto it1 = hull_dyn.rbegin();
+        auto it2 = hull.up_beg;
+        while (it1 != hull_dyn.rend() && it2 != hull.hull.end()) {
+          assert(it1->p.F == it2->F.F && it1->p.S == it2->F.S);
+          ++it1;
+          ++it2;
+        }
+        assert(it2 == hull.hull.end());
+        assert(it1 != hull_dyn.rend());
+        it2 = hull.hull.begin();
+        assert(it1->p.F == it2->F.F && it1->p.S == it2->F.S);
+        ++it1;
+        assert(it1 == hull_dyn.rend());
+        ran(j, 0, 10) {
+          int x = rand() % 20 - 10;
+          Vec vec = {x, 1};
+          ll best = -(1LL << 60);
+          for (auto p : points) {
+            best = max(best, dot(vec, p));
+          }
+          ll cand = hull_dyn.eval(x);
+          assert(best == cand);
+        }
+      }
+    }
+  }
+  for (int r = 2; r < 1e9; r *= 2) {
+    for (int i = 2; i < 200; ++i) {
+      for (int t = 0; t < 100; ++t) {
+        bool diff = false;
+        vector<Vec> points;
+        do {
+          points.clear();
+          ran(j, 0, i) {
+            points.emplace_back(
+              rand() % (2 * r) - r, rand() % (2 * r) - r);
+          }
+          ran(j, 0, i) {
+            if (points[j] != points[0]) diff = true;
+          }
+        } while (!diff);
+        Hull hull(points);
+        HullDynamic<-1> hull_dyn;
+        ran(j, 0, i) hull_dyn.insert_point(points[j].F, points[j].S);
+        auto it1 = hull_dyn.begin();
+        auto it2 = hull.hull.begin();
+        while (it1 != hull_dyn.end() && it2 != hull.up_beg) {
+          assert(it1->p.F == it2->F.F && it1->p.S == it2->F.S);
+          ++it1;
+          ++it2;
+        }
+        assert(it2 == hull.up_beg);
+        assert(it1 != hull_dyn.end());
+        assert(it1->p.F == it2->F.F && it1->p.S == it2->F.S);
+        ++it1;
+        assert(it1 == hull_dyn.end());
+        ran(j, 0, 10) {
+          int x = rand() % 20 - 10;
+          Vec vec = {x, 1};
+          ll best = (1LL << 60);
+          for (auto p : points) {
+            best = min(best, dot(vec, p));
+          }
+          ll cand = hull_dyn.eval(x);
+          assert(best == cand);
+        }
+      }
+    }
+  }
 }
 
 void test_closest() {
@@ -568,6 +711,26 @@ void test_intersects() {
 }
 
 int main() {
+  int seed;
+  scanf("%d", &seed);
+  srand(seed);
+  vector<Vec> points;
+  int cord_lim = sqrt(2e9) - 1;
+  printf("%d\n", cord_lim);
+  int cord_offset = 1e9;
+  HullDynamic<1> hull_dyn;
+  const int lim = 1e5;
+  ran(i, 0, lim) {
+    int x = rand() % (2 * cord_lim) - cord_lim;
+    hull_dyn.insert_point(x, cord_offset - x * x - (rand() & 1));
+  }
+  ll res = rand();
+  ran(i, 0, lim) {
+    int x = rand() % (2 * cord_lim) - cord_lim;
+    res ^= hull_dyn.eval(x);
+  }
+  printf("%lld", res);
+  test_dynamic_hull();
   test_closest();
   test_tan();
   test_in_dir();
