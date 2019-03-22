@@ -13,9 +13,9 @@ from collections import namedtuple
 Region = namedtuple('Region', ['start', 'end', 'token'])
 REGIONS = [
 
+	Region('/*ly*/', '/*ry*/', Token.RegionYellow),
 	Region('/*lp*/', '/*rp*/', Token.RegionPink),
 	Region('/*lg*/', '/*rg*/', Token.RegionGreen),
-	Region('/*ly*/', '/*ry*/', Token.RegionYellow),
 ]
 
 __all__ = ['TartuICPCLexer']
@@ -33,37 +33,54 @@ class TartuICPCLexer(CppLexer):
 	priority = 0.1
 
 	def passthrough(self, text, l, r, parent):
+		import sys
 		if parent == None:
 			prev = None
 			for ofs, tok, val in super().get_tokens_unprocessed(text[l:r]):
 				if prev:
 					yield prev
+
+				#sys.stderr.write(f'PACKET "{val}"\n')
 				prev = (ofs+l, tok, val)
-			ofs, tok, val = prev
-			yield ofs, tok, val[:-1]
-		else:
-			yield l, parent, text[l:r]
+			if prev:
+				ofs, tok, val = prev
+				#sys.stderr.write(f'pass_end "{val}"\n')
+				if(len(val) >= 2 and val[-2:] == '/*'):
+					val = val[:-2]
+				#sys.stderr.write(f'pass_end "{val}"\n')
+				yield ofs, tok, val
+				return
+		val = text[l:r]
+		#sys.stderr.write(f'pass_end "{val}"\n')
+		if(len(val) >= 2 and val[-2:] == '/*'):
+			val = val[:-2]
+		#sys.stderr.write(f'pass_end "{val}"\n')
+		yield l, parent, val
 
 	def _analyse(self, text, l, r, parent):
 		import sys
+		#sys.stderr.write(f'PIECE {l}..{r}\n')
+		#sys.stderr.write(text[l:r])
 		for regtype in REGIONS:
 			start = text.find(regtype.start, l, r)
 			if start == -1:
 				continue
 			ml = start + len(regtype.start)
 			end = text.find(regtype.end, ml, r)
-			mr = end + len(regtype.end)
 			if end == -1:
 				continue
-			sys.stderr.write(f'MATCH {regtype.token} {start}..{end}\n')
-			yield from self.passthrough(text, l, start, parent)
-			yield start, regtype.token, text[start:ml]
+			mr = end + len(regtype.end)
+			#sys.stderr.write(f'MATCH {regtype.token} {start}..{mr}\n')
+			#sys.stderr.write(f'BEG {text[start:ml]}\n')
+			#sys.stderr.write(f'END {text[end:mr]}\n')
+			yield from self._analyse(text, l, start+2, parent)
+			#yield start, regtype.token, text[start:mr]
+			#yield start, regtype.token, text[start:ml]
 			yield from self._analyse(text, ml, end, regtype.token)
-			yield end, regtype.token, text[end:mr]
+			#yield end, regtype.token, text[end:mr]
 			yield from self._analyse(text, mr, r, parent)
 			return
-		if l < r:
-			yield from self.passthrough(text, l, r, parent)
+		yield from self.passthrough(text, l, r, parent)
 
 	def get_tokens_unprocessed(self, text):
 		yield from self._analyse(text, 0, len(text), None)
@@ -128,7 +145,7 @@ class TartuICPCStyle(Style):
 
 		Error:                     "border:#FF0000",
 
-		Token.RegionPink:          "bg:#FFD8FF",
-		Token.RegionGreen:         "bg:#D8FFD8",
-		Token.RegionYellow:        "bg:#FFFFD8",
+		Token.RegionPink:          "bg:#FFB8FF",
+		Token.RegionGreen:         "bg:#B8FFB8",
+		Token.RegionYellow:        "bg:#FFFFB8",
 	}
