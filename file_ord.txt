@@ -2,6 +2,7 @@ header.tex
 setup.sh
 crc_simple.sh
 geometry_section.tex
+facts_section.tex
 ordered_set.cpp
 hashes.cpp
 triangle.cpp

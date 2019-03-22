@@ -1,0 +1,33 @@
+% !begin_codebook
+  \section{Maxflow Complexity}
+  \begin{description}[align=left]
+    \item [$\mathcal{O}(V^2E)$] -- Dinic
+    \item [$\Theta({VE \log U})$] -- Capacity scaling
+    \item [$\Theta(\text{flow}E)$] -- Small flow
+    \item [$\Theta(\min\{V^{\frac{2}{3}},E^{\frac{1}{2}}\}E)$] -- Unitary capacities
+    \item [$\Theta(\sqrt{V}E)$] -- Each vertex other than S,T has only a single incoming unitary edge or outgoing one (bipartite matching)
+    \item [$\Theta(\text{flow}E \log V)$] -- Min-cost-max flow
+  \end{description}
+  \section{Min Rotation of string}
+  \begin{lstlisting}
+    int a=0, N=s.size();
+    s += s;
+    ran(b,0,N){
+      ran(i,0,N) {
+        if (a+i == b || s[a+i] < s[b+i]) {
+          b += max(0, i-1);
+          break;
+        }
+        if (s[a+i] > s[b+i]) {
+          a = b;
+          break;
+        }
+      }
+    }
+    return a;
+  \end{lstlisting}
+\end{multicols}
+\unboldmath
+\setlength\columnsep{10mm}
+\begin{multicols*}{2}
+% !end_codebook

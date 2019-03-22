@@ -92,26 +92,27 @@
 \tableofcontents
 \par\noindent\rule{\textwidth}{0.4pt}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, texcomments=true, mathescape=true]{bash}
-alias g++='g++ -g -Wall -Wshadow -DCDEBUG' #.basrc
-alias a='setxkbmap us -option'
-alias m='setxkbmap us -option caps:escape'
-alias ma='setxkbmap us -variant dvp -option caps:escape'
+alias g++='g++ -g -Wall -Wshadow -Wconversion \
+    -fsanitize=undefined,address -DCDEBUG'               #.bashrc
+alias a='setxkbmap us -option'                           #.bashrc
+alias m='setxkbmap us -option caps:escape'               #.bashrc
+alias ma='setxkbmap us -variant dvp -option caps:escape' #.bashrc
 #settings
 gsettings set org.compiz.core:/org/compiz/profiles/Default/plugins/core/ hsize 4
 gsettings set org.gnome.desktop.wm.preferences focus-mode 'sloppy'
-set si cin #.vimrc
-set ts=4 sw=4 noet
-set cb=unnamed
+set si cin         #.vimrc
+set ts=4 sw=4 noet #.vimrc
+set cb=unnamedplus #.vimrc
 (global-set-key (kbd "C-x <next>") 'other-window) #.emacs
 (global-set-key (kbd "C-x <prior>") 'previous-multiframe-window)
 (global-set-key (kbd "C-M-z") 'ansi-term)
 (global-linum-mode 1)
 (column-number-mode 1)
 (show-paren-mode 1)
-(setq-default indent-tabs-mode nil)
+(setq-default indent-tabs-mode nil) #.emacs
 valgrind --vgdb-error=0 ./a <inp & #valgrind
-gdb a
-target remote | vgdb
+gdb a                              #valgrind
+target remote | vgdb               #valgrind
 \end{minted}
 \section{crc.sh}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, texcomments=true, mathescape=true]{bash}
@@ -179,6 +180,33 @@ Area of a spherical polygon:
 \begin{equation*}
   r^2 [ \text{sum of interior angles} - (n - 2)\pi ].
 \end{equation*}
+  \section{Maxflow Complexity}
+  \begin{description}[align=left]
+    \item [$\mathcal{O}(V^2E)$] -- Dinic
+    \item [$\Theta({VE \log U})$] -- Capacity scaling
+    \item [$\Theta(\text{flow}E)$] -- Small flow
+    \item [$\Theta(\min\{V^{\frac{2}{3}},E^{\frac{1}{2}}\}E)$] -- Unitary capacities
+    \item [$\Theta(\sqrt{V}E)$] -- Each vertex other than S,T has only a single incoming unitary edge or outgoing one (bipartite matching)
+    \item [$\Theta(\text{flow}E \log V)$] -- Min-cost-max flow
+  \end{description}
+  \section{Min Rotation of string}
+  \begin{lstlisting}
+    int a=0, N=s.size();
+    s += s;
+    ran(b,0,N){
+      ran(i,0,N) {
+        if (a+i == b || s[a+i] < s[b+i]) {
+          b += max(0, i-1);
+          break;
+        }
+        if (s[a+i] > s[b+i]) {
+          a = b;
+          break;
+        }
+      }
+    }
+    return a;
+  \end{lstlisting}
 \end{multicols}
 \unboldmath
 \setlength\columnsep{10mm}
@@ -196,25 +224,31 @@ Area of a spherical polygon:
 typedef long long ll;@ $ \hfill #1736 $ @
 typedef long double ld;
 using namespace std;@ $ \hfill %1386 $ @
+#pragma GCC optimize("Ofast")  // better vectorization
+#pragma GCC target("avx,avx2") // double vectorized performance
 #include <bits/extc++.h>
 using namespace __gnu_pbds;
 template <typename T, typename U>
-using hashmap = gp_hash_table<T, U>;
+using hashmap = gp_hash_table<T, U>; // dumb, 3x faster than stl
 template <typename T>@ $ \hfill #1392 $ @
 using ordered_set = tree<T, null_type, less<T>, rb_tree_tag,
-  tree_order_statistics_node_update>;
+  tree_order_statistics_node_update>;@ $ \hfill %3907 $ @
 int main() {
   ordered_set<int> cur;
-  cur.insert(1);@ $ \hfill #2223 $ @
+  cur.insert(1);
   cur.insert(3);
   cout << cur.order_of_key(2)
        << endl; // the number of elements in the set less than 2
   cout << *cur.find_by_order(0)
        << endl; // the 0-th smallest number in the set(0-based)
-  cout << *cur.find_by_order(1)@ $ \hfill #2496 $ @
+  cout << *cur.find_by_order(1)
        << endl; // the 1-th smallest number in the set(0-based)
+  ordered_set<int> oth;
+  oth.insert(5); // to join: cur < oth
+  cur.join(oth); // cur = {1, 3, 5}, oth = {}
+  cur.split(1, oth); // cur = {1}, oth = {3, 5}
   hashmap<int, int> h({}, {}, {}, {}, {1 << 16});
-}@ $ \hfill %5192 $ @
+}
 \end{minted}
 \section{PRNGs and Hash functions}
 \begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mm, breaklines, frame=lines, escapeinside=@@, texcomments=true, mathescape=true]{c++}
