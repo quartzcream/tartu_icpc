@@ -13,13 +13,14 @@ typedef long long ll;
 typedef long double ld;
 using namespace std;
 
-//!escape \section{Templated multi dimensional BIT $\mathcal{O}(\log(n)^\text{dim})$ per query}
+//!escape Templated multi dimensional BIT O(log(n)^d) per query
 
 //!begin_codebook
 //!start
-// Fully overloaded any dimensional BIT, use any type for coordinates,
-// elements, return_value. Includes coordinate compression.
-template <typename E_T, typename C_T, C_T n_inf, typename R_T>
+// Fully overloaded any dimensional BIT, use any type for
+// coordinates, elements, return_value. Includes
+// coordinate compression.
+template <class E_T, class C_T, C_T n_inf, class R_T>
 struct BIT {
   vector<C_T> pos;
   vector<E_T> elems;
@@ -32,14 +33,16 @@ struct BIT {
     } else {
       act = true;
       sort(pos.begin(), pos.end());
-      pos.resize(unique(pos.begin(), pos.end()) - pos.begin());
+      pos.resize(
+        unique(pos.begin(), pos.end()) - pos.begin());
       elems.resize(pos.size());
     }
   }
   template <typename... loc_form>
   void update(C_T cx, loc_form... args) {
     if (act) {
-      int x = lower_bound(pos.begin(), pos.end(), cx) - pos.begin();
+      int x = lower_bound(pos.begin(), pos.end(), cx) -
+              pos.begin();
       for (; x < (int)pos.size(); x += x & -x)
         elems[x].update(args...);
     } else {
@@ -47,10 +50,13 @@ struct BIT {
     }
   }
   template <typename... loc_form>
-  R_T query(C_T cx, loc_form... args) { // sum in (-inf, cx)
+  R_T query(
+    C_T cx, loc_form... args) { // sum in (-inf, cx)
     R_T res = 0;
-    int x = lower_bound(pos.begin(), pos.end(), cx) - pos.begin() - 1;
-    for (; x > 0; x -= x & -x) res += elems[x].query(args...);
+    int x = lower_bound(pos.begin(), pos.end(), cx) -
+            pos.begin() - 1;
+    for (; x > 0; x -= x & -x)
+      res += elems[x].query(args...);
     return res;
   }
 };
@@ -68,7 +74,9 @@ struct wrapped {
 //!finish
 int main() {
   // retun type should be same as type inside wrapped
-  BIT<BIT<wrapped<ll>, int, INT_MIN, ll>, int, INT_MIN, ll> fenwick;
+  BIT<BIT<wrapped<ll>, int, INT_MIN, ll>, int, INT_MIN,
+    ll>
+    fenwick;
   int dim = 2;
   vector<tuple<int, int, ll> > to_insert;
   to_insert.emplace_back(1, 1, 1);
@@ -81,7 +89,8 @@ int main() {
   }
   // actual use
   for (auto &cur : to_insert)
-    fenwick.update(get<0>(cur), get<1>(cur), get<2>(cur));
+    fenwick.update(
+      get<0>(cur), get<1>(cur), get<2>(cur));
   cout << fenwick.query(2, 2) << '\n';
 }
 //!end_codebook

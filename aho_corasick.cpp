@@ -17,13 +17,14 @@ const int mod = 1e9 + 7;
 const double M_PI = acos(-1.0);
 #endif
 
-//!escape \section{Aho Corasick $\mathcal{O}(|\text{alpha}|\sum{\text{len}})$}
+//!escape Aho Corasick O(|alpha|*sum(len))
 
 //!begin_codebook
 //!start
 const int alpha_size = 26;
 struct Node {
-  Node *nxt[alpha_size]; // May use other structures to move in trie
+  Node *nxt[alpha_size]; // May use other structures to
+                         // move in trie
   Node *suffix;
   Node() { memset(nxt, 0, alpha_size * sizeof(Node *)); }
   int cnt = 0;
@@ -32,7 +33,8 @@ Node *aho_corasick(vector<vector<char> > &dict) {
   Node *root = new Node;
   root->suffix = 0;
   vector<pair<vector<char> *, Node *> > state;
-  for (vector<char> &s : dict) state.emplace_back(&s, root);
+  for (vector<char> &s : dict)
+    state.emplace_back(&s, root);
   for (int i = 0; !state.empty(); ++i) {
     vector<pair<vector<char> *, Node *> > nstate;
     for (auto &cur : state) {
@@ -53,7 +55,8 @@ Node *aho_corasick(vector<vector<char> > &dict) {
           suf = suf->suffix;
         }
       }
-      if (cur.first->size() > i + 1) nstate.push_back(cur);
+      if (cur.first->size() > i + 1)
+        nstate.push_back(cur);
     }
     state = nstate;
   }
@@ -63,7 +66,8 @@ Node *aho_corasick(vector<vector<char> > &dict) {
 // auxilary functions for searhing and counting
 //!start
 Node *walk(Node *cur,
-  char c) { // longest prefix in dict that is suffix of walked string.
+  char c) { // longest prefix in dict that is suffix of
+            // walked string.
   while (true) {
     if (cur->nxt[c]) return cur->nxt[c];
     if (!cur->suffix) return cur;
@@ -81,8 +85,9 @@ void cnt_matches(Node *root, vector<char> &match_in) {
 }
 //!finish
 //!start
-void add_cnt(Node *root) { // After counting matches propagete ONCE to
-                           // suffixes for final counts
+void add_cnt(
+  Node *root) { // After counting matches propagete ONCE
+                // to suffixes for final counts
   vector<Node *> to_visit = {root};
   ran(i, 0, to_visit.size()) {
     Node *cur = to_visit[i];
@@ -95,9 +100,9 @@ void add_cnt(Node *root) { // After counting matches propagete ONCE to
 }
 //!finish
 int main() {
-  //!end_codebook
+  //!pause
   // http://codeforces.com/group/s3etJR5zZK/contest/212916/problem/4
-  //!begin_codebook
+  //!unpause
   int n, len;
   scanf("%d %d", &len, &n);
   vector<char> a(len + 1);

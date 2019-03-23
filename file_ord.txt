@@ -1,6 +1,6 @@
 header.tex
 setup.sh
-crc_simple.sh
+crc.sh
 geometry_section.tex
 facts_section.tex
 ordered_set.cpp

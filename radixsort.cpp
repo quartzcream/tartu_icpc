@@ -12,7 +12,7 @@ typedef long long ll;
 typedef long double ld;
 typedef unsigned char uchar;
 using namespace std;
-//!escape \section{Radixsort 50M 64 bit integers as single array in 1 sec}
+//!escape Radixsort 50M 64 bit integers as single array in 1 sec
 //!begin_codebook
 //!start
 
@@ -52,7 +52,8 @@ const int nmax = 5e7;
 ll arr[nmax], tmp[nmax];
 
 int main() {
-  for (int i = 0; i < nmax; ++i) arr[i] = ((ll)rand() << 32) | rand();
+  for (int i = 0; i < nmax; ++i)
+    arr[i] = ((ll)rand() << 32) | rand();
   rsort(arr, tmp, nmax);
   assert(is_sorted(arr, arr + nmax));
 }

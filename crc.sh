@@ -1,14 +1,13 @@
-# !escape \section{crc.sh}
+# !escape crc.sh
 
 # !begin_codebook
 #!/bin/envbash
-starts=($(sed '/^\s*$/d' $1 | grep -n "//\!start" | cut -f1 -d:))
-finishes=($(sed '/^\s*$/d' $1 | grep -n "//\!finish" | cut -f1 -d:))
-for ((i=0;i<${#starts[@]};i++)); do
-  for j in `seq 5 5 $((finishes[$i]-starts[$i]+4))`; do
-    sed '/^\s*$/d' $1 | head -$((finishes[$i]-1)) | tail -$((finishes[$i]-starts[$i]-1)) | \
-      head -$j | tr -d '[[:space:]]' | cksum | cut -f1 -d ' ' | tail -c 4
-  done #whistespaces don't matter
-  echo #there shouldn't be any comments in the checked range
-done #check last number in each block
+
+for j in `seq $2 1 $3`; do #whistespaces don't matter.
+  sed '/^\s*$/d' $1 | head -$j | tr -d '[[:space:]]' \
+    | cksum | cut -f1 -d ' ' | tail -c 5
+done #there shouldn't be any COMMENTS.
+#copy lines being checked to separate file.
+# $ ./crc.sh tmp.cpp 999 999
+# $ ./crc.sh tmp.cpp 1 333 | grep XXXX
 # !end_codebook

@@ -17,31 +17,29 @@ const int mod = 1e9 + 7;
 const double M_PI = acos(-1.0);
 #endif
 
-//!escape \section{PRNGs and Hash functions}
-/*
+//!escape PRNGs and Hash functions
 //!begin_codebook
 //!start
 mt19937 gen;
-uint64_t rand64() { return gen() ^ ((uint64_t)gen() << 32); }
+uint64_t rand64() {
+  return gen() ^ ((uint64_t)gen() << 32);
+}
 //!finish
-//!end_codebook
-*/
-//!begin_codebook
 //!start
 uint64_t rand64() {
   static uint64_t x = 1; //x != 0
   x ^= x >> 12;
   x ^= x << 25;
   x ^= x >> 27;
-  return x * 0x2545f4914f6cdd1d; //can remove mult
+  return x * 0x2545f4914f6cdd1d; // can remove mult
 }
 //!finish
-//!end_codebook
+//!pause
 /*
-//!begin_codebook
+//!unpause
 //!start
-uint64_t mix(uint64_t x){ //can replace constant with variable
-        uint64_t mem[2] = { x, 0xdeadbeeffeebdaedull };
+uint64_t mix(uint64_t x){ // deadbeef -> y allowed
+variable uint64_t mem[2] = { x, 0xdeadbeeffeebdaedull };
         asm volatile (
                 "pxor %%xmm0, %%xmm0;"
                 "movdqa (%0), %%xmm1;"
@@ -51,14 +49,14 @@ uint64_t mix(uint64_t x){ //can replace constant with variable
                 : "r" (&mem[0])
                 : "memory"
         );
-        return mem[0]; // use both slots for 128 bit hash
+        return mem[0]; // use both slots for 128 bit
 }
 //!finish
-//!end_codebook
+//!pause
 */
-//!begin_codebook
+//!unpause
 //!start
-uint64_t mix(uint64_t x) { //x != 0
+uint64_t mix64(uint64_t x) { //x != 0
   x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
   x = (x ^ (x >> 27)) * 0x94d049bb133111eb;
   x = x ^ (x >> 31);
@@ -66,7 +64,7 @@ uint64_t mix(uint64_t x) { //x != 0
 }
 //!finish
 //!start
-uint64_t unmix(uint64_t x) {
+uint64_t unmix64(uint64_t x) {
   x = (x ^ (x >> 31) ^ (x >> 62)) * 0x319642b2d24d8ec3;
   x = (x ^ (x >> 27) ^ (x >> 54)) * 0x96de1b173f119089;
   x = x ^ (x >> 30) ^ (x >> 60);
@@ -74,9 +72,9 @@ uint64_t unmix(uint64_t x) {
 }
 //!finish
 //!start
-uint64_t combine(uint64_t x, uint64_t y) {
+uint64_t combine64(uint64_t x, uint64_t y) {
   if (y < x) swap(x, y); // remove for ord
-  return mix(mix(x) + y);
+  return mix64(mix64(x) + y);
 }
 //!finish
 //!end_codebook
@@ -96,8 +94,6 @@ int main() {
     }
     assert(x == y);
   }
-    ran(i, 0, 10) {
-      cout << rand64() << '\n';
-    }
+  ran(i, 0, 10) { cout << rand64() << '\n'; }
   return 0;
 }

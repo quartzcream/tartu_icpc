@@ -1,4 +1,4 @@
-//!escape \section{gcc ordered set, hashtable}
+//!escape gcc ordered set, hashtable
 
 //!begin_codebook
 //!start
@@ -17,30 +17,30 @@ typedef long long ll;
 typedef long double ld;
 using namespace std;
 //!finish
-#pragma GCC optimize ("Ofast") //better vectorization
-#pragma GCC target ("avx,avx2") //double vectorized performance
+#pragma GCC optimize("Ofast") // better vectorization
+#pragma GCC target("avx,avx2")
+// double vectorized performance
 //!start
 #include <bits/extc++.h>
 using namespace __gnu_pbds;
 
 template <typename T, typename U>
-using hashmap = gp_hash_table<T, U>; //dumb, 3x faster than stl
+using hashmap = gp_hash_table<T, U>;
+// dumb, 3x faster than stl
 
 template <typename T>
-using ordered_set = tree<T, null_type, less<T>, rb_tree_tag,
-  tree_order_statistics_node_update>;
+using ordered_set = tree<T, null_type, less<T>,
+  rb_tree_tag, tree_order_statistics_node_update>;
 //!finish
 
 int main() {
   ordered_set<int> cur;
   cur.insert(1);
   cur.insert(3);
-  cout << cur.order_of_key(2)
-       << endl; // the number of elements in the set less than 2
-  cout << *cur.find_by_order(0)
-       << endl; // the 0-th smallest number in the set(0-based)
-  cout << *cur.find_by_order(1)
-       << endl; // the 1-th smallest number in the set(0-based)
+  cout << cur.order_of_key(2) << endl;
+  // the number of elements in the set less than 2
+  cout << *cur.find_by_order(1) << endl;
+  // the 1-st smallest number in the set(0-based)
 
   ordered_set<int> oth;
   oth.insert(5); // to join: cur < oth

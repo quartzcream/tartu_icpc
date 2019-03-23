@@ -13,7 +13,7 @@ typedef long long ll;
 typedef long double ld;
 using namespace std;
 
-//!escape \section{2-Sat $\mathcal{O}(n)$ and SCC $\mathcal{O}(n)$}
+//!escape 2-Sat O(n) and SCC O(n)
 //!begin_codebook
 //!start
 struct Graph {
@@ -27,16 +27,14 @@ struct Graph {
 
   void add_edge(int u, int v) { con[u].push_back(v); }
 
-  void top_dfs(int pos, vector<int> &result, vector<bool> &explr,
-    vector<vector<int> > &revcon) {
+  void top_dfs(int pos, vector<int> &result,
+    vector<bool> &explr, vector<vector<int> > &revcon) {
     if (explr[pos]) return;
     explr[pos] = true;
     for (auto next : revcon[pos])
       top_dfs(next, result, explr, revcon);
     result.push_back(pos);
   }
-  //!finish
-  //!start
 
   vector<int> topsort() {
     vector<vector<int> > revcon(n);
@@ -49,30 +47,26 @@ struct Graph {
     ran(i, 0, n) top_dfs(i, result, explr, revcon);
     reverse(result.begin(), result.end());
     return result;
-  }
-  //!finish
-  //!start
+  }/*ly*/
 
-  void dfs(int pos, vector<int> &result, vector<bool> &explr) {
+  void dfs(
+    int pos, vector<int> &result, vector<bool> &explr) {
     if (explr[pos]) return;
     explr[pos] = true;
     for (auto next : con[pos]) dfs(next, result, explr);
     result.push_back(pos);
-  }
-  //!finish
-  //!start
+  }/*ry*//*lp*/
   vector<vector<int> > scc() {
     //!pause
-    //!end_codebook
     // tested on
     // https://www.hackerearth.com/practice/algorithms/graphs/strongly-connected-comps/practice-problems/algorithm/a-walk-to-remember-qualifier2/
     //!unpause
-    //!begin_codebook
     vector<int> order = topsort();
     reverse(order.begin(), order.end());
     vector<bool> explr(n, false);
     vector<vector<int> > res;
-    for (auto it = order.rbegin(); it != order.rend(); ++it) {
+    for (auto it = order.rbegin(); it != order.rend();
+         ++it) {
       vector<int> comp;
       top_dfs(*it, comp, explr, con);
       sort(comp.begin(), comp.end());
@@ -80,17 +74,17 @@ struct Graph {
     }
     sort(res.begin(), res.end());
     return res;
-  }
+  }/*rp*/
 };
 //!finish
 
 int main() {
-  //!end_codebook
+  //!pause
   ios_base::sync_with_stdio(false);
   cin.tie(0);
   // Solution for:
   // http://codeforces.com/group/PjzGiggT71/contest/221700/problem/C
-  //!begin_codebook
+  //!unpause
 
   int n, m;
   cin >> n >> m;
@@ -115,7 +109,8 @@ int main() {
       vector<int> traversed;
       g.dfs(u, traversed, explr);
 
-      if (traversed.size() > 0 && !state[traversed[0] ^ 1]) {
+      if (traversed.size() > 0 &&
+          !state[traversed[0] ^ 1]) {
         for (auto c : traversed) state[c] = 1;
       }
     }

@@ -18,24 +18,21 @@ const int mod = 1e9 + 7;
 const double M_PI = acos(-1.0);
 #endif
 
-//!escape \section{Fast mod mult, Rabbin Miller prime check, Pollard rho factorization $\mathcal{O}(\sqrt{p})$}
+//!escape Fast mod mult, Rabbin Miller prime check, Pollard rho factorization O(p^0.5)
 
 //!begin_codebook
 //!start
 
 struct ModArithm {
   //!pause
-  //!end_codebook
-  ull q = 0;  // (1<<(shift+64))/n
+  ull q = 0; // (1<<(shift+64))/n
   char shift = -1;
   //!unpause
-  //!begin_codebook
   ull n;
   ld rec;
-  ModArithm(ull _n) : n(_n) {  // n in [2, 1<<63)
-    rec = 1.0L/n;
+  ModArithm(ull _n) : n(_n) { // n in [2, 1<<63)
+    rec = 1.0L / n;
     //!pause
-    //!end_codebook
     ull rem = 1;
     while (rem < n) {
       ++shift;
@@ -48,44 +45,54 @@ struct ModArithm {
       }
       rem *= 2;
     }
-    //!begin_codebook
     //!unpause
   }
-  ull multf(ull a, ull b) {  // a, b in [0, min(2*n, 1<<63))
-    ull mult = (ld)a*b*rec+0.5L;
-    ll res = a*b-mult*n;
-    if(res < 0) res += n;
+  // a, b in [0, min(2*n, 1<<63))
+  ull multf(ull a, ull b) {
+    ull mult = (ld)a * b * rec + 0.5L;
+    ll res = a * b - mult * n;
+    if (res < 0) res += n;
     return res; // in [0, n-1)
   }
   //!pause
-  //!end_codebook
 #ifndef ONLINE_JUDGE
-  ull multa(ll a, ll b) {  // a, b in [0, min(2*n, 1<<63))
+  ull multa(ll a, ll b) { // a, b in [0, min(2*n, 1<<63))
     ull res;
     ull tmp;
     __asm__(
-        "mulq %[b];\n\t"           // a*b
-        "movq %%rax, %[res];\n\t"  // ab_l = (a*b) & ((1 << 64)-1)
-        "movq %%rdx, %[tmp];\n\t"  // ab_h = (a*b) >> 64
-        "mulq %[q];\n\t"           // ab_l * q
-        "movq %[tmp], %%rax;\n\t"
-        "movq %%rdx, %[tmp];\n\t"  // abq_m = (ab_l * q) >> 64
-        "mulq %[q];\n\t"           // ab_h * q
-        "addq %[tmp], %%rax;\n\t"  // abq_m += (ab_h * q) & ((1 << 64)-1)
-        "adcq $0, %%rdx;\n\t"      // abq_h = ((ab_h * q) >> 64) + carry
-        "shrdq %%cl, %%rdx, %%rax;\n\t" // d = (a*b)/n = (abq_m >> shift) | (abq_h << (64 -shift))
-        "mulq %[n];\n\t"         // d*n
-        "subq %%rax, %[res];\n\t"  // ab_l - = dn_l
-        : [res] "=&r"(res), [tmp] "=&r"(tmp)
-        : [a] "%a"(a), [b] "d"(b), [q] "r"(q), [shift] "c"(shift), [n] "rm"(n)
-        : "cc");
-    return res;  // in [0, 2n-1)
+      "mulq %[b];\n\t"          // a*b
+      "movq %%rax, %[res];\n\t" // ab_l = (a*b) & ((1 <<
+                                // 64)-1)
+      "movq %%rdx, %[tmp];\n\t" // ab_h = (a*b) >> 64
+      "mulq %[q];\n\t"          // ab_l * q
+      "movq %[tmp], %%rax;\n\t"
+      "movq %%rdx, %[tmp];\n\t" // abq_m = (ab_l * q) >>
+                                // 64
+      "mulq %[q];\n\t"          // ab_h * q
+      "addq %[tmp], %%rax;\n\t" // abq_m += (ab_h * q) &
+                                // ((1 << 64)-1)
+      "adcq $0, %%rdx;\n\t" // abq_h = ((ab_h * q) >> 64)
+                            // + carry
+      "shrdq %%cl, %%rdx, %%rax;\n\t" // d = (a*b)/n =
+                                      // (abq_m >> shift)
+                                      // | (abq_h << (64
+                                      // -shift))
+      "mulq %[n];\n\t"                // d*n
+      "subq %%rax, %[res];\n\t"       // ab_l - = dn_l
+      : [res] "=&r"(res), [tmp] "=&r"(tmp)
+      : [a] "%a"(a), [b] "d"(b), [q] "r"(q),
+      [shift] "c"(shift), [n] "rm"(n)
+      : "cc");
+    return res; // in [0, 2n-1)
   }
   ull multi(ull a, ull b) {
     unsigned __int128 mult = a;
     mult *= b;
-    ull prod = (((mult>>64) * q) + ((unsigned __int128)(ull)mult*q>>64))>>shift;
-    return (ull)mult-prod*n;
+    ull prod =
+      (((mult >> 64) * q) +
+        ((unsigned __int128)(ull)mult * q >> 64)) >>
+      shift;
+    return (ull)mult - prod * n;
   }
   ull fix(ull a) {
     if (a >= n) a -= n;
@@ -93,7 +100,6 @@ struct ModArithm {
   }
   ull mult(ull a, ull b) { return fix(multi(a, b)); }
 #endif
-  //!begin_codebook
   //!unpause
   ull sqp1(ull a) { return multf(a, a) + 1; }
 };
@@ -111,19 +117,20 @@ ull pow_mod(ull a, ull n, ModArithm &arithm) {
 //!finish
 //!start
 
-vector< char > small_primes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
+vector<char> small_primes = {
+  2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
 
-bool is_prime(ull n) {  // n <= 1<<63, 1M rand/s
+bool is_prime(ull n) { // n <= 1<<63, 1M rand/s
   ModArithm arithm(n);
   if (n == 2 || n == 3) return true;
   if (!(n & 1) || n == 1) return false;
-  ull s = __builtin_ctz(n - 1);
+  int s = __builtin_ctzll(n - 1);
   ull d = (n - 1) >> s;
   for (ull a : small_primes) {
     if (a >= n) break;
     a = pow_mod(a, d, arithm);
     if (a == 1 || a == n - 1) continue;
-    for (ull r = 1; r < s; ++r) {
+    ran(r, 1, s) {
       a = arithm.multf(a, a);
       if (a == 1) return false;
       if (a == n - 1) break;
@@ -133,22 +140,21 @@ bool is_prime(ull n) {  // n <= 1<<63, 1M rand/s
   return true;
 }
 //!finish
-//!end_codebook
+//!pause
 
 #ifdef ONLINE_JUDGE
-ll __gcd(ll a, ll b){
-  if(a)
-    return __gcd(b%a, a);
+ll __gcd(ll a, ll b) {
+  if (a) return __gcd(b % a, a);
   return b;
 }
 #endif
 
+//!unpause
 //!start
-//!begin_codebook
 
 ll pollard_rho(ll n) {
   ModArithm arithm(n);
-  int cum_cnt = 64 - __builtin_clz(n);
+  int cum_cnt = 64 - __builtin_clzll(n);
   cum_cnt *= cum_cnt / 5 + 1;
   while (true) {
     ll lv = rand() % n;
@@ -158,18 +164,18 @@ ll pollard_rho(ll n) {
     while (true) {
       ll cur = 1;
       ll v_cur = v;
-      int j_stop = min(cum_cnt, tar-idx);
+      int j_stop = min(cum_cnt, tar - idx);
       for (int j = 0; j < j_stop; ++j) {
-        cur = arithm.multf(cur, abs(v_cur -lv));
+        cur = arithm.multf(cur, abs(v_cur - lv));
         v_cur = arithm.sqp1(v_cur);
         ++idx;
       }
-      //!end_codebook
-      //cur = arithm.fix(cur);
-      //!begin_codebook
+      //!pause
+      // cur = arithm.fix(cur);
+      //!unpause
       if (!cur) {
         for (int j = 0; j < cum_cnt; ++j) {
-          ll g = __gcd(abs(v-lv), n);
+          ll g = __gcd(abs(v - lv), n);
           if (g == 1) {
             v = arithm.sqp1(v);
           } else if (g == n) {
@@ -197,9 +203,12 @@ ll pollard_rho(ll n) {
 //!finish
 //!start
 
-map< ll, int > prime_factor(ll n, map< ll, int > *res = NULL) {  // n <= 1<<61, ~1000/s (<500/s on CF)
+
+map<ll, int> prime_factor(
+      ll n, map<ll, int> *res = NULL) {
+  // n <= 1<<62, ~1000/s (<500/s on CF)
   if (!res) {
-    map< ll, int > res_act;
+    map<ll, int> res_act;
     for (int p : small_primes) {
       while (!(n % p)) {
         ++res_act[p];
@@ -216,8 +225,8 @@ map< ll, int > prime_factor(ll n, map< ll, int > *res = NULL) {  // n <= 1<<61, 
     prime_factor(factor, res);
     prime_factor(n / factor, res);
   }
-  return map< ll, int >();
-} //Usage: fact = prime\_factor(n);
+  return map<ll, int>();
+} // Usage: fact = prime_factor(n);
 //!finish
 //!end_codebook
 
@@ -388,27 +397,27 @@ int main() {
     }
   }
 #endif
-#if 1
-  cout<<"test 3.2\n";
+#if 0
+  cout << "test 3.2\n";
   ull last = 1.5e9;
-  while(!is_prime(last)){
+  while (!is_prime(last)) {
     ++last;
   }
-  for(int i=0; i<1500; ++i){
-    ull nxt = last+1;
-    while(!is_prime(nxt)){
+  for (int i = 0; i < 1500; ++i) {
+    ull nxt = last + 1;
+    while (!is_prime(nxt)) {
       ++nxt;
     }
-    ull cor = last*nxt;
+    ull cor = last * nxt;
     map<ll, int> factorization = prime_factor(cor);
     assert(factorization.size() == 2);
     ull cand = 1;
-    for(auto cur : factorization){
+    for (auto cur : factorization) {
       assert(is_prime(cur.first));
       assert(cur.second == 1);
       cand *= cur.first;
     }
-    assert(cor==cand);
+    assert(cor == cand);
     last = nxt;
   }
 #endif
@@ -441,6 +450,24 @@ int main() {
       }
     }
     assert(cor==cand);
+  }
+#endif
+#if 1
+  cout<<"test 3.5\n";
+  {
+    int cnt = 100;
+    vector<ll> primes;
+    for(ll i = 2e9; primes.size()<cnt; --i){
+      if(is_prime(i)){
+        primes.push_back(i);
+      }
+    }
+    ran(i, 0, primes.size()){
+      ran(j, i, primes.size()){
+        map<ll, int> factorization = prime_factor(primes[i]*primes[j]);
+        assert(factorization.size() == 2 || factorization[primes[i]] == 2);
+      }
+    }
   }
 #endif
 }

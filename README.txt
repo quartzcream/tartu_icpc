@@ -1,6 +1,9 @@
-University of Tartu ICPC Team Notebook (2017-2018)
+University of Tartu ICPC Team Notebook (2018-2019)
 
-codebook.pdf can be created by running create_codebook.py(requires moreutils package).
+install tartu_icpc pygments style
+$ ./create_codebook2.py
+Convert codebook_part2.html to codebook_part2.pdf using Prince html to pdf converter
+$ ./create_codebook3.py
 
 Add new files to file_ord.txt.
 To change general latex options edit header.tex.

@@ -17,19 +17,29 @@ const int mod = 1e9 + 7;
 const double M_PI = acos(-1.0);
 #endif
 
-//!escape \section{Delaunay triangulation $\mathcal{O}(n\log n)}
+//!escape Delaunay triangulation O(nlogn)
 
 //!begin_codebook
 //!start
 const int max_co = (1 << 28) - 5;
 struct Vec {
   int x, y;
-  bool operator==(const Vec &oth) { return x == oth.x && y == oth.y; }
-  bool operator!=(const Vec &oth) { return !operator==(oth); }
-  Vec operator-(const Vec &oth) { return {x - oth.x, y - oth.y}; }
+  bool operator==(const Vec &oth) {
+    return x == oth.x && y == oth.y;
+  }
+  bool operator!=(const Vec &oth) {
+    return !operator==(oth);
+  }
+  Vec operator-(const Vec &oth) {
+    return {x - oth.x, y - oth.y};
+  }
 };
-ll cross(Vec a, Vec b) { return (ll)a.x * b.y - (ll)a.y * b.x; }
-ll dot(Vec a, Vec b) { return (ll)a.x * b.x + (ll)a.y * b.y; }
+ll cross(Vec a, Vec b) {
+  return (ll)a.x * b.y - (ll)a.y * b.x;
+}
+ll dot(Vec a, Vec b) {
+  return (ll)a.x * b.x + (ll)a.y * b.y;
+}
 struct Edge {
   Vec tar;
   Edge *nxt;
@@ -39,8 +49,12 @@ struct Edge {
 };
 struct Seg {
   Vec a, b;
-  bool operator==(const Seg &oth) { return a == oth.a && b == oth.b; }
-  bool operator!=(const Seg &oth) { return !operator==(oth); }
+  bool operator==(const Seg &oth) {
+    return a == oth.a && b == oth.b;
+  }
+  bool operator!=(const Seg &oth) {
+    return !operator==(oth);
+  }
 };
 ll orient(Vec a, Vec b, Vec c) {
   return (ll)a.x * (b.y - c.y) + (ll)b.x * (c.y - a.y) +
@@ -59,9 +73,15 @@ bool in_c_circle(Vec *arr, Vec d) {
     m[i][2] += m[i][1] * m[i][1];
   }
   __int128 res = 0;
-  res += (__int128)(m[0][0] * m[1][1] - m[0][1] * m[1][0]) * m[2][2];
-  res += (__int128)(m[1][0] * m[2][1] - m[1][1] * m[2][0]) * m[0][2];
-  res -= (__int128)(m[0][0] * m[2][1] - m[0][1] * m[2][0]) * m[1][2];
+  res +=
+    (__int128)(m[0][0] * m[1][1] - m[0][1] * m[1][0]) *
+    m[2][2];
+  res +=
+    (__int128)(m[1][0] * m[2][1] - m[1][1] * m[2][0]) *
+    m[0][2];
+  res -=
+    (__int128)(m[0][0] * m[2][1] - m[0][1] * m[2][0]) *
+    m[1][2];
   return res > 0;
 }
 //!finish
@@ -71,23 +91,27 @@ Edge *add_triangle(Edge *a, Edge *b, Edge *c) {
   Edge *tmp = new Edge[3];
   ran(i, 0, 3) {
     old[i]->rep = tmp + i;
-    tmp[i] = {old[i]->tar, tmp + (i + 1) % 3, old[i]->inv};
+    tmp[i] = {
+      old[i]->tar, tmp + (i + 1) % 3, old[i]->inv};
     if (tmp[i].inv) tmp[i].inv->inv = tmp + i;
   }
   return tmp;
 }
 
-Edge *add_point(Vec p, Edge *cur) { // returns outgoing edge
+Edge *add_point(
+  Vec p, Edge *cur) { // returns outgoing edge
   Edge *triangle[] = {cur, cur->nxt, cur->nxt->nxt};
   ran(i, 0, 3) {
-    if (orient(triangle[i]->tar, triangle[(i + 1) % 3]->tar, p) < 0)
+    if (orient(triangle[i]->tar,
+          triangle[(i + 1) % 3]->tar, p) < 0)
       return NULL;
   }
   ran(i, 0, 3) {
     if (triangle[i]->rep) {
       Edge *res = add_point(p, triangle[i]->rep);
       if (res)
-        return res; // unless we are on last layer we must exit here
+        return res; // unless we are on last layer we
+                    // must exit here
     }
   }
   Edge p_as_e{p};
@@ -104,8 +128,8 @@ Edge *add_point(Vec p, Edge *cur) { // returns outgoing edge
 
 Edge *delaunay(vector<Vec> &points) {
   random_shuffle(points.begin(), points.end());
-  Vec arr[] = {{4 * max_co, 4 * max_co}, {-4 * max_co, max_co},
-    {max_co, -4 * max_co}};
+  Vec arr[] = {{4 * max_co, 4 * max_co},
+    {-4 * max_co, max_co}, {max_co, -4 * max_co}};
   Edge *res = new Edge[3];
   ran(i, 0, 3) res[i] = {arr[i], res + (i + 1) % 3};
   for (Vec &cur : points) {
@@ -120,7 +144,8 @@ Edge *delaunay(vector<Vec> &points) {
         Edge tmp{cur};
         tmp.inv = add_triangle(&tmp, out, e->nxt);
         tmp.tar = e->nxt->tar;
-        tmp.inv->inv = add_triangle(&tmp, e->nxt->nxt, out->nxt->nxt);
+        tmp.inv->inv =
+          add_triangle(&tmp, e->nxt->nxt, out->nxt->nxt);
         out = tmp.inv->nxt;
         continue;
       }
@@ -132,27 +157,29 @@ Edge *delaunay(vector<Vec> &points) {
 }
 //!finish
 //!start
-void extract_triangles(Edge *cur, vector<vector<Seg> > &res) {
+void extract_triangles(
+  Edge *cur, vector<vector<Seg> > &res) {
   if (!cur->vis) {
     bool inc = true;
     Edge *it = cur;
-    do{
+    do {
       it->vis = true;
       if (it->rep) {
         extract_triangles(it->rep, res);
         inc = false;
       }
       it = it->nxt;
-    } while(it != cur);
+    } while (it != cur);
     if (inc) {
       Edge *triangle[3] = {cur, cur->nxt, cur->nxt->nxt};
       res.resize(res.size() + 1);
       vector<Seg> &tar = res.back();
       ran(i, 0, 3) {
         if ((abs(triangle[i]->tar.x) < max_co &&
-              abs(triangle[(i + 1) % 3]->tar.x) < max_co))
-          tar.push_back(
-            {triangle[i]->tar, triangle[(i + 1) % 3]->tar});
+              abs(triangle[(i + 1) % 3]->tar.x) <
+                max_co))
+          tar.push_back({triangle[i]->tar,
+            triangle[(i + 1) % 3]->tar});
       }
       if (tar.empty()) res.pop_back();
     }
@@ -180,7 +207,8 @@ void extract_build(Edge *cur, bool val,
     cur_res.resize(cur_res.size() + 1);
     vector<Seg> &tar = cur_res.back();
     for (int i = 0; i < 3; ++i) {
-      tar.push_back({triangle[i]->tar, triangle[(i + 1) % 3]->tar});
+      tar.push_back(
+        {triangle[i]->tar, triangle[(i + 1) % 3]->tar});
     }
   }
 }
@@ -209,22 +237,27 @@ bool clean_intersect(Seg a, Seg b) {
 }
 
 bool shared_seg(Seg a, Seg b) {
-  if (!cross(a.b - a.a, b.a - a.a) && dot(a.b - a.a, b.a - a.a) > 0 &&
+  if (!cross(a.b - a.a, b.a - a.a) &&
+      dot(a.b - a.a, b.a - a.a) > 0 &&
       dot(a.a - a.b, b.a - a.b) > 0)
     return true;
-  if (!cross(a.b - a.a, b.b - a.a) && dot(a.b - a.a, b.b - a.a) > 0 &&
+  if (!cross(a.b - a.a, b.b - a.a) &&
+      dot(a.b - a.a, b.b - a.a) > 0 &&
       dot(a.a - a.b, b.b - a.b) > 0)
     return true;
-  if (!cross(b.b - b.a, a.a - b.a) && dot(b.b - b.a, a.a - b.a) > 0 &&
+  if (!cross(b.b - b.a, a.a - b.a) &&
+      dot(b.b - b.a, a.a - b.a) > 0 &&
       dot(b.a - b.b, a.a - b.b) > 0)
     return true;
-  if (!cross(b.b - b.a, a.b - b.a) && dot(b.b - b.a, a.b - b.a) > 0 &&
+  if (!cross(b.b - b.a, a.b - b.a) &&
+      dot(b.b - b.a, a.b - b.a) > 0 &&
       dot(b.a - b.b, a.b - b.b) > 0)
     return true;
   return false;
 }
 
-void print_triangulation(vector<vector<Seg> > &triangles) {
+void print_triangulation(
+  vector<vector<Seg> > &triangles) {
   for (int i = 0; i < triangles.size() && i < 30; ++i) {
     auto cur = triangles[i];
     cout << "{\n";
@@ -250,7 +283,8 @@ bool is_triangulation(
     } else {
       ++t;
     }
-    if (triangles[i].size() != 1 && triangles[i].size() != 3) {
+    if (triangles[i].size() != 1 &&
+        triangles[i].size() != 3) {
       cerr << "size\n";
       return false;
     }
@@ -260,9 +294,12 @@ bool is_triangulation(
           arr[l] = triangles[k][l].a;
           if (triangles[i][j] != triangles[k][l] &&
               (triangles[i][j].a != triangles[k][l].b ||
-                triangles[i][j].b != triangles[k][l].a) &&
-              (clean_intersect(triangles[i][j], triangles[k][l]) ||
-                shared_seg(triangles[i][j], triangles[k][l]))) {
+                triangles[i][j].b !=
+                  triangles[k][l].a) &&
+              (clean_intersect(
+                 triangles[i][j], triangles[k][l]) ||
+                shared_seg(
+                  triangles[i][j], triangles[k][l]))) {
             print_triangulation(triangles);
             cerr << "intersect\n";
             return false;
@@ -273,7 +310,8 @@ bool is_triangulation(
   }
   if (t != 2 * n - h - 2) {
     cerr << "euler\n";
-    cerr << "n=" << n << ",h=" << h << ",t=" << t << '\n';
+    cerr << "n=" << n << ",h=" << h << ",t=" << t
+         << '\n';
   }
   return t == 2 * n - h - 2;
 }
@@ -295,8 +333,10 @@ bool is_delaunay(vector<vector<Seg> > &triangles) {
           arr[l] = triangles[k][l].a;
           if (triangles[i][j] != triangles[k][l] &&
               (triangles[i][j].a != triangles[k][l].b ||
-                triangles[i][j].b != triangles[k][l].a) &&
-              internal_intersect(triangles[i][j], triangles[k][l])) {
+                triangles[i][j].b !=
+                  triangles[k][l].a) &&
+              internal_intersect(
+                triangles[i][j], triangles[k][l])) {
             print_triangulation(triangles);
             cerr << "intersect\n";
             return false;
@@ -326,14 +366,16 @@ void test_delaunay(int n) {
     for (int t = 0; t < 1000; ++t) {
       vector<Vec> points;
       for (int j = 0; j < i; ++j) {
-        points.push_back({rand() % (2 * max_co - 1) - max_co + 1,
-          rand() % (2 * max_co - 1) - max_co + 1});
+        points.push_back(
+          {rand() % (2 * max_co - 1) - max_co + 1,
+            rand() % (2 * max_co - 1) - max_co + 1});
         bool err;
         do {
           err = false;
           for (int k = 0; k < j; ++k) {
             if (points[k] == points[j]) {
-              points[j] = {rand() % (2 * max_co - 1) - max_co + 1,
+              points[j] = {
+                rand() % (2 * max_co - 1) - max_co + 1,
                 rand() % (2 * max_co - 1) - max_co + 1};
               err = true;
               break;
@@ -347,7 +389,8 @@ void test_delaunay(int n) {
       if (!is_triangulation(triangulation, i) ||
           !is_delaunay(triangulation)) {
         for (int j = 0; j < i; ++j) {
-          cout << points[j].x << ' ' << points[j].y << '\n';
+          cout << points[j].x << ' ' << points[j].y
+               << '\n';
         }
         exit(0);
       }
@@ -360,8 +403,8 @@ int main() {
   /*
   for (int i = 0; i < 2e5; ++i) {
     // points.push_back(Vec {0, i});
-    points.push_back(Vec{rand() % (2 * max_co - 1) - max_co + 1,
-      rand() % (2 * max_co - 1) - max_co + 1});
+    points.push_back(Vec{rand() % (2 * max_co - 1) -
+  max_co + 1, rand() % (2 * max_co - 1) - max_co + 1});
   }
   */
   Edge *cur = delaunay(points);

@@ -53,14 +53,16 @@ ostream& operator<<(ostream& l, Vec r) {
   return l << '(' << r.x << ", " << r.y << ')';
 }
 double len(Vec a) { return hypot(a.x, a.y); }
-double cross(Vec l, Vec r) { return l.x * r.y - l.y * r.x; }
+double cross(Vec l, Vec r) {
+  return l.x * r.y - l.y * r.x;
+}
 double angle(Vec a) {
   return fmod(atan2(a.y, a.x) + 2 * PI, 2 * PI);
 }
 Vec normal(Vec a) { return Vec({-a.y, a.x}) / len(a); }
 // OMLEND: 2D Vectors
 //----------------------------------------------------------------
-//!escape \section{Seg-Seg intersection, halfplane intersection area}
+//!escape Seg-Seg intersection, halfplane intersection area
 //!begin_codebook
 //!start
 struct Seg {
@@ -98,15 +100,17 @@ double calc_area(const vector<Seg>& lines) {
   }
 
   ran(i, 0, 2) {
-    sort(slines[i].begin(), slines[i].end(), [&](Seg l, Seg r) {
-      if (cross(l.d(), r.d()) == 0)
-        return normal(l.d()) * l.a > normal(r.d()) * r.a;
-      return (1 - 2 * i) * cross(l.d(), r.d()) < 0;
-    });
+    sort(slines[i].begin(), slines[i].end(),
+      [&](Seg l, Seg r) {
+        if (cross(l.d(), r.d()) == 0)
+          return normal(l.d()) * l.a >
+                 normal(r.d()) * r.a;
+        return (1 - 2 * i) * cross(l.d(), r.d()) < 0;
+      });
   }
 
-  // Now find the application area of the lines and clean up redundant
-  // ones
+  // Now find the application area of the lines and clean
+  // up redundant ones
   vector<double> ap_s[2];
   ran(side, 0, 2) {
     vector<double>& apply = ap_s[side];
@@ -128,7 +132,8 @@ double calc_area(const vector<Seg>& lines) {
       if (clines.size() == 0) {
         apply.push_back(-HUGE_VAL);
       } else {
-        apply.push_back(intersection(line, clines.back()).y);
+        apply.push_back(
+          intersection(line, clines.back()).y);
       }
       clines.push_back(line);
     }
@@ -141,8 +146,8 @@ double calc_area(const vector<Seg>& lines) {
   double result = 0;
   {
     double lb = -HUGE_VALL, ub;
-    for (int i = 0, j = 0;
-         i < (int)slines[0].size() && j < (int)slines[1].size();
+    for (int i = 0, j = 0; i < (int)slines[0].size() &&
+                           j < (int)slines[1].size();
          lb = ub) {
       ub = min(ap_s[0][i + 1], ap_s[1][j + 1]);
 
@@ -159,11 +164,12 @@ double calc_area(const vector<Seg>& lines) {
       aub = max(aub, alb);
 
       ran(k, 0, 2) {
-        double x1 =
-          l[0].a.x + (alb - l[0].a.y) / l[0].d().y * l[0].d().x;
-        double x2 =
-          l[0].a.x + (aub - l[0].a.y) / l[0].d().y * l[0].d().x;
-        result += (-1 + 2 * k) * (aub - alb) * (x1 + x2) / 2;
+        double x1 = l[0].a.x + (alb - l[0].a.y) /
+                                 l[0].d().y * l[0].d().x;
+        double x2 = l[0].a.x + (aub - l[0].a.y) /
+                                 l[0].d().y * l[0].d().x;
+        result +=
+          (-1 + 2 * k) * (aub - alb) * (x1 + x2) / 2;
       }
 
       if (ap_s[0][i + 1] < ap_s[1][j + 1]) {

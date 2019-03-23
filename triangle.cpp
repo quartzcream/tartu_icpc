@@ -5,7 +5,7 @@ const int mod = 1e9 + 7;
 #ifndef M_PI
 #define M_PI acos(-1.0)
 #endif
-//!escape \section{Triangle centers}
+//!escape Triangle centers
 
 //!begin_codebook
 //!start
@@ -14,11 +14,13 @@ const double coord_max = 1e6;
 typedef complex<double> point;
 point A, B, C; // vertixes of the triangle
 bool collinear() {
-  double min_diff = min(abs(A - B), min(abs(A - C), abs(B - C)));
+  double min_diff =
+    min(abs(A - B), min(abs(A - C), abs(B - C)));
   if (min_diff < coord_max * min_delta) return true;
   point sp = (B - A) / (C - A);
   double ang = M_PI / 2 - abs(abs(arg(sp)) - M_PI / 2);
-  return ang < min_delta; // positive angle with the real line
+  return ang < min_delta;
+  // positive angle with the real line
 }
 //!finish
 //!start
@@ -29,7 +31,8 @@ point circum_center() {
   double b2 = norm(A - C);
   double c2 = norm(A - B);
   // barycentric coordinates of the circumcenter
-  double c_A = a2 * (b2 + c2 - a2); // sin(2 * alpha) works also
+  // sin(2 * alpha) works also
+  double c_A = a2 * (b2 + c2 - a2);
   double c_B = b2 * (a2 + c2 - b2);
   double c_C = c2 * (a2 + b2 - c2);
   double sum = c_A + c_B + c_C;

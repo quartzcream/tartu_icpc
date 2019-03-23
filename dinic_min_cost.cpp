@@ -16,8 +16,9 @@ const int mod = 1e9 + 7;
 #ifndef M_PI
 const double M_PI = acos(-1.0);
 #endif
-//!escape \section{Dinic}
+//!escape Dinic
 //!begin_codebook
+//!start
 struct MaxFlow {
   const static ll INF = 1e18;
   int source, sink;
@@ -35,13 +36,13 @@ struct MaxFlow {
   }
   MaxFlow(
     const vector<tuple<int, int, ll, ll/*ly*/, ll /*ry*/> > &edges) {
-    for (auto &cur : edges) { // from, to, cap, rcap/*ly*/, cost/*ry*/
-      start.resize(
-        max(max(get<0>(cur), get<1>(cur)) + 2, (int)start.size()));
+    for (auto &cur : edges) { //from, to, cap, rcap/*ly*/, cost/*ry*/
+      start.resize(max(max(get<0>(cur), get<1>(cur)) + 2,
+            (int)start.size()));
       ++start[get<0>(cur) + 1];
       ++start[get<1>(cur) + 1];
     }
-    ran(i, 1, (int)start.size()) start[i] += start[i - 1];
+    ran(i, 1, (int)start.size()) start[i] += start[i-1];
     now = start;
     adj.resize(start.back());
     cap.resize(start.back());
@@ -75,7 +76,8 @@ struct MaxFlow {
       int u = bfs[i];
       while (now[u] < start[u + 1]) {
         int v = adj[now[u]];
-        if (/*ly*/cost[now[u]] == 0 && /*ry*/cap[now[u]] >= min_cap && lvl[v] == 0) {
+        if (/*ly*/cost[now[u]] == 0 &&/*ry*/
+            cap[now[u]] >= min_cap && lvl[v] == 0) {
           lvl[v] = lvl[u] + 1;
           if(v==sink) return true;
           bfs.push_back(v);
@@ -93,7 +95,8 @@ struct MaxFlow {
       int v = adj[now[u]];
       if (lvl[v] == lvl[u] + 1/*ly*/ && cost[now[u]] == 0/*ry*/ &&
           cap[now[u]] >= min_cap) {
-        ll cur = dinic_dfs(v, min(flow, (ll)cap[now[u]]), min_cap);
+        ll cur = dinic_dfs(v, min(flow, (ll)cap[now[u]]),
+            min_cap);
         if (cur) {
           add_flow(now[u], cur);
           flow -= cur;
@@ -132,11 +135,11 @@ struct MaxFlow {
     if (check_imp) return imp;/*rp*/
     return visited[sink];
   }/*ry*//*lp*/
-  bool recalc_dist_bellman_ford() { // return whether there is
-                                          // a negative cycle
+  // return whether there is a negative cycle
+  bool recalc_dist_bellman_ford() {
     int i = 0;
-    for (; i < (int)start.size() - 1 && recalc_dist(true); ++i) {
-    }
+    for (; i < (int)start.size() - 1 &&
+        recalc_dist(true); ++i) {}
     return i == (int)start.size() - 1;
   }/*rp*/
   /*ly*/pair<ll, /*ry*/ll/*ly*/>/*ry*/ calc_flow(int _source, int _sink) {
@@ -154,7 +157,8 @@ struct MaxFlow {
           while (dinic_bfs(min_cap)) {
             now = start;
             ll cur;
-            while (cur = dinic_dfs(source, INF, min_cap)) flow += cur;
+            while (cur = dinic_dfs(source, INF, min_cap))
+              flow += cur;
           }
         }/*ly*/
         tot_flow += flow;
@@ -163,11 +167,14 @@ struct MaxFlow {
     }
     return /*ly*/{tot_/*ry*/flow/*ly*/, tot_cost}/*ry*/;
   }
+//!finish
+//!start
   ll flow_on_edge(int idx) {
     assert(idx < cap.size());
     return orig_cap[idx] - cap[cap_loc[idx]];
   }
 };
+//!finish
 const int nmax = 1055;
 int main() {
   int t;

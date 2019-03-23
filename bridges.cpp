@@ -3,7 +3,7 @@ using namespace std;
 
 const int nmax = 3e5 + 5;
 
-//!escape \section{Bridges $\mathcal{O}(n)$}
+//!escape Bridges O(n)
 
 //!begin_codebook
 //!start
@@ -33,28 +33,22 @@ struct vert {
       }
     }
     return seen;
-  }
-  //!finish
-  //!start
+  }/*ly*/
   void remove_adj_bridges() {
     for (edge &nxt : con) {
       if (nxt.is_bridge()) nxt.exists = false;
     }
-  }
-  //!finish
-  //!start
+  }/*ry*//*lp*/
   int cnt_adj_bridges() {
     int res = 0;
     for (edge &nxt : con) res += nxt.is_bridge();
     return res;
-  }
-  //!finish
-  //!start
+  }/*rp*/
 };
 
 bool edge::is_bridge() {
-  return exists &&
-         (dest->seen > rev->dest->val || dest->val < rev->dest->seen);
+  return exists && (dest->seen > rev->dest->val ||
+                     dest->val < rev->dest->seen);
 }
 //!finish
 vert graph[nmax];
@@ -72,7 +66,8 @@ int main() { // Mechanics Practice BRIDGES
   }
   graph[1].dfs(1, NULL);
   int res = 0;
-  for (int i = 1; i <= n; ++i) res += graph[i].cnt_adj_bridges();
+  for (int i = 1; i <= n; ++i)
+    res += graph[i].cnt_adj_bridges();
   cout << res / 2 << endl;
 }
 //!end_codebook

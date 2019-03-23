@@ -2,7 +2,7 @@
 using namespace std;
 typedef long long ll;
 
-//!escape \section{DMST $\mathcal{O}(E \log V)$}
+//!escape DMST O(E log V)
 
 //!begin_codebook
 //!start
@@ -52,11 +52,12 @@ struct DMST {
     Node *con_to_root() {
       if (anc() == root) return root;
       in_use = true;
-      Node *super = this; // Will become root or the first Node
-                          // encountered in a loop.
+      Node *super = this;
+      // Will become root or the first Node encountered
+      // in a loop.
       while (super == this) {
-        while (
-          !con.empty() && con.front().second->tar->anc() == anc()) {
+        while (!con.empty() &&
+               con.front().second->tar->anc() == anc()) {
           pop_heap(con.begin(), con.end(), comp);
           con.pop_back();
         }
@@ -68,8 +69,10 @@ struct DMST {
         auto nxt = con.back();
         con.pop_back();
         w = -nxt.first;
-        if (nxt.second->tar
-              ->in_use) { // anc() wouldn't change anything
+        if (nxt.second->tar->in_use) {
+          //!pause
+          // anc() wouldn't change anything
+          //!unpause
           super = nxt.second->tar->anc();
           to_proc.resize(to_proc.size() + 1);
         } else {
@@ -77,27 +80,29 @@ struct DMST {
         }
         if (super != root) {
           to_proc.back().cont.push_back(nxt.second);
-          out_cands.emplace_back(
-            to_proc.size() - 1, to_proc.back().cont.size() - 1);
+          out_cands.emplace_back(to_proc.size() - 1,
+            to_proc.back().cont.size() - 1);
         } else { // Clean circles
           nxt.second->inc = true;
           nxt.second->from->clean();
         }
       }
-      if (super != root) { // we are some loops non first Node.
+      if (super != root) {
+        // we are some loops non first Node.
         if (con.size() > super->con.size()) {
-          swap(con,
-            super->con); // Largest con in loop should not be copied.
+          swap(con, super->con);
+          // Largest con in loop should not be copied.
           swap(w, super->w);
         }
         for (auto cur : con) {
           super->con.emplace_back(
             cur.first - super->w + w, cur.second);
-          push_heap(super->con.begin(), super->con.end(), comp);
+          push_heap(
+            super->con.begin(), super->con.end(), comp);
         }
       }
-      par = super; // root or anc() of first Node encountered in a
-                   // loop
+      par = super; // root or anc() of first Node
+                   // encountered in a loop
       return super;
     }
   };
@@ -106,16 +111,20 @@ struct DMST {
   vector<Node> graph;
   vector<Edge> edges;
 
-  DMST(int n, vector<EdgeDesc> &desc,
-    int r) { // Self loops and multiple edges are okay.
+  DMST(int n, vector<EdgeDesc> &desc, int r) {
+    // Self loops and multiple edges are okay.
     graph.resize(n);
     croot = &graph[r];
-    for (auto &cur : desc) // Edges are reversed internally
-      edges.push_back(Edge{&graph[cur.to], &graph[cur.from], cur.w});
+    for (auto &cur : desc)
+      // Edges are reversed internally
+      edges.push_back(
+        Edge{&graph[cur.to], &graph[cur.from], cur.w});
     for (int i = 0; i < desc.size(); ++i)
-      graph[desc[i].to].con.emplace_back(desc[i].w, &edges[i]);
+      graph[desc[i].to].con.emplace_back(
+        desc[i].w, &edges[i]);
     for (int i = 0; i < n; ++i)
-      make_heap(graph[i].con.begin(), graph[i].con.end(), comp);
+      make_heap(
+        graph[i].con.begin(), graph[i].con.end(), comp);
   }
   bool find() {
     root = croot;
@@ -127,32 +136,35 @@ struct DMST {
     }
     return true;
   }
-  //!finish
-  //!end_codebook
+  //!pause
   ll brute_find() {
     root = croot;
     ll best_w = -1;
     int best;
-    for (int mask = 0; mask < (1 << edges.size()); ++mask) {
+    for (int mask = 0; mask < (1 << edges.size());
+         ++mask) {
       ll w = 0;
       for (int i = 0; i < edges.size(); ++i) {
         edges[i].inc = mask & (1 << i);
         if (edges[i].inc) w += edges[i].w;
       }
       if (best_w != -1 && w >= best_w) continue;
-      for (int i = 0; i < graph.size(); ++i) graph[i].in_use = false;
+      for (int i = 0; i < graph.size(); ++i)
+        graph[i].in_use = false;
       croot->in_use = true;
       for (int i = 0; i < graph.size(); ++i) {
         for (int j = 0; j < graph.size(); ++j) {
           for (auto &cur : graph[j].con) {
-            if (cur.second->inc && cur.second->tar->in_use) {
+            if (cur.second->inc &&
+                cur.second->tar->in_use) {
               graph[j].in_use = true;
             }
           }
         }
       }
       bool ok = true;
-      for (int i = 0; i < graph.size(); ++i) ok &= graph[i].in_use;
+      for (int i = 0; i < graph.size(); ++i)
+        ok &= graph[i].in_use;
       if (ok) {
         best_w = w;
         best = mask;
@@ -160,17 +172,14 @@ struct DMST {
     }
     return best_w;
   }
-  //!begin_codebook
-  //!start
-  ll weight() {
+  //!unpause
+  /*ly*/ll weight() {
     ll res = 0;
     for (auto &cur : edges) {
       if (cur.inc) res += cur.w;
     }
     return res;
-  }
-  //!finish
-  //!start
+  }/*ry*/
 };
 
 void DMST::Circle::clean(int idx) {
@@ -225,14 +234,15 @@ void test() {
 int main() {
   test();
   int t, n, m,
-    k;      // http://lightoj.com/volume_showproblem.php?problem=1380
-  cin >> t; // As the site does not support C++11 need to use compat
-            // version of this file
+    k; // http://lightoj.com/volume_showproblem.php?problem=1380
+  cin >> t; // As the site does not support C++11 need to
+            // use compat version of this file
   for (int ct = 0; ct < t; ++ct) {
     cin >> n >> m >> k;
     vector<EdgeDesc> desc(m);
     for (int i = 0; i < m; ++i) {
-      scanf("%d %d %d", &desc[i].from, &desc[i].to, &desc[i].w);
+      scanf("%d %d %d", &desc[i].from, &desc[i].to,
+        &desc[i].w);
     }
     DMST dmst(n, desc, k);
     cout << "Case " << ct + 1 << ": ";
