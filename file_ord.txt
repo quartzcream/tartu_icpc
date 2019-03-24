@@ -1,8 +1,9 @@
 header.tex
-setup.sh
-crc.sh
 geometry_section.tex
 facts_section.tex
+footer.tex
+setup.sh
+crc.sh
 ordered_set.cpp
 hashes.cpp
 triangle.cpp
@@ -26,4 +27,4 @@ fft.cpp
 pollard_rho.cpp
 queyranne.tex
 berlekamp_massey.cpp
-footer.tex
+dominators.cpp

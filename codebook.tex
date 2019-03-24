@@ -201,6 +201,9 @@ Area of a spherical polygon:
 \setlength\columnsep{10mm}
 \begin{multicols*}{2}
 % 
+\includepdf[pages={-}, angle=90,pagecommand={\pagestyle{fancy}}]{codebookpart2}
+\end{document}
+% 
 \section{Symmetric Submodular Functions; Queyrannes's algorithm}
 
 \noindent {\bf SSF}: such function $f : V \rightarrow R$ that satisfies $f(A) = f(V/A)$
@@ -251,7 +254,4 @@ def enum_all_minimal_minimizers(X):
 			s = merge(tu, s)
 \end{minted}
 
-% 
-\includepdf[pages={-}, angle=90,pagecommand={\pagestyle{fancy}}]{codebookpart2}
-\end{document}
 % 

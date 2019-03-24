@@ -57,7 +57,8 @@
         text-align: center;
         padding-top: 0px;
         padding-bottom: 0px;
-        font: 10pt Inconsolata;
+        font-family: Helvetica, prince-no-fallback;
+        font: 10pt Helvetica;
         line-height: 90%;  
         white-space: pre-wrap;
       }
@@ -2714,6 +2715,111 @@ target remote <span class="p">|</span> vgdb                            <span cla
   <span class="k">while</span> <span class="p">(</span><span class="n">cs</span><span class="p">.</span><span class="n">back</span><span class="p">()</span> <span class="o">==</span> <span class="n">K</span><span class="o">::</span><span class="n">zero</span><span class="p">)</span> <span class="n">cs</span><span class="p">.</span><span class="n">pop_back</span><span class="p">();</span>
   <span class="k">return</span> <span class="n">cs</span><span class="p">;</span>
 <span class="p">}</span>                                                   <span class="o">%</span><span class="mi">8013</span>
+<header>
+<b>Dominator tree</b>
+</header>
+<span></span><span class=" -RegionYellow">struct Tree {</span>
+<span class=" -RegionYellow">  /* insert structure here */</span>
+<span class=" -RegionYellow">  void set_root(int u) {</span>
+<span class=" -RegionYellow">    </span><span class=" -RegionPink">cout &lt;&lt; &quot;root is &quot; &lt;&lt; u &lt;&lt; endl;</span><span class=" -RegionYellow"></span>
+<span class=" -RegionYellow">  }</span>
+<span class=" -RegionYellow">  void add_edge(int u, int v) {</span>
+<span class=" -RegionYellow">    </span><span class=" -RegionPink">cout &lt;&lt; u &lt;&lt; &quot;-&gt;&quot; &lt;&lt; v &lt;&lt; endl;</span>                 <span class=" -RegionPink"> 9295</span><span class=" -RegionYellow"></span>
+<span class=" -RegionYellow">  }</span>
+<span class=" -RegionYellow">};</span>
+<span class="k">struct</span> <span class="n">Graph</span> <span class="p">{</span>
+  <span class="n">vector</span><span class="o">&lt;</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">in_edges</span><span class="p">,</span> <span class="n">out_edges</span><span class="p">;</span>          <span class=" -RegionYellow"> 4936</span>
+  <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">ord</span><span class="p">,</span> <span class="n">dfs_idx</span><span class="p">,</span> <span class="n">parent</span><span class="p">;</span>
+  <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">sdom</span><span class="p">,</span> <span class="n">idom</span><span class="p">;</span>                       <span class="mi">3559</span><span class=" -RegionPink"> 2843</span>
+  <span class="n">vector</span><span class="o">&lt;</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">rsdom</span><span class="p">;</span> <span class="cm">/* inverse of sdom */</span>
+  <span class="cm">/* slightly modified version of dsu-s root[] */</span>
+  <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">dsu</span><span class="p">;</span>
+  <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">label</span><span class="p">;</span>                                <span class=" -RegionYellow"> 8541</span>
+  <span class="kt">void</span> <span class="nf">dfs</span><span class="p">(</span><span class="kt">int</span> <span class="n">cur</span><span class="p">,</span> <span class="kt">int</span> <span class="n">par</span><span class="p">,</span> <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">vis</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">ord</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">cur</span><span class="p">);</span>                         <span class="mi">7901</span><span class=" -RegionPink"> 9919</span>
+    <span class="n">parent</span><span class="p">[</span><span class="n">cur</span><span class="p">]</span> <span class="o">=</span> <span class="n">par</span><span class="p">;</span>
+    <span class="n">dfs_idx</span><span class="p">[</span><span class="n">cur</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">ord</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>             <span class=" -RegionYellow"> 7813</span>
+    <span class="n">vis</span><span class="p">[</span><span class="n">cur</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="nl">nxt</span> <span class="p">:</span> <span class="n">out_edges</span><span class="p">[</span><span class="n">cur</span><span class="p">])</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">vis</span><span class="p">[</span><span class="n">nxt</span><span class="p">])</span>
+        <span class="n">dfs</span><span class="p">(</span><span class="n">nxt</span><span class="p">,</span> <span class="n">cur</span><span class="p">,</span> <span class="n">vis</span><span class="p">);</span>                     <span class="mi">2896</span><span class=" -RegionPink"> 8657</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="kt">void</span> <span class="n">add_edge</span><span class="p">(</span><span class="kt">int</span> <span class="n">u</span><span class="p">,</span> <span class="kt">int</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">in_edges</span><span class="p">[</span><span class="n">v</span><span class="p">].</span><span class="n">push_back</span><span class="p">(</span><span class="n">u</span><span class="p">);</span>                       <span class=" -RegionYellow"> 7318</span>
+    <span class="n">out_edges</span><span class="p">[</span><span class="n">u</span><span class="p">].</span><span class="n">push_back</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="n">Graph</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">in_edges</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>              <span class="mi">9743</span>
+    <span class="n">out_edges</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>            <span class=" -RegionYellow"> 4844</span>
+    <span class="n">rsdom</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>                <span class=" -RegionPink"> 3586</span>
+    <span class="n">dfs_idx</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+    <span class="n">parent</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>                            <span class="mi">4169</span>
+    <span class="n">ran</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">sdom</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>                            <span class=" -RegionYellow"> 9601</span>
+      <span class="n">idom</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+      <span class="n">dsu</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>                             <span class=" -RegionPink"> 9397</span>
+      <span class="n">label</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="kt">int</span> <span class="n">find</span><span class="p">(</span><span class="kt">int</span> <span class="n">u</span><span class="p">,</span> <span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>                       <span class="mi">9092</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">u</span> <span class="o">==</span> <span class="n">dsu</span><span class="p">[</span><span class="n">u</span><span class="p">])</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>                                  <span class=" -RegionYellow"> 7325</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">u</span><span class="p">;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="kt">int</span> <span class="n">v</span> <span class="o">=</span> <span class="n">find</span><span class="p">(</span><span class="n">dsu</span><span class="p">[</span><span class="n">u</span><span class="p">],</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>                    <span class=" -RegionPink"> 5383</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">v</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="n">u</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">dfs_idx</span><span class="p">[</span><span class="n">sdom</span><span class="p">[</span><span class="n">label</span><span class="p">[</span><span class="n">dsu</span><span class="p">[</span><span class="n">u</span><span class="p">]]]]</span> <span class="o">&lt;</span>               <span class="mi">4446</span>
+        <span class="n">dfs_idx</span><span class="p">[</span><span class="n">sdom</span><span class="p">[</span><span class="n">label</span><span class="p">[</span><span class="n">u</span><span class="p">]]])</span> <span class="p">{</span>                  <span class=" -RegionYellow"> 8958</span>
+            <span class="n">label</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="n">dsu</span><span class="p">[</span><span class="n">u</span><span class="p">]];</span>
+    <span class="p">}</span>
+    <span class="n">dsu</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">;</span>                                     <span class=" -RegionPink"> 7626</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">?</span> <span class="nl">v</span> <span class="p">:</span> <span class="n">label</span><span class="p">[</span><span class="n">u</span><span class="p">];</span>
+  <span class="p">}</span>
+  <span class="kt">void</span> <span class="n">merge</span><span class="p">(</span><span class="kt">int</span> <span class="n">u</span><span class="p">,</span> <span class="kt">int</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span> <span class="n">dsu</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="p">;</span> <span class="p">}</span>           <span class="mi">7786</span>
+  <span class="n">Tree</span> <span class="nf">dom_tree</span><span class="p">(</span><span class="kt">int</span> <span class="n">src</span><span class="p">)</span> <span class="p">{</span>                          <span class=" -RegionYellow"> 8979</span>
+    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">vis</span><span class="p">(</span><span class="n">idom</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span> <span class="mi">0</span><span class="p">);</span>                <span class=" -RegionPink"> 2672</span>
+    <span class="n">dfs</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vis</span><span class="p">);</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">ord</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">;</span> <span class="o">--</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kt">int</span> <span class="n">u</span> <span class="o">=</span> <span class="n">ord</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>                                <span class="mi">7907</span>
+      <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="nl">v</span> <span class="p">:</span> <span class="n">in_edges</span><span class="p">[</span><span class="n">u</span><span class="p">])</span> <span class="p">{</span>                   <span class=" -RegionYellow"> 8128</span>
+        <span class="kt">int</span> <span class="n">w</span> <span class="o">=</span> <span class="n">find</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>                            <span class=" -RegionPink"> 1947</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">dfs_idx</span><span class="p">[</span><span class="n">sdom</span><span class="p">[</span><span class="n">u</span><span class="p">]]</span> <span class="o">&gt;</span> <span class="n">dfs_idx</span><span class="p">[</span><span class="n">sdom</span><span class="p">[</span><span class="n">w</span><span class="p">]])</span> <span class="p">{</span>
+          <span class="n">sdom</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">sdom</span><span class="p">[</span><span class="n">w</span><span class="p">];</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">rsdom</span><span class="p">[</span><span class="n">sdom</span><span class="p">[</span><span class="n">u</span><span class="p">]].</span><span class="n">push_back</span><span class="p">(</span><span class="n">u</span><span class="p">);</span>            <span class="mo">06</span><span class="mi">80</span><span class=" -RegionYellow"> 9870</span>
+      <span class="p">}</span>
+      <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="nl">w</span> <span class="p">:</span> <span class="n">rsdom</span><span class="p">[</span><span class="n">u</span><span class="p">])</span> <span class="p">{</span>                      <span class=" -RegionPink"> 8453</span>
+        <span class="kt">int</span> <span class="n">v</span> <span class="o">=</span> <span class="n">find</span><span class="p">(</span><span class="n">w</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">sdom</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">==</span> <span class="n">sdom</span><span class="p">[</span><span class="n">w</span><span class="p">])</span> <span class="p">{</span>
+          <span class="n">idom</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="n">sdom</span><span class="p">[</span><span class="n">w</span><span class="p">];</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="n">idom</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">merge</span><span class="p">(</span><span class="n">parent</span><span class="p">[</span><span class="n">u</span><span class="p">],</span> <span class="n">u</span><span class="p">);</span>                    <span class="mi">2734</span><span class=" -RegionYellow"> 2302</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="n">Tree</span> <span class="n">ans</span><span class="p">;</span>                                       <span class=" -RegionPink"> 3234</span>
+    <span class="n">ran</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">ord</span><span class="p">.</span><span class="n">size</span><span class="p">())</span> <span class="p">{</span>
+      <span class="kt">int</span> <span class="n">u</span> <span class="o">=</span> <span class="n">ord</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">idom</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">!=</span> <span class="n">sdom</span><span class="p">[</span><span class="n">u</span><span class="p">])</span> <span class="p">{</span>
+        <span class="n">idom</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">idom</span><span class="p">[</span><span class="n">idom</span><span class="p">[</span><span class="n">u</span><span class="p">]];</span>
+      <span class="p">}</span>
+      <span class="n">ans</span><span class="p">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">idom</span><span class="p">[</span><span class="n">u</span><span class="p">],</span> <span class="n">u</span><span class="p">);</span>            <span class="mi">5705</span><span class=" -RegionYellow"> 5261</span><span class=" -RegionPink"> 5730</span>
+    <span class="p">}</span>
+    <span class="n">ans</span><span class="p">.</span><span class="n">set_root</span><span class="p">(</span><span class="n">src</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">ans</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>                                        <span class="o">%</span><span class="mi">3056</span><span class=" -RegionYellow">%2845</span><span class=" -RegionPink">%7093</span>
 
 
 
