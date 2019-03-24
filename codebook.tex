@@ -111,6 +111,89 @@
 \par\noindent\rule{\textwidth}{0.4pt}
 
 % 
+  \section{Maxflow Complexity}
+  \begin{description}[align=left]
+    \item [$\mathcal{O}(V^2E)$] -- Dinic
+    \item [$\Theta({VE \log U})$] -- Capacity scaling
+    \item [$\Theta(\text{flow}E)$] -- Small flow
+    \item [$\Theta(\min\{V^{\frac{2}{3}},E^{\frac{1}{2}}\}E)$] -- Unitary capacities
+    \item [$\Theta(\sqrt{V}E)$] -- Each vertex other than S,T has only a single incoming unitary edge or outgoing one (bipartite matching)
+    \item [$\Theta(\text{flow}E \log V)$] -- Min-cost-max flow
+  \end{description}
+  \section{Min Rotation of string}
+  \begin{lstlisting}
+    int a=0, N=s.size();
+    s += s;
+    ran(b,0,N){
+      ran(i,0,N) {
+        if (a+i == b || s[a+i] < s[b+i]) {
+          b += max(0, i-1);
+          break;
+        }
+        if (s[a+i] > s[b+i]) {
+          a = b;
+          break;
+        }
+      }
+    }
+    return a;
+  \end{lstlisting}
+\end{multicols}
+\unboldmath
+\setlength\columnsep{10mm}
+\begin{multicols*}{2}
+% 
+\section{Symmetric Submodular Functions; Queyrannes's algorithm}
+
+\noindent {\bf SSF}: such function $f : V \rightarrow R$ that satisfies $f(A) = f(V/A)$
+and for all $x \in V, X \subseteq Y \subseteq V$ it holds that
+$f(X+x) - f(X) \leq f(Y+x) - f(Y)$.
+
+\noindent {\bf Hereditary family}: such set $I \subseteq 2^V$ so that $X \subset Y \wedge Y \in I \Rightarrow X \in I$.
+
+\noindent {\bf Loop}: such $v \in V$ so that ${v} \notin I$.
+
+\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mmbreaklines, frame=lines, texcomments=true, mathescape=true]{python}
+def minimize():
+	s = merge_all_loops()
+	while size >= 3:
+		t, u = find_pp()
+		{u} is a possible minimizer
+		tu = merge(t, u)
+		if tu not in I:
+			s = merge(tu, s)
+	for x in V:
+		{x} is a possible minimizer
+def find_pp():
+	W = {s} # s as in minimizer()
+	todo = V/W
+	ord = []
+	while len(todo) > 0:
+		x = min(todo, key=lambda x: f(W+{x}) - f({x}))
+		W += {x}
+		todo -= {x}
+		ord.append(x)
+	return ord[-1], ord[-2]
+
+def enum_all_minimal_minimizers(X): 
+  # X is a inclusionwise minimal minimizer
+	s = merge(s, X)
+	yield X
+	for {v} in I:
+		if f({v}) == f(X):
+			yield X
+			s = merge(v, s)
+	while size(V) >= 3:
+		t, u = find_pp()
+		tu = merge(t, u)
+		if tu not in I:
+			s = merge(tu, s)
+		elif f({tu}) = f(X):
+			yield tu
+			s = merge(tu, s)
+\end{minted}
+
+% 
 \end{multicols}
 \boldmath
 \setlength\columnsep{5mm}
@@ -169,89 +252,6 @@ Area of a spherical polygon:
   r^2 [ \text{sum of interior angles} - (n - 2)\pi ].
 \end{equation*}
 % 
-  \section{Maxflow Complexity}
-  \begin{description}[align=left]
-    \item [$\mathcal{O}(V^2E)$] -- Dinic
-    \item [$\Theta({VE \log U})$] -- Capacity scaling
-    \item [$\Theta(\text{flow}E)$] -- Small flow
-    \item [$\Theta(\min\{V^{\frac{2}{3}},E^{\frac{1}{2}}\}E)$] -- Unitary capacities
-    \item [$\Theta(\sqrt{V}E)$] -- Each vertex other than S,T has only a single incoming unitary edge or outgoing one (bipartite matching)
-    \item [$\Theta(\text{flow}E \log V)$] -- Min-cost-max flow
-  \end{description}
-  \section{Min Rotation of string}
-  \begin{lstlisting}
-    int a=0, N=s.size();
-    s += s;
-    ran(b,0,N){
-      ran(i,0,N) {
-        if (a+i == b || s[a+i] < s[b+i]) {
-          b += max(0, i-1);
-          break;
-        }
-        if (s[a+i] > s[b+i]) {
-          a = b;
-          break;
-        }
-      }
-    }
-    return a;
-  \end{lstlisting}
-\end{multicols}
-\unboldmath
-\setlength\columnsep{10mm}
-\begin{multicols*}{2}
-% 
 \includepdf[pages={-}, angle=90,pagecommand={\pagestyle{fancy}}]{codebookpart2}
 \end{document}
-% 
-\section{Symmetric Submodular Functions; Queyrannes's algorithm}
-
-\noindent {\bf SSF}: such function $f : V \rightarrow R$ that satisfies $f(A) = f(V/A)$
-and for all $x \in V, X \subseteq Y \subseteq V$ it holds that
-$f(X+x) - f(X) \leq f(Y+x) - f(Y)$.
-
-\noindent {\bf Hereditary family}: such set $I \subseteq 2^V$ so that $X \subset Y \wedge Y \in I \Rightarrow X \in I$.
-
-\noindent {\bf Loop}: such $v \in V$ so that ${v} \notin I$.
-
-\begin{minted}[tabsize=2,baselinestretch=1,linenos,numbersep = 1mmbreaklines, frame=lines, texcomments=true, mathescape=true]{python}
-def minimize():
-	s = merge_all_loops()
-	while size >= 3:
-		t, u = find_pp()
-		{u} is a possible minimizer
-		tu = merge(t, u)
-		if tu not in I:
-			s = merge(tu, s)
-	for x in V:
-		{x} is a possible minimizer
-def find_pp():
-	W = {s} # s as in minimizer()
-	todo = V/W
-	ord = []
-	while len(todo) > 0:
-		x = min(todo, key=lambda x: f(W+{x}) - f({x}))
-		W += {x}
-		todo -= {x}
-		ord.append(x)
-	return ord[-1], ord[-2]
-
-def enum_all_minimal_minimizers(X): 
-  # X is a inclusionwise minimal minimizer
-	s = merge(s, X)
-	yield X
-	for {v} in I:
-		if f({v}) == f(X):
-			yield X
-			s = merge(v, s)
-	while size(V) >= 3:
-		t, u = find_pp()
-		tu = merge(t, u)
-		if tu not in I:
-			s = merge(tu, s)
-		elif f({tu}) = f(X):
-			yield tu
-			s = merge(tu, s)
-\end{minted}
-
 % 
