@@ -1,115 +1,63 @@
-#define DEBUG(...) cerr << __VA_ARGS__ << endl;
-
-#ifndef CDEBUG
-#undef DEBUG
-#define DEBUG(...) ((void)0);
-#define NDEBUG
-#endif
-
-#define ran(i, a, b) for (auto i = (a); i < (b); i++)
-
 #include <iostream>
 #include <vector>
-#include <queue>
 
-typedef long long ll;
-typedef long double ld;
 using namespace std;
-//!escape Dominator tree
-//!begin_codebook
-//!start
-/*ly*/struct Tree {
+
+struct Tree {
   /* insert structure here */
-  //!pause
-  int root;
-  vector<vector<int>> adj;
-  //!unpause
-  void set_root(int u) {
-    //!pause
-#if 0
-    //!unpause
-    /*lp*/cout << "root is " << u << endl;/*rp*/
-    //!pause
-#endif
-    root = u;
-    //!unpause
+  void set_root (int u) {
+    cout << "root is " << u << endl;
   }
-  void add_edge(int u, int v) {
-    //!pause
-#if 0
-    //!unpause
-    /*lp*/cout << u << "->" << v << endl;/*rp*/
-    //!pause
-#endif
-    adj[u].push_back(v);
-    //!unpause
+  void add_edge (int u, int v) {
+    cout << u << "->" << v << endl;
   }
-  //!pause
-  int solve_dfs (int vertex, int &ans) {
-    int sum = 1;
-    for (int nxt : adj[vertex]) {
-      sum += solve_dfs(nxt, ans);
-    }
-
-    if (vertex != root) {
-      ans = max(ans, sum);
-    }
-    return sum;
-  }
-
-  int solve () {
-    int ans = 0;
-    solve_dfs(root, ans);
-    return ans;
-  }
-  
-  Tree (int _vertexc) {
-    root = -1;
-    adj = vector<vector<int>> (_vertexc + 5, vector<int> (0));
-  }
-  //!unpause
-};/*ry*/
+};
 
 struct Graph {
   vector<vector<int>> in_edges, out_edges;
-  vector<int> ord, dfs_idx, parent;
+  vector<int> ord, dfs_index, parent;
   vector<int> sdom, idom;
   vector<vector<int>> rsdom; /* inverse of sdom */
-  /* slightly modified version of dsu-s root[] */
-  vector<int> dsu;
+  vector<int> dsu; /* slightly modified version of dsu-s root[] */
   vector<int> label;
 
-  void dfs(int cur, int par, vector<int> &vis) {
-    ord.push_back(cur);
-    parent[cur] = par;
-    dfs_idx[cur] = (int)ord.size() - 1;
-    vis[cur] = 1;
-    for (int nxt : out_edges[cur]) {
-      if (!vis[nxt])
-        dfs(nxt, cur, vis);
+  void dfs (int vertex, int par, vector<int> &visited) {
+    ord.push_back(vertex);
+    parent[vertex] = par;
+    dfs_index[vertex] = (int) ord.size() - 1;
+    visited[vertex] = 1;
+    for (int nxt : out_edges[vertex]) {
+      in_edges[nxt].push_back(vertex);
+      if (!visited[nxt]) {
+        dfs(nxt, vertex, visited);
+      }
     }
   }
 
-  void add_edge(int u, int v) {
-    in_edges[v].push_back(u);
+  void add_edge (int u, int v) {
     out_edges[u].push_back(v);
   }
 
-  Graph(int n) {
-    in_edges.resize(n, vector<int>(0));
-    out_edges.resize(n, vector<int>(0));
-    rsdom.resize(n, vector<int>(0));
-    dfs_idx.resize(n, -1);
-    parent.resize(n, -1);
-    ran(i, 0, n) {
-      sdom.push_back(i);
-      idom.push_back(i);
-      dsu.push_back(i);
-      label.push_back(i);
+  Graph (int _vertexc) {
+    in_edges = vector<vector<int>> (_vertexc, vector<int> (0));
+    out_edges = vector<vector<int>> (_vertexc, vector<int> (0));
+    ord = vector<int> (0);
+    dfs_index = vector<int> (_vertexc, -1);
+    parent = vector<int> (_vertexc, -1);
+    sdom = vector<int> (_vertexc);
+    idom = vector<int> (_vertexc);
+    rsdom = vector<vector<int>> (_vertexc, vector<int> (0));
+    dsu = vector<int> (_vertexc);
+    label = vector<int> (_vertexc);
+    for (int i = 0; i < _vertexc; i++) {
+      idom[i] = i;
+      sdom[i] = i;
+      dsu[i] = i;
+      label[i] = i;
     }
   }
 
-  int find(int u, int x = 0) {
+  int find (int u, int x = 0) {
     if (u == dsu[u]) {
       if (x) {
         return -1;
@@ -123,25 +71,26 @@ struct Graph {
       return u;
     }
 
-    if (dfs_idx[sdom[label[dsu[u]]]] <
-        dfs_idx[sdom[label[u]]]) {
-            label[u] = label[dsu[u]];
+    if (dfs_index[sdom[label[dsu[u]]]] < dfs_index[sdom[label[u]]]) {
+      label[u] = label[dsu[u]];
     }
     dsu[u] = v;
     return x ? v : label[u];
   }
 
-  void merge(int u, int v) { dsu[v] = u; }
+  void merge (int u, int v) {
+    dsu[v] = u;
+  }
+  
+  Tree dom_tree (int src) {
+    vector<int> visited ((int) idom.size(), 0);
+    dfs(src, -1, visited);
 
-  Tree dom_tree(int src) {
-    vector<int> vis(idom.size(), 0);
-    dfs(src, -1, vis);
-
-    for (int i = (int)ord.size() - 1; i >= 0; --i) {
+    for (int i = (int) ord.size() - 1; i >= 0; i--) {
       int u = ord[i];
       for (int v : in_edges[u]) {
         int w = find(v);
-        if (dfs_idx[sdom[u]] > dfs_idx[sdom[w]]) {
+        if (dfs_index[sdom[u]] > dfs_index[sdom[w]]) {
           sdom[u] = sdom[w];
         }
       }
@@ -163,16 +112,10 @@ struct Graph {
         merge(parent[u], u);
       }
     }
-
-    //!pause
-#if 0
-    //!unpause
-    Tree ans;    
-    //!pause
-#endif
-    /*ly*/Tree ans (sdom.size() + 5);/*ry*/
-    //!unpause
-    ran(i, 1, (int)ord.size()) {
+    
+    Tree ans; /* if your constructor needs # of vertices,
+               * use (int) idom.size() + 5 for example */
+    for (int i = 1; i < (int) ord.size(); i++) {
       int u = ord[i];
       if (idom[u] != sdom[u]) {
         idom[u] = idom[idom[u]];
@@ -183,60 +126,19 @@ struct Graph {
     return ans;
   }
 };
-//!finish
-//!end_codebook
-// solves:
-// https://codeforces.com/contest/757/problem/F
-const int maxn = 200005;
-const ll inf = 1LL << 60;
-vector<pair<int, ll>> adj [maxn];
-ll dist [maxn];
-vector<int> preds [maxn];
-bool vis [maxn];
 
 int main () {
-  int vertexc, edgec, src;
-  cin >> vertexc >> edgec >> src;
+  int vertexc, arcc;
+  cin >> vertexc >> arcc;
 
-  for (int i = 0; i < edgec; i++) {
-    int u, v, w;
-    cin >> u >> v >> w;
+  Graph G (vertexc); /* if using 1-indexed vertices, use
+                      * vertexc + 5 or something */
+  for (int i = 0; i < arcc; i++) {
+    int u, v;
+    cin >> u >> v;
 
-    adj[u].push_back(make_pair(v, w));
-    adj[v].push_back(make_pair(u, w));
+    G.add_edge(u, v);
   }
 
-  for (int i = 1; i <= vertexc; i++) {
-    dist[i] = inf;
-  }
-
-  Graph SPDAG (vertexc + 5);
-  priority_queue<pair<ll, int>, vector<pair<ll, int>>, greater<pair<ll, int>>> Q;
-  dist[src] = 0;
-  Q.push(make_pair(dist[src], src));
-  while (!Q.empty()) {
-    int u = Q.top().second;
-    Q.pop();
-
-    if (!vis[u]) {
-      vis[u] = 1;
-
-      for (int v : preds[u]) {
-        SPDAG.add_edge(v, u);
-      }
-      
-      for (pair<int, ll> nxt : adj[u]) {
-        if (dist[u] + nxt.second < dist[nxt.first]) {
-          dist[nxt.first] = dist[u] + nxt.second;
-          preds[nxt.first] = vector<int> (1, u);
-          Q.push(make_pair(dist[nxt.first], nxt.first));
-        } else if (dist[u] + nxt.second == dist[nxt.first]) {
-          preds[nxt.first].push_back(u);
-        }
-      }
-    }
-  }
-
-  Tree dom = SPDAG.dom_tree(src);
-  cout << dom.solve() << endl;
+  Tree T = G.dom_tree(0);
 }
