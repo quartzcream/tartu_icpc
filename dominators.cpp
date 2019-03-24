@@ -27,6 +27,7 @@ struct Graph {
     dfs_index[vertex] = (int) ord.size() - 1;
     visited[vertex] = 1;
     for (int nxt : out_edges[vertex]) {
+      in_edges[nxt].push_back(vertex);
       if (!visited[nxt]) {
         dfs(nxt, vertex, visited);
       }
@@ -34,7 +35,6 @@ struct Graph {
   }
 
   void add_edge (int u, int v) {
-    in_edges[v].push_back(u);
     out_edges[u].push_back(v);
   }
 
@@ -113,7 +113,8 @@ struct Graph {
       }
     }
     
-    Tree ans;
+    Tree ans; /* if your constructor needs # of vertices,
+               * use (int) idom.size() + 5 for example */
     for (int i = 1; i < (int) ord.size(); i++) {
       int u = ord[i];
       if (idom[u] != sdom[u]) {
@@ -130,7 +131,8 @@ int main () {
   int vertexc, arcc;
   cin >> vertexc >> arcc;
 
-  Graph G (vertexc);
+  Graph G (vertexc); /* if using 1-indexed vertices, use
+                      * vertexc + 5 or something */
   for (int i = 0; i < arcc; i++) {
     int u, v;
     cin >> u >> v;
