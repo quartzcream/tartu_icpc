@@ -40,6 +40,6 @@ fout.close()
 
 for i in range(2):
     os.system("""/bin/bash -c "printf '\n%.0s' {1..1000}  | pdflatex --shell-escape codebook3.tex >/dev/null" """) #Run latex twice to fix links
-os.system("qpdf --pages codebook3.pdf 1-22 -- codebook3.pdf  codebook.pdf")
+os.system("qpdf --pages codebook3.pdf 1-25 -- codebook3.pdf  codebook.pdf")
 
 

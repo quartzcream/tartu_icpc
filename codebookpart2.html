@@ -803,6 +803,12 @@ gsettings <span class="nb">set</span> org.compiz.core: <span class="se">\ </span
     /org/compiz/profiles/Default/plugins/core/ hsize <span class="m">4</span>
 gsettings <span class="nb">set</span> org.gnome.desktop.wm.preferences <span class="se">\</span>
     focus-mode <span class="s1">&#39;sloppy&#39;</span>                         <span class="c1">#settings</span>
+gvim template.cpp
+<span class="nb">cd</span> samps                                 <span class="c1">#copy everything</span>
+<span class="k">for</span> d in *<span class="p">;</span> <span class="k">do</span> <span class="nb">cd</span> <span class="nv">$d</span><span class="p">;</span> <span class="k">for</span> f in *<span class="p">;</span> <span class="k">do</span> <span class="se">\</span>
+    cp <span class="nv">$f</span> <span class="s2">&quot;../../</span><span class="si">${</span><span class="nv">d</span><span class="p">,,</span><span class="si">}</span><span class="nv">$f</span><span class="s2">&quot;</span><span class="p">;</span> <span class="k">done</span><span class="p">;</span> <span class="se">\</span>
+    <span class="nb">cd</span> ..<span class="p">;</span> cp <span class="s2">&quot;../template.cpp&quot;</span> <span class="s2">&quot;../</span><span class="si">${</span><span class="nv">d</span><span class="p">,,</span><span class="si">}</span><span class="s2">.cpp&quot;</span><span class="p">;</span> <span class="k">done</span>
+<span class="nb">cd</span> ..
 <span class="nb">set</span> si cin                                        <span class="c1">#.vimrc</span>
 <span class="nb">set</span> <span class="nv">ts</span><span class="o">=</span><span class="m">4</span> <span class="nv">sw</span><span class="o">=</span><span class="m">4</span> noet                                <span class="c1">#.vimrc</span>
 <span class="nb">set</span> <span class="nv">cb</span><span class="o">=</span>unnamedplus                                <span class="c1">#.vimrc</span>
@@ -1478,18 +1484,16 @@ target remote <span class="p">|</span> vgdb                            <span cla
   <span class="n">vector</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">diag</span> <span class="o">=</span> <span class="n">prr</span><span class="p">.</span><span class="n">first</span><span class="p">;</span>
   <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">diag_cols</span> <span class="o">=</span> <span class="n">prr</span><span class="p">.</span><span class="n">second</span><span class="p">.</span><span class="n">first</span><span class="p">;</span>
   <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">crap_cols</span> <span class="o">=</span> <span class="n">prr</span><span class="p">.</span><span class="n">second</span><span class="p">.</span><span class="n">second</span><span class="p">;</span>
-  <span class="k">if</span> <span class="p">(</span><span class="n">diag_cols</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">!=</span> <span class="n">matrix</span><span class="p">.</span><span class="n">size</span><span class="p">())</span>             <span class="mi">8673</span>
-    <span class="k">return</span> <span class="n">vector</span><span class="o">&lt;</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
-  <span class="n">vector</span><span class="o">&lt;</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span> <span class="n">ans</span><span class="p">;</span>
+  <span class="n">vector</span><span class="o">&lt;</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span> <span class="n">ans</span><span class="p">;</span>                             <span class="mi">9794</span>
   <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="nl">u</span> <span class="p">:</span> <span class="n">crap_cols</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">vector</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">row</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
     <span class="n">row</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-    <span class="n">ran</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">diag</span><span class="p">.</span><span class="n">size</span><span class="p">())</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span>             <span class="mi">1447</span>
-      <span class="o">-</span><span class="n">diag</span><span class="p">[</span><span class="n">diag_cols</span><span class="p">[</span><span class="n">i</span><span class="p">]][</span><span class="n">u</span><span class="p">];</span>
+    <span class="n">ran</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">diag_cols</span><span class="p">.</span><span class="n">size</span><span class="p">())</span>
+      <span class="n">row</span><span class="p">[</span><span class="n">diag_cols</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="o">-</span><span class="n">diag</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">u</span><span class="p">];</span>               <span class="mi">2600</span>
     <span class="n">ans</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">row</span><span class="p">);</span>
   <span class="p">}</span>
   <span class="k">return</span> <span class="n">ans</span><span class="p">;</span>
-<span class="p">}</span>                                                   <span class="o">%</span><span class="mi">1837</span>
+<span class="p">}</span>                                                   <span class="o">%</span><span class="mi">5812</span>
 <header>
 <b>Polynomial roots and O(n^2) interpolation</b>
 </header>
@@ -2249,6 +2253,48 @@ target remote <span class="p">|</span> vgdb                            <span cla
 <span class=" -RegionYellow">    root-&gt;build_suffix_tree(s);</span>                     <span class=" -RegionYellow"> 1055</span>
   <span class="p">}</span>
 <span class="p">};</span>                                             <span class="o">%</span><span class="mi">5553</span><span class=" -RegionYellow">%5020</span>
+<header>
+<b>Palindromic tree O(n)</b>
+</header>
+<span></span><span class="k">struct</span> <span class="n">palindromic_tree</span> <span class="p">{</span>
+  <span class="kt">int</span> <span class="n">len</span><span class="p">[</span><span class="n">MAXN</span><span class="p">],</span> <span class="n">link</span><span class="p">[</span><span class="n">MAXN</span><span class="p">],</span> <span class="n">cnt</span><span class="p">[</span><span class="n">MAXN</span><span class="p">];</span>
+  <span class="kt">char</span> <span class="n">s</span><span class="p">[</span><span class="n">MAXN</span><span class="p">];</span>
+  <span class="n">vector</span><span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">to</span><span class="p">[</span><span class="n">MAXN</span><span class="p">];</span>                  <span class="mi">3118</span>
+  <span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="n">last</span><span class="p">,</span> <span class="n">sz</span><span class="p">;</span>
+  <span class="kt">void</span> <span class="nf">clear</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">fill</span><span class="p">(</span><span class="n">to</span><span class="p">,</span> <span class="n">to</span> <span class="o">+</span> <span class="n">MAXN</span><span class="p">,</span> <span class="n">vector</span><span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&gt;</span><span class="p">());</span>
+    <span class="n">memset</span><span class="p">(</span><span class="n">len</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">len</span><span class="p">));</span>
+    <span class="n">memset</span><span class="p">(</span><span class="n">link</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">link</span><span class="p">));</span>                   <span class="mi">5652</span>
+    <span class="n">memset</span><span class="p">(</span><span class="n">cnt</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">cnt</span><span class="p">));</span>
+    <span class="n">memset</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">s</span><span class="p">));</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">last</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">link</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">len</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="n">s</span><span class="p">[</span><span class="n">n</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="mi">27</span><span class="p">;</span>
+    <span class="n">sz</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">palindromic_tree</span><span class="p">()</span> <span class="p">{</span> <span class="n">clear</span><span class="p">();</span> <span class="p">}</span>                    <span class="mo">00</span><span class="mi">82</span>
+  <span class="kt">int</span> <span class="nf">get_link</span><span class="p">(</span><span class="kt">int</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="n">len</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="n">s</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span> <span class="n">v</span> <span class="o">=</span> <span class="n">link</span><span class="p">[</span><span class="n">v</span><span class="p">];</span>
+    <span class="k">return</span> <span class="n">v</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="kt">int</span> <span class="nf">tr</span><span class="p">(</span><span class="kt">int</span> <span class="n">v</span><span class="p">,</span> <span class="kt">int</span> <span class="n">c</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">it</span> <span class="p">:</span> <span class="n">to</span><span class="p">[</span><span class="n">v</span><span class="p">])</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">it</span><span class="p">.</span><span class="n">first</span> <span class="o">==</span> <span class="n">c</span><span class="p">)</span> <span class="k">return</span> <span class="n">it</span><span class="p">.</span><span class="n">second</span><span class="p">;</span>           <span class="mi">1937</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="kt">int</span> <span class="n">add_letter</span><span class="p">(</span><span class="kt">int</span> <span class="n">c</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">s</span><span class="p">[</span><span class="n">n</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">cur</span> <span class="o">=</span> <span class="n">get_link</span><span class="p">(</span><span class="n">last</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">tr</span><span class="p">(</span><span class="n">cur</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span> <span class="p">{</span>
+      <span class="n">len</span><span class="p">[</span><span class="n">sz</span><span class="p">]</span> <span class="o">=</span> <span class="n">len</span><span class="p">[</span><span class="n">cur</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+      <span class="n">link</span><span class="p">[</span><span class="n">sz</span><span class="p">]</span> <span class="o">=</span> <span class="n">tr</span><span class="p">(</span><span class="n">get_link</span><span class="p">(</span><span class="n">link</span><span class="p">[</span><span class="n">cur</span><span class="p">]),</span> <span class="n">c</span><span class="p">);</span>
+      <span class="n">to</span><span class="p">[</span><span class="n">cur</span><span class="p">].</span><span class="n">push_back</span><span class="p">({</span><span class="n">c</span><span class="p">,</span> <span class="n">sz</span><span class="o">++</span><span class="p">});</span>                  <span class="mi">4761</span>
+    <span class="p">}</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="n">tr</span><span class="p">(</span><span class="n">cur</span><span class="p">,</span> <span class="n">c</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">cnt</span><span class="p">[</span><span class="n">last</span><span class="p">]</span> <span class="o">=</span> <span class="n">cnt</span><span class="p">[</span><span class="n">link</span><span class="p">[</span><span class="n">last</span><span class="p">]]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>                                                  <span class="o">%</span><span class="mi">3854</span>
 <header>
 <b>DMST O(E log V)</b>
 </header>

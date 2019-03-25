@@ -15,6 +15,7 @@ using namespace std;
 const int MAXN = 2e6 + 666;
 //!escape Palindromic tree O(n)
 //!begin_codebook
+//!start
 struct palindromic_tree {
   int len[MAXN], link[MAXN], cnt[MAXN];
   char s[MAXN];
@@ -60,6 +61,7 @@ struct palindromic_tree {
     return cnt[last] = cnt[link[last]] + 1;
   }
 };
+//!finish
 //!end_codebook
 struct palindromic_tree me;
 
