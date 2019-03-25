@@ -1,4 +1,4 @@
-
+#!escape Contest setup
 #!begin_codebook
 
 alias g++='g++ -g -Wall -Wshadow -Wconversion \  #.bashrc

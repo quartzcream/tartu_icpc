@@ -41,11 +41,11 @@ struct intmod {
     return *this;
   }
   intmod<T, P> &operator*=(const intmod<T, P> i) {
-    x = ((long long)x * i.x) % P;
+    x = ((ll)x * i.x) % P;
     return *this;
   }
   intmod<T, P> &operator/=(const intmod<T, P> i) {
-    x = ((long long)x * i.inverse().x) % P;
+    x = ((ll)x * i.inverse().x) % P;
     return *this;
   }
   intmod<T, P> operator+(const intmod<T, P> i) const {

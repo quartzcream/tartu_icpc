@@ -13,6 +13,7 @@
 \usepackage{hyperref}
 \usepackage{pdflscape}
 \usepackage{multicol}
+\usepackage{lmodern}
 
 \usepackage{physics}
 \usepackage{harpoon}
@@ -47,6 +48,7 @@
 \DeclareMathOperator{\prp}{perp}
 %\newcommand*{\vv}[1]{\overrightharp{\ensuremath{#1}}}
 \newcommand{\vv}[1]{\overline{#1}}
+\usepackage{setspace}
 
 \numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
 \numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
@@ -56,21 +58,22 @@
 \usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
 \usepackage{booktabs} % Horizontal rules in tables
 
-
 \usepackage{enumitem} % Customized lists
 \setlist[itemize]{noitemsep} % Make itemize lists more compact
 \usepackage{fancyhdr} % Proper control over header
-
+\usepackage{microtype}
+\usepackage{tocloft}
 
 \usepackage{minted}
 \usepackage{etoolbox}
+
 \AtBeginEnvironment{minted}{\fontsize{10}{10}\selectfont}
 \BeforeBeginEnvironment{minted}{\vspace*{-2.5mm}}
 \AfterEndEnvironment{minted}{\vspace*{-4.5mm}}
-\usemintedstyle{tartu_icpc}
+\usemintedstyle{emacs}
 
 \titleformat*{\section}{\bfseries}
-\titlespacing*{\section}{10mm}{0ex}{0ex}
+\titlespacing*{\section}{0mm}{2mm}{0ex}
 
 \title{\textbf{University of Tartu ICPC Team Notebook (2018-2019)}}
 \date{\today}
@@ -79,7 +82,7 @@
 \fancyhf{}
 \lhead{University of Tartu}
 \rhead{\thepage}
-\setlength{\headsep}{0mm}
+\setlength{\headsep}{2mm}
 
 \hyphenpenalty=2000
 \exhyphenpenalty=2000
@@ -88,16 +91,38 @@
 \binoppenalty=10
 \relpenalty=10
 
+
+
+\renewcommand\cftsecfont{\small}
+
+\renewcommand\cftsecpagefont{\small}
+
+\setlength{\cftbeforesecskip}{0pt}
+\renewcommand\cftsecbeforepnum{\vskip 0pt}
+\renewcommand\cftsecafterpnum{\vskip 0pt}
+
+
+
+
 \makeatletter
-\renewcommand\tableofcontents{%
-    \@starttoc{toc}%
-}
+\let\latexl@section\l@section
+\def\l@section#1#2{\begingroup\let\numberline\@gobble\latexl@section{#1}{#2}\endgroup}
+\def\@seccntformat#1{\ifcsname #1format\endcsname\else\csname the#1\endcsname\quad\fi}
+\def\sectionformat{}
 \makeatother
-\begin{document}
+
+
+\addto\captionsenglish{% Replace "english" with the language you use
+  \renewcommand{\contentsname}%
+    {}%
+}
+\begin{document} 
+\pagenumbering{gobble} 
 
 \begin{landscape}
-\setlength\columnsep{10mm}
-\begin{multicols*}{2}
+\setlength{\columnsep}{4mm}
+\setlength{\columnseprule}{0.4pt}
+\begin{multicols}{3}
 
 \begin{center}
 	\smallskip
@@ -106,9 +131,14 @@
 	\today
 \end{center}
  
+\begingroup
+\let\clearpage\relax
+\vspace{-10mm} % the removed space. Set as appropriate
 \tableofcontents
+\endgroup
+\pagenumbering{arabic}  
 
-\par\noindent\rule{\textwidth}{0.4pt}
+% \par\noindent\rule{\textwidth}{0.4pt}
 
 % !end_codebook
 

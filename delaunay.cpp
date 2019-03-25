@@ -72,7 +72,7 @@ bool in_c_circle(Vec *arr, Vec d) {
     m[i][2] = m[i][0] * m[i][0];
     m[i][2] += m[i][1] * m[i][1];
   }
-  __int128 res = 0;
+  __int128 res = 0; //double seems to work as well
   res +=
     (__int128)(m[0][0] * m[1][1] - m[0][1] * m[1][0]) *
     m[2][2];

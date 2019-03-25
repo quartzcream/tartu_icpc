@@ -176,19 +176,17 @@ with open('header.html', 'r') as file:
     full_html = file.read()
 full_tex = ""
 
-os.system("touch codebook.tex");
 for file in file_ord:
     print(file)
     file = file.rstrip()
-    is_source = False
     
     lang = "tex"
     if(file[-4:] == ".cpp" or file[-4:] == ".hpp" or file[-2:] == ".c" or file[-2:] == ".h" ):
         lang = "c++"
-        is_source = True
-    if(file[-3:] == ".sh" ):
+    elif(file[-3:] == ".sh" ):
         lang = "bash"
-        is_source = True
+    else:
+        continue
     outputting = False
     hashing = False
     escape_str = "!escape "
@@ -204,69 +202,59 @@ for file in file_ord:
     col_hash = True
 
 
-    if(is_source):
-        processed = ""
-        portion = []
-        fin = open(file, "r")
-        for line in fin.readlines():
-            line = line.rstrip()
-            escape_idx = line.find(escape_str)
-            beg_idx = line.find(beg_str)
-            end_idx = line.find(end_str)
-            hash_beg_idx = line.find(beg_hash_str)
-            hash_end_idx = line.find(end_hash_str)
-            no_col_hash_idx = line.find(no_col_hash_str)
-            pause_idx = line.find(pause_str)
-            unpause_idx = line.find(unpause_str)
-            if(escape_idx != -1):
-                line = line[escape_idx+len(escape_str):]
-                full_html += '<header>\n<b>'
-                full_html += line
-                full_html += '</b>\n</header>\n'
-            elif(beg_idx != -1):
-                outputting = True
-            elif(end_idx != -1):
-                outputting = False
-                if len(portion) > 0:
-                    processed += '\n'.join(portion)+'\n'
-                portion = []
-            elif(hash_beg_idx != -1):
-                hashing = True
-            elif(hash_end_idx != -1):
-                hashing = False
-                if len(portion) > 0:
-                    processed += '\n'.join(process(portion, col_hash))+'\n'
-                portion = []
-            elif(no_col_hash_idx != -1):
-                col_hash = False
-            elif(pause_idx != -1):
-                outputting = False
-            elif(unpause_idx != -1):
-                outputting = True;
-            elif(outputting and not line.isspace() and len(line) > 0):
-                portion.append(line)
-        fout = open("tmp_source."+lang, "w");
-        fout.write(processed)
-        fout.close()
-        os.system("pygmentize -O full,style=tartu_icpc -o tmp_source.html tmp_source."+lang)
-        with open('tmp_source.html', 'r') as file:
-            loc_html = file.read()
-        loc_html_beg = loc_html.find(loc_html_beg_str)+len(loc_html_beg_str)
-        loc_html_end = loc_html.find(loc_html_end_str)
-        full_html += loc_html[loc_html_beg:loc_html_end]
-    else:
-        with open(file, 'r') as fin:
-            loc_tex = fin.read()
-        beg_idx = loc_tex.find(beg_str)+len(beg_str)
-        end_idx = loc_tex.find(end_str)
-        full_tex += loc_tex[beg_idx:end_idx]
+    processed = ""
+    portion = []
+    fin = open(file, "r")
+    for line in fin.readlines():
+        line = line.rstrip()
+        escape_idx = line.find(escape_str)
+        beg_idx = line.find(beg_str)
+        end_idx = line.find(end_str)
+        hash_beg_idx = line.find(beg_hash_str)
+        hash_end_idx = line.find(end_hash_str)
+        no_col_hash_idx = line.find(no_col_hash_str)
+        pause_idx = line.find(pause_str)
+        unpause_idx = line.find(unpause_str)
+        if(escape_idx != -1):
+            line = line[escape_idx+len(escape_str):]
+            full_html += '<header>\n<b>'
+            full_html += line
+            full_html += '</b>\n</header>\n'
+        elif(beg_idx != -1):
+            outputting = True
+        elif(end_idx != -1):
+            outputting = False
+            if len(portion) > 0:
+                processed += '\n'.join(portion)+'\n'
+            portion = []
+        elif(hash_beg_idx != -1):
+            hashing = True
+        elif(hash_end_idx != -1):
+            hashing = False
+            if len(portion) > 0:
+                processed += '\n'.join(process(portion, col_hash))+'\n'
+            portion = []
+        elif(no_col_hash_idx != -1):
+            col_hash = False
+        elif(pause_idx != -1):
+            outputting = False
+        elif(unpause_idx != -1):
+            outputting = True;
+        elif(outputting and not line.isspace() and len(line) > 0):
+            portion.append(line)
+    fout = open("tmp_source."+lang, "w");
+    fout.write(processed)
+    fout.close()
+    os.system("pygmentize -O full,style=tartu_icpc -o tmp_source.html tmp_source."+lang)
+    with open('tmp_source.html', 'r') as file:
+        loc_html = file.read()
+    loc_html_beg = loc_html.find(loc_html_beg_str)+len(loc_html_beg_str)
+    loc_html_end = loc_html.find(loc_html_end_str)
+    full_html += loc_html[loc_html_beg:loc_html_end]
 
 
 with open('footer.html', 'r') as file:
     full_html += file.read()
 fout = open("codebookpart2.html", "w")
 fout.write(full_html)
-fout.close()
-fout = open("codebook.tex", "w")
-fout.write(full_tex)
 fout.close()

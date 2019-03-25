@@ -1,6 +1,10 @@
 header.tex
 facts_section.tex
+kactl_chapter.tex
 queyranne.tex
+kactl_subset_transf.tex
+kactl_number_theory_chapter.tex
+kactl_comb_chapter.tex
 geometry_section.tex
 footer.tex
 triangle.cpp
@@ -16,8 +20,14 @@ radixsort.cpp
 fft.cpp
 pollard_rho.cpp
 berlekamp_massey.cpp
+lin_alg.cpp
+kactl_poly.h
+kactl_poly_roots.h
+kactl_poly_interpolate.h
+kactl_simplex.h
 dinic_min_cost.cpp
 Library/Flow/cyclec.h
+kactl_global_min_cut.h
 aho_corasick.cpp
 suffix_automaton.cpp
 DMST.cpp
