@@ -34,11 +34,12 @@ for file in file_ord:
         elif(outputting):
             full_tex += line
 
-fout = open("codebook.tex", "w")
+fout = open("codebook3.tex", "w")
 fout.write(full_tex)
 fout.close()
 
 for i in range(2):
-    os.system("""/bin/bash -c "printf '\n%.0s' {1..1000}  | pdflatex --shell-escape codebook.tex >/dev/null" """) #Run latex twice to fix links
+    os.system("""/bin/bash -c "printf '\n%.0s' {1..1000}  | pdflatex --shell-escape codebook3.tex >/dev/null" """) #Run latex twice to fix links
+os.system("qpdf --pages codebook3.pdf 1-22 -- codebook3.pdf  codebook.pdf")
 
 
