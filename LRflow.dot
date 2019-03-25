@@ -1,0 +1,25 @@
+digraph g{
+  labelloc="t";
+  label="LR-flow";
+  rankdir=LR
+  node [shape=circle,width=0.6 fixdesize=true];
+  SF [label = S, color = blue];
+  TF [label = T, color = red];
+  AF [label = A];
+  BF [label = B];
+  SF -> AF [style=dotted];
+  AF -> BF [label = "L≤F≤R"];
+  BF -> TF [style=dotted];
+  AF -> A [style=invis,weight=1]
+  BF -> B [style=invis,weight=1]
+
+  SP [label = "S'", color = blue];
+  TP [label = "T'", color = red];
+  S -> A [style=dotted];
+  A -> B [label = "0≤F≤R-L"];
+  B -> T [style=dotted];
+  T -> S [label = "0≤F≤∞",color=green];
+  A -> TP [label = "0≤F≤L",color=green];
+  SP -> B [label = "0≤F≤L",color=green];
+}
+

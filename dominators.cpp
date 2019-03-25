@@ -15,7 +15,7 @@
 typedef long long ll;
 typedef long double ld;
 using namespace std;
-//!escape Dominator tree
+//!escape Dominator tree O(NlogN)
 //!begin_codebook
 //!start
 /*ly*/struct Tree {
