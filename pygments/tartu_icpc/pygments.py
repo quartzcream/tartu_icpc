@@ -160,7 +160,7 @@ class TartuICPCStyle(Style):
 		Error:                     "border:#FF0000",
 
 		#Token.RegionWhite:         "#bbbbbb",
-		Token.RegionPink:          "bg:#FFD9FF",
-		Token.RegionGreen:         "bg:#D9FFD9",
-		Token.RegionYellow:        "bg:#FFFFD9"
+		Token.RegionPink:          "bg:#FFD8FF",
+		Token.RegionGreen:         "bg:#D8FFD8",
+		Token.RegionYellow:        "bg:#FFFFD8"
 	}

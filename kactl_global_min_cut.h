@@ -8,7 +8,7 @@
  * matrix. Time: O(V^3) Status: Lightly tested
  */
 #pragma once
-
+//!escape Global Min Cut O(V^3)
 //!begin_codebook
 //!start
 

@@ -72,9 +72,9 @@
       body .err { border: 1px solid #FF0000 } /* Error */
       body .k { color: #AA22FF; font-weight: bold } /* Keyword */
       body .o { color: #666666 } /* Operator */
-      body .-RegionGreen { background-color: #B8FFB8 } /* RegionGreen */
-      body .-RegionPink { background-color: #FFB8FF } /* RegionPink */
-      body .-RegionYellow { background-color: #FFFFB8 } /* RegionYellow */
+      body .-RegionGreen { background-color: #D8FFD8 } /* RegionGreen */
+      body .-RegionPink { background-color: #FFD8FF } /* RegionPink */
+      body .-RegionYellow { background-color: #FFFFD8 } /* RegionYellow */
       body .ch { color: #008800; font-style: italic } /* Comment.Hashbang */
       body .cm { color: #008800; font-style: italic } /* Comment.Multiline */
       body .cp { color: #008800 } /* Comment.Preproc */
@@ -1968,6 +1968,9 @@ target remote <span class="p">|</span> vgdb                            <span cla
     <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
   <span class="p">}</span>
 <span class="p">};</span>                                                  <span class="o">%</span><span class="mi">4029</span>
+<header>
+<b>Global Min Cut O(V^3)</b>
+</header>
 <span></span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="n">vi</span><span class="o">&gt;</span> <span class="n">GetMinCut</span><span class="p">(</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">vi</span><span class="o">&gt;&amp;</span> <span class="n">weights</span><span class="p">)</span> <span class="p">{</span>
   <span class="kt">int</span> <span class="n">N</span> <span class="o">=</span> <span class="n">sz</span><span class="p">(</span><span class="n">weights</span><span class="p">);</span>
   <span class="n">vi</span> <span class="nf">used</span><span class="p">(</span><span class="n">N</span><span class="p">),</span> <span class="n">cut</span><span class="p">,</span> <span class="n">best_cut</span><span class="p">;</span>
