@@ -260,15 +260,19 @@ vector<vector<T>> homog_basis(
   vector<int> diag_cols = prr.second.first;
   vector<int> crap_cols = prr.second.second;
 
-  if (diag_cols.size() != matrix.size())
-    return vector<vector<T>>(0);
+  //if (diag_cols.size() != matrix.size())
+  //  return vector<vector<T>>(0);
 
   vector<vector<T>> ans;
   for (int u : crap_cols) {
     vector<T> row(width, 0);
     row[u] = 1;
-    ran(i, 0, (int)diag.size()) row[i] =
-      -diag[diag_cols[i]][u];
+    for (int i = 0; i < (int) diag_cols.size(); i++) {
+      row[diag_cols[i]] = -diag[i][u];
+    }
+    
+    //ran(i, 0, (int)diag.size()) row[i] =
+    //  -diag[diag_cols[i]][u];
     ans.push_back(row);
   }
   return ans;
