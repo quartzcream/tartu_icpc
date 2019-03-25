@@ -141,7 +141,7 @@ def process(content, col_hash = True):
         for j in range(len(keys)):
             since_hash[j] += len(''.join(col_versions[keys[j]][i].split()))
         write_hash = [False for key in keys]
-        chars_between = 100
+        chars_between = 70
         for j in range(len(keys)-1, -1, -1):
             if(since_hash[j] >= chars_between):
                 write_hash[j] = True
