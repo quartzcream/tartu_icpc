@@ -30,6 +30,7 @@ Library/Flow/cyclec.h
 kactl_global_min_cut.h
 aho_corasick.cpp
 suffix_automaton.cpp
+palindromic_tree.cpp
 DMST.cpp
 dominators.cpp
 bridges.cpp

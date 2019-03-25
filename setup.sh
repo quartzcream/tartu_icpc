@@ -13,6 +13,14 @@ gsettings set org.compiz.core: \                #settings
 gsettings set org.gnome.desktop.wm.preferences \
     focus-mode 'sloppy'                         #settings
 
+gvim template.cpp
+
+cd samps                                 #copy everything
+for d in *; do cd $d; for f in *; do \
+    cp $f "../../${d,,}$f"; done; \
+    cd ..; cp "../template.cpp" "../${d,,}.cpp"; done
+cd ..
+
 set si cin                                        #.vimrc
 set ts=4 sw=4 noet                                #.vimrc
 set cb=unnamedplus                                #.vimrc
