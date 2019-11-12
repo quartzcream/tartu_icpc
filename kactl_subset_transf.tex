@@ -37,4 +37,21 @@ vi conv(vi a, vi b) {
   return a;
 }
 \end{minted}
+
+% Copied from Martin Širokov
+\section{SOS-DP $\mathcal{O}(N \log N)$}
+$\displaystyle a[x] \gets \bigoplus\nolimits_{y \subseteq x} a[y]$,
+where $\oplus$ is any commutative, associative operation.
+
+\begin{minted}[tabsize=2,baselinestretch=1, breaklines, texcomments=true, mathescape=true]{c++}
+for (int k = 0; k < K; k++) { // K = log N, N should be a power of two
+  int m = 1 << k;
+  for (int i = 0; i < 1 << K; i++) {
+    if (i & m) {
+      a[i] = op(a[i], a[i - m]); // replace op with your operation
+    }
+  }
+}
+\end{minted}
+
 % !end_codebook

@@ -90,4 +90,22 @@
 			\item ways a convex polygon with $n+2$ sides can be cut into triangles by connecting vertices with straight lines.
 			\item permutations of $[n]$ with no 3-term increasing subseq.
 		\end{itemize}
+
+                \section{Hall's marriage theorem}
+                Let $G$ be a bipartite graph consisting of sets $X$ and $Y$.
+                We can match every vertex in $X$ if and only if for every $W \subseteq X$,
+                \[ \left| W \right| \le \left| N(W) \right|. \]
+
+                \section{Prüfer sequences}
+                Consider trees with $n$ vertices. Prüfer sequences are sequences of length
+                $n - 2$ in bijection with labeled trees.
+
+                To convert a tree to a sequence:
+                \begin{itemize}
+                \item while the tree has more than two vertices:
+                  \begin{itemize}
+                  \item pick the leaf with the smallest label;
+                  \item remove it and append its neighbor to the sequence.
+                  \end{itemize}
+                \end{itemize}
 %!end_codebook
