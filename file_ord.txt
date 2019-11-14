@@ -26,6 +26,7 @@ kactl_poly_roots.h
 kactl_poly_interpolate.h
 kactl_simplex.h
 dinic_min_cost.cpp
+gomoryhu.cpp
 Library/Flow/cyclec.h
 kactl_global_min_cut.h
 aho_corasick.cpp
