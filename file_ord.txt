@@ -5,6 +5,7 @@ queyranne.tex
 kactl_subset_transf.tex
 kactl_number_theory_chapter.tex
 kactl_comb_chapter.tex
+tables.tex
 geometry_section.tex
 footer.tex
 triangle.cpp
@@ -13,6 +14,7 @@ convex_hull.cpp
 delaunay.cpp
 setup.sh
 crc.sh
+template.cpp
 ordered_set.cpp
 hashes.cpp
 allocator.h
